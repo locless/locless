@@ -40,7 +40,7 @@ export const DesktopSidebar: React.FC<Props> = ({ className }) => {
         },
         {
             icon: BookOpen,
-            href: 'https://unkey.dev/docs',
+            href: 'https://docs.locless.com/',
             external: true,
             label: 'Docs',
         },
