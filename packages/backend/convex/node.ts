@@ -46,6 +46,36 @@ export const getSingle = query({
     },
 });
 
+export const getPublic = query({
+    args: {
+        projectId: v.id('projects'),
+        componentId: v.id('components'),
+        environment: v.union(v.literal('dev'), v.literal('prod')),
+    },
+    handler: async (ctx, args) => {
+        const project = await ctx.db.get(args.projectId);
+
+        if (!project) {
+            return null;
+        }
+
+        const component = await ctx.db.get(args.componentId);
+
+        if (component?.projectId !== project._id) {
+            return null;
+        }
+
+        const node = await ctx.db
+            .query('nodes')
+            .withIndex('by_component_and_environment', q =>
+                q.eq('componentId', component._id).eq('environment', args.environment)
+            )
+            .first();
+
+        return node;
+    },
+});
+
 export const save = mutation({
     args: {
         nodeId: v.optional(v.id('nodes')),
