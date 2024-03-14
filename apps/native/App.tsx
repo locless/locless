@@ -3,7 +3,6 @@ import { StatusBar } from "expo-status-bar";
 import { Button, StyleSheet, Text, View } from "react-native";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ConvexReactClient, useQuery } from "convex/react";
-import { api } from "@repo/backend/convex/_generated/api";
 import "react-native-get-random-values";
 import {
   BarcodeScanningResult,
