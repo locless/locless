@@ -2,7 +2,7 @@
 
 // Inspired by react-hot-toast library
 
-import type { ToastActionElement, ToastProps } from '@ui/components/ui/toast';
+import type { ToastActionElement, ToastProps } from './toast';
 import { useEffect, useState } from 'react';
 
 const TOAST_LIMIT = 1;
