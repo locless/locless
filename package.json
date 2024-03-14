@@ -9,12 +9,16 @@
         "format": "prettier --write \"**/*.{ts,tsx,md}\""
     },
     "devDependencies": {
-        "@repo/eslint-config": "workspace:*",
-        "@repo/typescript-config": "workspace:*",
+        "@repo/eslint-config": "*",
+        "@repo/typescript-config": "*",
         "prettier": "^3.2.5",
         "turbo": "latest"
     },
-    "packageManager": "pnpm@8.9.0",
+    "workspaces": {
+        "packages": ["packages/*", "apps/*"],
+        "nohoist": ["**/react-native", "**/react-native/**", "**/expo", "**/expo/**"]
+    },
+    "packageManager": "yarn@1.22.22",
     "engines": {
         "node": ">=18"
     }
