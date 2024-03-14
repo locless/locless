@@ -16,7 +16,7 @@
     },
     "workspaces": {
         "packages": ["packages/*", "apps/*"],
-        "nohoist": ["**/react-native", "**/react-native/**", "**/expo", "**/expo/**"]
+        "nohoist": ["**/react-native", "**/react-native/**", "**/expo", "**/expo/**", "**/@clerk", "**/@clerk/**"]
     },
     "packageManager": "yarn@1.22.22",
     "engines": {
