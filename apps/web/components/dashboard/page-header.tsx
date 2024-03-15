@@ -11,8 +11,8 @@ type Props = {
 export const PageHeader: React.FC<Props> = ({ title, description, actions }) => {
     const actionRows: React.ReactNode[][] = [];
     if (actions) {
-        for (let i = 0; i < actions.length; i += 3) {
-            actionRows.push(actions.slice(i, i + 3));
+        for (let i = 0; i < actions.length; i += 4) {
+            actionRows.push(actions.slice(i, i + 4));
         }
     }
 

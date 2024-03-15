@@ -11,6 +11,7 @@ import { Loading } from '@/components/dashboard/loading';
 import { CreateNodeButton } from './create-node-button';
 import { Separator } from '@repo/ui/components/ui/separator';
 import { SaveNodeButton } from './save-node-button';
+import { PreviewNodeButton } from './preview-node-button';
 
 type Props = PropsWithChildren<{
     params: {
@@ -51,6 +52,7 @@ export default function ProjectPageLayout(props: Props) {
                         <CopyButton value={component._id} />
                     </Badge>,
                     <CreateNodeButton key='createNode' />,
+                    <PreviewNodeButton key='previewNode' projectId={props.params.projectId} componentId={props.params.componentId} />,
                     <SaveNodeButton key='saveNode' componentId={props.params.componentId} />,
                 ]}
             />

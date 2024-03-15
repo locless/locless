@@ -1,27 +1,41 @@
 import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
-import { StatusBar } from "expo-status-bar";
-import { Button, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
-import { ConvexReactClient, useQuery } from "convex/react";
+import { ConvexReactClient } from "convex/react";
 import "react-native-get-random-values";
 import {
   BarcodeScanningResult,
   CameraView,
-  PermissionStatus,
   useCameraPermissions,
 } from "expo-camera/next";
 import { useEffect, useState } from "react";
+import { Id } from "@repo/backend/convex/_generated/dataModel";
+import Preview from "./src/Preview";
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL, {
   unsavedChangesWarning: false,
 });
 
 export default function App() {
-  const [permission, requestPermission] = useCameraPermissions();
+  const [_permission, requestPermission] = useCameraPermissions();
   const [didScan, setDidScan] = useState(false);
+  const [componentId, setComponentId] = useState<Id<"components"> | null>(null);
+  const [projectId, setProjectId] = useState<Id<"projects"> | null>(null);
 
   const handleBarcodeScanned = (scanningResult: BarcodeScanningResult) => {
-    console.log(scanningResult.data);
+    if (didScan) {
+      return;
+    }
+
+    try {
+      const data = JSON.parse(scanningResult.data);
+      setComponentId(data.componentId);
+      setProjectId(data.projectId);
+    } catch (e) {
+      console.error(e);
+    }
+
+    setDidScan(true);
   };
 
   useEffect(() => {
@@ -33,16 +47,20 @@ export default function App() {
       publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!}
     >
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-        <View style={styles.container}>
-          <CameraView
-            barcodeScannerSettings={{
-              barcodeTypes: ["qr"],
-            }}
-            facing="back"
-            style={{flex: 1,width:"100%"}}
-            onBarcodeScanned={handleBarcodeScanned}
-          />
-        </View>
+        {projectId && componentId ? (
+          <Preview componentId={componentId} projectId={projectId} />
+        ) : (
+          <View style={styles.container}>
+            <CameraView
+              barcodeScannerSettings={{
+                barcodeTypes: ["qr"],
+              }}
+              facing="back"
+              style={{ flex: 1, width: "100%" }}
+              onBarcodeScanned={handleBarcodeScanned}
+            />
+          </View>
+        )}
       </ConvexProviderWithClerk>
     </ClerkProvider>
   );

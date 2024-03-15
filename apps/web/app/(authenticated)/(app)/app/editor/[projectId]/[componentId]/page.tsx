@@ -17,7 +17,7 @@ import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pa
 import { TreeItemComponent } from './tree-item';
 import { AppRegistry } from 'react-native-web';
 import ReactNativeApp from './react-native-app';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { PropSearch } from './prop-search';
 import { CopyButton } from '@/components/dashboard/copy-button';
 
@@ -35,8 +35,6 @@ export default function EditorPage(props: Props) {
     });
 
     const convex = useConvex();
-
-    const [isLoading, setLoading] = useState(false);
 
     const {
         componentsData,
@@ -199,7 +197,6 @@ export default function EditorPage(props: Props) {
     };
 
     const loadNode = async () => {
-        setLoading(true);
         const node = await convex.query(api.node.getSingle, {
             projectId: props.params.projectId,
             componentId: props.params.componentId,
@@ -241,18 +238,12 @@ export default function EditorPage(props: Props) {
 
         AppRegistry.registerComponent('App', () => ReactNativeApp);
         AppRegistry.runApplication('App', { rootTag: document.getElementById('react-native-app') });
-
-        setLoading(false);
     };
 
     useEffect(() => {
         if (component) {
             loadNode();
         }
-
-        return () => {
-            AppRegistry.unmountApplicationComponentAtRootTag(document.getElementById('react-native-app'));
-        };
     }, [component]);
 
     if (component === null) {
