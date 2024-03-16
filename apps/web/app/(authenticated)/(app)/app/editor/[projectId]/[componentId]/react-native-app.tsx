@@ -40,8 +40,8 @@ export default function ReactNativeApp() {
         Object.entries(styles).forEach(style => {
             currentStyle = style[1].value;
 
-            if (/^\d+$/.test(currentStyle[0] === '-' ? currentStyle.substring(1) : currentStyle)) {
-                parsedStyles[style[0]] = Math.max(parseFloat(currentStyle), 0);
+            if (/^\d+$/.test(currentStyle.replaceAll('-', '').replaceAll('.', ''))) {
+                parsedStyles[style[0]] = parseFloat(currentStyle);
             } else if (currentStyle.includes('vh')) {
                 parsedStyles[style[0]] = (parseFloat(currentStyle.slice(0, -2)) / 100) * frameItem?.styles.height;
             } else if (currentStyle.includes('vw')) {

@@ -7,10 +7,16 @@ import useEditor, { ElementNode } from './useEditor';
  * Here's the component that will render a single row of your tree
  */
 export const TreeItemComponent = forwardRef<HTMLDivElement, TreeItemComponentProps<ElementNode>>((props, ref) => {
-    const { activeItem, updateTab, updateActiveItem } = useEditor();
+    const { activeItem, updateTab, updateActiveItem, clearActiveItem } = useEditor();
 
     const handleSetActiveItem = (item: ElementNode) => {
-        if (item.id === 'background-dummy' || item.id === activeItem) {
+        if (item.id === 'background-dummy') {
+            return;
+        }
+
+        if(item.id === activeItem) {
+            clearActiveItem();
+            updateTab('frames');
             return;
         }
 
