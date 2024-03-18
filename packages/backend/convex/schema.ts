@@ -75,7 +75,7 @@ export default defineSchema({
                     styles: v.array(
                         v.object({
                             name: v.string(),
-                            type: v.union(v.literal('custom'), v.literal('var')),
+                            type: v.union(v.literal('custom'), v.literal('var'), v.literal('outside')),
                             value: v.string(),
                             varId: v.optional(v.id('variables')),
                         })
@@ -90,7 +90,12 @@ export default defineSchema({
                     props: v.array(
                         v.object({
                             name: v.string(),
-                            type: v.union(v.literal('custom'), v.literal('var'), v.literal('translation')),
+                            type: v.union(
+                                v.literal('custom'),
+                                v.literal('var'),
+                                v.literal('translation'),
+                                v.literal('outside')
+                            ),
                             value: v.string(),
                             varId: v.optional(v.id('variables')),
                             translationId: v.optional(v.id('translations')),
@@ -99,53 +104,83 @@ export default defineSchema({
                 })
             )
         ),
-        meta: v.optional(
+        outsideProps: v.optional(
             v.array(
                 v.object({
-                    id: v.string(),
                     name: v.string(),
                     type: v.union(
-                        v.literal('textInput'),
-                        v.literal('view'),
-                        v.literal('activityIndicator'),
-                        v.literal('button'),
-                        v.literal('checkBox'),
-                        v.literal('flatList'),
-                        v.literal('image'),
-                        v.literal('imageBackground'),
-                        v.literal('keyboardAvoidingView'),
-                        v.literal('modal'),
-                        v.literal('picker'),
-                        v.literal('pressable'),
-                        v.literal('progressBar'),
-                        v.literal('refreshControl'),
-                        v.literal('safeAreaView'),
-                        v.literal('scrollView'),
-                        v.literal('sectionList'),
-                        v.literal('statusBar'),
-                        v.literal('switch'),
-                        v.literal('text'),
-                        v.literal('touchable'),
-                        v.literal('touchableHighlight'),
-                        v.literal('touchableNativeFeedback'),
-                        v.literal('touchableOpacity'),
-                        v.literal('touchableWithoutFeedback'),
-                        v.literal('virtualizedList'),
-                        v.literal('touchableOpacity')
+                        v.literal('function'),
+                        v.literal('boolean'),
+                        v.literal('number'),
+                        v.literal('string'),
+                        v.literal('object'),
+                        v.literal('array'),
+                        v.literal('deeplink')
                     ),
                 })
             )
         ),
-        layout: v.optional(
-            v.array(
-                v.object({
-                    id: v.string(),
-                    value: v.string(),
-                    connectionId: v.optional(v.id('components')),
-                    canHaveChildren: v.optional(v.boolean()),
-                    children: v.optional(v.array(v.any())),
-                })
-            )
+        meta: v.array(
+            v.object({
+                id: v.string(),
+                name: v.string(),
+                type: v.union(
+                    v.literal('textInput'),
+                    v.literal('view'),
+                    v.literal('activityIndicator'),
+                    v.literal('button'),
+                    v.literal('checkBox'),
+                    v.literal('flatList'),
+                    v.literal('image'),
+                    v.literal('imageBackground'),
+                    v.literal('keyboardAvoidingView'),
+                    v.literal('modal'),
+                    v.literal('picker'),
+                    v.literal('pressable'),
+                    v.literal('progressBar'),
+                    v.literal('refreshControl'),
+                    v.literal('safeAreaView'),
+                    v.literal('scrollView'),
+                    v.literal('sectionList'),
+                    v.literal('statusBar'),
+                    v.literal('switch'),
+                    v.literal('text'),
+                    v.literal('touchable'),
+                    v.literal('touchableHighlight'),
+                    v.literal('touchableNativeFeedback'),
+                    v.literal('touchableOpacity'),
+                    v.literal('touchableWithoutFeedback'),
+                    v.literal('virtualizedList'),
+                    v.literal('touchableOpacity')
+                ),
+            })
+        ),
+        layout: v.array(
+            v.object({
+                id: v.string(),
+                value: v.string(),
+                connectionId: v.optional(v.id('components')),
+                canHaveChildren: v.optional(v.boolean()),
+                children: v.optional(v.array(v.any())),
+            })
         ),
     }).index('by_component_and_environment', ['componentId', 'environment']),
+    nodeDummyProps: defineTable({
+        props: v.array(
+            v.object({
+                name: v.string(),
+                type: v.union(
+                    v.literal('function'),
+                    v.literal('boolean'),
+                    v.literal('number'),
+                    v.literal('string'),
+                    v.literal('object'),
+                    v.literal('array'),
+                    v.literal('deeplink')
+                ),
+                value: v.any(),
+            })
+        ),
+        nodeId: v.id('nodes'),
+    }).index('by_nodes', ['nodeId']),
 });

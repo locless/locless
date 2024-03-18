@@ -15,7 +15,7 @@ interface IStyles {
     id: string;
     styles: {
         varId?: Id<'variables'> | undefined;
-        type: 'var' | 'custom';
+        type: 'var' | 'custom' | 'outside';
         name: string;
         value: string;
     }[];
@@ -27,18 +27,31 @@ interface IProps {
         varId?: Id<'variables'> | undefined;
         translationId?: Id<'translations'> | undefined;
         name: string;
-        type: 'var' | 'custom' | 'translation';
+        type: 'var' | 'custom' | 'translation' | 'outside';
         value: string;
     }[];
 }
 
 export const SaveNodeButton = ({ componentId }: Props) => {
     const createNodeMutation = useMutation(api.node.save);
+    const addDummyPropMutation = useMutation(api.node.addDummyProp);
     const { toast } = useToast();
 
-    const { componentsData, isSaveAllowed, updateSaveButton } = useEditor();
+    const {
+        componentsData,
+        isSaveAllowed,
+        dummyPropsId,
+        dummyProps,
+        loadDummyPropsId,
+        updateSaveButton,
+        loadComponentsData,
+    } = useEditor();
 
-    const transformStyles = (styles: Record<string, Record<string, ElementStyle>>) => {
+    const transformStyles = (styles?: Record<string, Record<string, ElementStyle>>) => {
+        if (!styles) {
+            return;
+        }
+
         let array: IStyles[] = [];
 
         Object.entries(styles).forEach(item => {
@@ -51,7 +64,11 @@ export const SaveNodeButton = ({ componentId }: Props) => {
         return array;
     };
 
-    const transformProps = (props: Record<string, Record<string, ElementProp>>) => {
+    const transformProps = (props?: Record<string, Record<string, ElementProp>>) => {
+        if (!props) {
+            return;
+        }
+
         let array: IProps[] = [];
 
         Object.entries(props).forEach(item => {
@@ -85,21 +102,44 @@ export const SaveNodeButton = ({ componentId }: Props) => {
     };
 
     const handleSaveNode = async () => {
+        if (!componentsData.layout) {
+            return;
+        }
+
         const nodeId = await createNodeMutation({
             componentId,
             environment: 'dev',
             nodeId: componentsData.nodeId,
             styles: transformStyles(componentsData.styles),
             props: transformProps(componentsData.props),
-            layout: transformLayout(componentsData.layout),
+            layout: transformLayout(componentsData.layout) as ElementNode[],
             meta: Object.values(componentsData.meta),
+            outsideProps: componentsData.outsideProps,
         });
 
         if (nodeId) {
             updateSaveButton(false);
+            loadComponentsData({ ...componentsData, nodeId });
             toast({
-                description: 'Your element has been created!',
+                description: 'Your element has been saved!',
             });
+
+            const savedDummyPropId = await addDummyPropMutation({
+                nodeId,
+                props: dummyProps,
+                dummyPropId: dummyPropsId,
+            });
+
+            if (savedDummyPropId) {
+                if (dummyProps?.length) {
+                    loadDummyPropsId(savedDummyPropId);
+                }
+
+                updateSaveButton(false);
+                toast({
+                    description: 'Dummy props have been saved!',
+                });
+            }
         }
     };
 

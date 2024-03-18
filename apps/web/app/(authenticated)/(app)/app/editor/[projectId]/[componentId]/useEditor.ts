@@ -54,25 +54,39 @@ export type TabType = 'frames' | 'styles' | 'interactions';
 
 export interface ElementStyle {
     name: string;
-    type: 'custom' | 'var';
+    type: 'custom' | 'var' | 'outside';
     value: string;
     varId?: Id<'variables'>;
 }
 
 export interface ElementProp {
     name: string;
-    type: 'custom' | 'var' | 'translation';
+    type: 'custom' | 'var' | 'translation' | 'outside';
     value: string;
     varId?: Id<'variables'>;
     translationId?: Id<'translations'>;
 }
 
+export type DummyPropType = 'string' | 'number' | 'boolean' | 'object' | 'function' | 'array' | 'deeplink';
+
+export interface OutsideProp {
+    name: string;
+    type: DummyPropType;
+}
+
 export interface GlobalData {
     nodeId?: Id<'nodes'>;
-    styles: Record<string, Record<string, ElementStyle>>;
-    props: Record<string, Record<string, ElementProp>>;
+    styles?: Record<string, Record<string, ElementStyle>>;
+    props?: Record<string, Record<string, ElementProp>>;
     meta: Record<string, ElementData>;
     layout: ElementNode[];
+    outsideProps?: OutsideProp[];
+}
+
+export interface DummyProp {
+    name: string;
+    type: DummyPropType;
+    value: any;
 }
 
 interface EditorState {
@@ -81,6 +95,8 @@ interface EditorState {
     frameItem?: ElementNodeWithData;
     activeItem?: string;
     isSaveAllowed: boolean;
+    dummyPropsId?: Id<'nodeDummyProps'>;
+    dummyProps?: DummyProp[];
     updateSaveButton: (val: boolean) => void;
     updateTab: (newType: TabType) => void;
     updateFrameItem: (el: ElementNodeWithData) => void;
@@ -90,8 +106,11 @@ interface EditorState {
     addToLayout: (item: ElementNode) => void;
     updateLayout: (layout: ElementNode[]) => void;
     updateMeta: (id: string, meta: ElementData) => void;
+    updateOutsideProp: (prop: OutsideProp) => void;
     clearActiveItem: () => void;
     loadComponentsData: (componentsData: GlobalData) => void;
+    loadDummyPropsId: (dummyPropsId: Id<'nodeDummyProps'>) => void;
+    loadDummyProps: (dummyProps?: DummyProp[]) => void;
 }
 
 const useEditor = create<EditorState>(set => ({
@@ -101,7 +120,9 @@ const useEditor = create<EditorState>(set => ({
         props: {},
         meta: {},
         layout: [],
+        outsideProps: [],
     },
+    dummyProps: undefined,
     isSaveAllowed: false,
     activeTabType: 'frames',
     frameItem: undefined,
@@ -128,7 +149,16 @@ const useEditor = create<EditorState>(set => ({
         set(state => ({
             componentsData: { ...state.componentsData, meta: { ...state.componentsData.meta, [id]: meta } },
         })),
+    updateOutsideProp: prop =>
+        set(state => ({
+            componentsData: {
+                ...state.componentsData,
+                outsideProps: [...(state.componentsData.outsideProps ?? []), prop],
+            },
+        })),
     loadComponentsData: componentsData => set({ componentsData }),
+    loadDummyPropsId: dummyPropsId => set({ dummyPropsId }),
+    loadDummyProps: dummyProps => set({ dummyProps }),
 }));
 
 export default useEditor;

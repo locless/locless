@@ -101,6 +101,8 @@ export const initialReactNativeComponents = [
 
 export const typesWithoutChildren = ['input', 'image'];
 
+export const typesGlobalProps = ['function', 'boolean', 'number', 'string', 'object', 'array'];
+
 interface SearchObject {
     tag: string;
     defaultValue: string;

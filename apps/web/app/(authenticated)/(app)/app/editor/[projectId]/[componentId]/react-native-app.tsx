@@ -27,33 +27,45 @@ import {
     VirtualizedList,
     StyleSheet,
 } from 'react-native-web';
-import useEditor, { ElementNode, ElementProp, ElementStyle } from './useEditor';
+import useEditor, { DummyProp, ElementNode, ElementProp, ElementStyle } from './useEditor';
 
 export default function ReactNativeApp() {
-    const { componentsData, frameItem } = useEditor();
+    const { componentsData, frameItem, dummyProps } = useEditor();
 
     const parseStyles = (styles: Record<string, ElementStyle>) => {
         let parsedStyles: Record<string, any> = {};
 
         let currentStyle = '';
 
-        Object.entries(styles).forEach(style => {
-            currentStyle = style[1].value;
+        let dummyProp: DummyProp | undefined = undefined;
 
-            if (/^\d+$/.test(currentStyle.replaceAll('-', '').replaceAll('.', ''))) {
-                parsedStyles[style[0]] = parseFloat(currentStyle);
-            } else if (currentStyle.includes('vh')) {
-                parsedStyles[style[0]] = (parseFloat(currentStyle.slice(0, -2)) / 100) * frameItem?.styles.height;
-            } else if (currentStyle.includes('vw')) {
-                parsedStyles[style[0]] = (parseFloat(currentStyle.slice(0, -2)) / 100) * frameItem?.styles.width;
-            } else if (currentStyle.includes('{')) {
-                try {
-                    parsedStyles[style[0]] = JSON.parse(currentStyle);
-                } catch (_err) {
-                    /* empty */
+        Object.entries(styles).forEach(style => {
+            if (style[1].type === 'outside') {
+                if (dummyProps?.length) {
+                    dummyProp = dummyProps.find(p => p.name === style[1].value);
+
+                    if (dummyProp) {
+                        parsedStyles[style[0]] = dummyProp.value;
+                    }
                 }
             } else {
-                parsedStyles[style[0]] = currentStyle;
+                currentStyle = style[1].value;
+
+                if (/^\d+$/.test(currentStyle.replaceAll('-', '').replaceAll('.', ''))) {
+                    parsedStyles[style[0]] = parseFloat(currentStyle);
+                } else if (currentStyle.includes('vh')) {
+                    parsedStyles[style[0]] = (parseFloat(currentStyle.slice(0, -2)) / 100) * frameItem?.styles.height;
+                } else if (currentStyle.includes('vw')) {
+                    parsedStyles[style[0]] = (parseFloat(currentStyle.slice(0, -2)) / 100) * frameItem?.styles.width;
+                } else if (currentStyle.includes('{')) {
+                    try {
+                        parsedStyles[style[0]] = JSON.parse(currentStyle);
+                    } catch (_err) {
+                        /* empty */
+                    }
+                } else {
+                    parsedStyles[style[0]] = currentStyle;
+                }
             }
         });
 
@@ -65,9 +77,21 @@ export default function ReactNativeApp() {
 
         let currentStyle = '';
 
+        let dummyProp: DummyProp | undefined = undefined;
+
         Object.entries(props).forEach(prop => {
-            currentStyle = prop[1].value;
-            parsedProps[prop[0]] = currentStyle;
+            if (prop[1].type === 'outside') {
+                if (dummyProps?.length) {
+                    dummyProp = dummyProps.find(p => p.name === prop[1].value);
+
+                    if (dummyProp) {
+                        parsedProps[prop[0]] = dummyProp.value;
+                    }
+                }
+            } else {
+                currentStyle = prop[1].value;
+                parsedProps[prop[0]] = currentStyle;
+            }
         });
 
         return parsedProps;
@@ -75,8 +99,8 @@ export default function ReactNativeApp() {
 
     const parseUI = (item: ElementNode) => {
         const meta = componentsData.meta[item.id];
-        const props = componentsData.props[item.id];
-        const styles = componentsData.styles[item.id];
+        const props = componentsData.props?.[item.id];
+        const styles = componentsData.styles?.[item.id];
 
         if (!meta || !styles || !props) {
             return null;

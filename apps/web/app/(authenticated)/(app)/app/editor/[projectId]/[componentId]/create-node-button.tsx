@@ -38,15 +38,21 @@ export const CreateNodeButton = ({ ...rest }: React.ButtonHTMLAttributes<HTMLBut
         const id = uuid();
 
         const type = tab === 'native-components' ? (value as MetaType) : componentsData.meta[value]?.type;
-        const styles = tab === 'native-components' ? {} : componentsData.styles[value];
-        const props = tab === 'native-components' ? {} : componentsData.props[value];
+        const styles = tab === 'native-components' ? {} : componentsData.styles?.[value];
+        const props = tab === 'native-components' ? {} : componentsData.props?.[value];
 
-        if (!type || !props || !styles) {
+        if (!type) {
             return;
         }
 
-        updateProps(id, props);
-        updateStyles(id, styles);
+        if (props) {
+            updateProps(id, props);
+        }
+
+        if (styles) {
+            updateStyles(id, styles);
+        }
+
         updateMeta(id, {
             id,
             type,
@@ -74,14 +80,14 @@ export const CreateNodeButton = ({ ...rest }: React.ButtonHTMLAttributes<HTMLBut
             <DialogTrigger asChild>
                 <Button className='flex-row items-center gap-1 font-semibold ' {...rest}>
                     <Plus size={18} className='w-4 h-4 ' />
-                    Add Element
+                    Create Element
                 </Button>
             </DialogTrigger>
             <DialogContent className='w-10/12'>
                 <DialogHeader>
                     <DialogTitle className='text-black'>Create new component</DialogTitle>
                     <DialogDescription>
-                        Choose one of components from the list. Click save when you&apos;re done.
+                        Choose one of components from the list. Click create when you&apos;re done.
                     </DialogDescription>
                 </DialogHeader>
                 <div className='gap-4 py-4'>
