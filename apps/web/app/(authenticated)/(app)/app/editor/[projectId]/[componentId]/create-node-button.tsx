@@ -38,8 +38,8 @@ export const CreateNodeButton = ({ ...rest }: React.ButtonHTMLAttributes<HTMLBut
         const id = uuid();
 
         const type = tab === 'native-components' ? (value as MetaType) : componentsData.meta[value]?.type;
-        const styles = tab === 'native-components' ? {} : componentsData.styles?.[value];
-        const props = tab === 'native-components' ? {} : componentsData.props?.[value];
+        const styles = tab === 'native-components' ? undefined : componentsData.styles?.[value];
+        const props = tab === 'native-components' ? undefined : componentsData.props?.[value];
 
         if (!type) {
             return;

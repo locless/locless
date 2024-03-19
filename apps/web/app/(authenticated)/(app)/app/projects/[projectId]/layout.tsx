@@ -39,11 +39,6 @@ export default function ProjectPageLayout(props: Props) {
             segment: null,
         },
         {
-            label: 'Components',
-            href: `/app/components`,
-            segment: 'components',
-        },
-        {
             label: 'Settings',
             href: `/app/projects/${props.params.projectId}/settings`,
             segment: 'settings',

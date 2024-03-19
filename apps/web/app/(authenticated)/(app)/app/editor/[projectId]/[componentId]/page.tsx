@@ -109,7 +109,7 @@ export default function EditorPage(props: Props) {
     };
 
     const handleOnStyleChosen = (value: string) => {
-        const chosenStyle = StylesValues[value];
+        const chosenStyle = StylesValues[value.toLowerCase()];
 
         if (!chosenStyle) {
             return;
@@ -155,7 +155,7 @@ export default function EditorPage(props: Props) {
     };
 
     const handleOnPropChosen = (value: string) => {
-        const chosenProp = PropsValues[value];
+        const chosenProp = PropsValues[value.toLowerCase()];
 
         if (!chosenProp) {
             return;
@@ -318,6 +318,61 @@ export default function EditorPage(props: Props) {
         });
     };
 
+    const handleRemoveItem = (idToRemove: string) => {
+        let newTree = [...componentsData.layout];
+        let newProps = componentsData.props ? { ...componentsData.props } : undefined;
+        let newStyles = componentsData.styles ? { ...componentsData.styles } : undefined;
+        let newMeta = { ...componentsData.meta };
+
+        // Recursive function to find and remove the item and its children from the array
+        function findAndRemove(items: ElementNode[], parentId: string) {
+            return items.filter(item => {
+                if (item.id === parentId) {
+                    if (newProps) {
+                        delete newProps[item.id];
+
+                        if (Object.keys(newProps).length === 0) {
+                            newProps = undefined;
+                        }
+                    }
+
+                    if (newStyles) {
+                        delete newStyles[item.id];
+
+                        if (Object.keys(newStyles).length === 0) {
+                            newStyles = undefined;
+                        }
+                    }
+
+                    delete newMeta[item.id];
+
+                    // If this item has children, add their IDs to the list of IDs to remove
+                    if (item.children) {
+                        item.children.forEach(child => findAndRemove([child], child.id));
+                    }
+                    return false; // Remove this item
+                } else {
+                    // Check children recursively
+                    if (item.children) {
+                        item.children = findAndRemove(item.children, parentId);
+                    }
+                    return true; // Keep this item
+                }
+            });
+        }
+
+        // Modify the original items array
+        newTree = findAndRemove(newTree, idToRemove);
+
+        loadComponentsData({
+            ...componentsData,
+            layout: newTree,
+            props: newProps,
+            styles: newStyles,
+            meta: newMeta,
+        });
+    };
+
     useEffect(() => {
         if (component) {
             loadNode();
@@ -353,7 +408,14 @@ export default function EditorPage(props: Props) {
 
     return (
         <div className='flex flex-1 justify-between max-w-full max-h-full'>
-            <div className='flex flex-col w-72'>
+            <div
+                className='flex flex-col w-72'
+                onKeyDown={(e: any) => {
+                    if (e.key === 'Backspace' && activeItem) {
+                        e.preventDefault();
+                        handleRemoveItem(activeItem);
+                    }
+                }}>
                 <div className='flex items-center justify-between pb-4 pr-4'>
                     <h4 className='scroll-m-20 text-xl font-semibold tracking-tight text-black'>Components</h4>
                 </div>

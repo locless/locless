@@ -307,3 +307,28 @@ export const addDummyProp = mutation({
         }
     },
 });
+
+export const deleteSingle = mutation({
+    args: {
+        nodeId: v.id('nodes'),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (identity === null) {
+            throw new Error('Unauthenticated call to mutation');
+        }
+
+        await ctx.db.delete(args.nodeId);
+
+        const dummyProps = await ctx.db
+            .query('nodeDummyProps')
+            .withIndex('by_nodes', q => q.eq('nodeId', args.nodeId))
+            .collect();
+
+        if (dummyProps) {
+            dummyProps.forEach(async prop => {
+                await ctx.db.delete(prop._id);
+            });
+        }
+    },
+});

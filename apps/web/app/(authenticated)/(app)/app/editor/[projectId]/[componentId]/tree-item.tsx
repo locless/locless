@@ -14,7 +14,7 @@ export const TreeItemComponent = forwardRef<HTMLDivElement, TreeItemComponentPro
             return;
         }
 
-        if(item.id === activeItem) {
+        if (item.id === activeItem) {
             clearActiveItem();
             updateTab('frames');
             return;

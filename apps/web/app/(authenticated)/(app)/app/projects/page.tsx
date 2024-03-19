@@ -4,7 +4,6 @@ import { PageHeader } from '@/components/dashboard/page-header';
 import { CreateProjectButton } from './create-project-button';
 
 import { Separator } from '@repo/ui/components/ui/separator';
-import { Search } from 'lucide-react';
 import Link from 'next/link';
 import { ProjectList } from './client';
 import { useConvexAuth, useMutation, useQuery } from 'convex/react';
@@ -43,21 +42,14 @@ export default function ApisOverviewPage() {
 
     return (
         <div className=''>
+            <PageHeader
+                title='Dashboard'
+                description='Manage your projects'
+                actions={[<CreateProjectButton workspaceId={workspace?._id} disabled={unpaid} />]}
+            />
+            <Separator className='my-6' />
             {unpaid ? (
                 <div>
-                    <PageHeader title='Applications' description='Manage your projects' />
-                    <Separator className='my-6' />
-                    <section className='my-4 flex flex-col gap-4 md:flex-row md:items-center'>
-                        <div className='border-border focus-within:border-primary/40 flex h-8 flex-grow items-center gap-2 rounded-md border bg-transparent px-3 py-2 text-sm'>
-                            <Search className='h-4 w-4' />
-                            <input
-                                disabled
-                                className='placeholder:text-content-subtle flex-grow bg-transparent focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 '
-                                placeholder='Search..'
-                            />
-                        </div>
-                        <CreateProjectButton workspaceId={workspace?._id} disabled />
-                    </section>
                     <div className='mt-10 flex min-h-[400px] flex-col items-center  justify-center space-y-6 rounded-lg border border-dashed px-4 md:mt-24'>
                         <h3 className='text-center text-xl font-semibold leading-none tracking-tight md:text-2xl'>
                             Please add billing to your account

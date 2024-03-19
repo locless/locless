@@ -116,11 +116,11 @@ interface EditorState {
 const useEditor = create<EditorState>(set => ({
     componentsData: {
         nodeId: undefined,
-        styles: {},
-        props: {},
+        styles: undefined,
+        props: undefined,
         meta: {},
         layout: [],
-        outsideProps: [],
+        outsideProps: undefined,
     },
     dummyProps: undefined,
     isSaveAllowed: false,

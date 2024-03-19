@@ -29,21 +29,6 @@ export function ProjectList({ workspaceId }: Props) {
 
     return (
         <div>
-            <PageHeader title='Dashboard' description='Manage your projects' />
-            <Separator className='my-6' />
-            <section className='my-4 flex flex-col gap-4 md:flex-row md:items-center'>
-                <div className='border-border focus-within:border-primary/40 flex h-8 flex-grow items-center gap-2 rounded-md border bg-transparent px-3 py-2 text-sm'>
-                    <Search className='h-4 w-4' />
-                    <input
-                        className='placeholder:text-content-subtle flex-grow bg-transparent focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 '
-                        placeholder='Search..'
-                        onChange={e => {
-                            // TODO: make a search logic
-                        }}
-                    />
-                </div>
-                <CreateProjectButton key='createProject' workspaceId={workspaceId} />
-            </section>
             {results.length ? (
                 <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-2 xl:grid-cols-3'>
                     {results.map(project => (

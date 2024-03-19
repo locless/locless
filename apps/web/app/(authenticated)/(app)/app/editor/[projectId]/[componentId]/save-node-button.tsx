@@ -35,6 +35,8 @@ interface IProps {
 export const SaveNodeButton = ({ componentId }: Props) => {
     const createNodeMutation = useMutation(api.node.save);
     const addDummyPropMutation = useMutation(api.node.addDummyProp);
+    const removeNode = useMutation(api.node.deleteSingle);
+
     const { toast } = useToast();
 
     const {
@@ -106,45 +108,59 @@ export const SaveNodeButton = ({ componentId }: Props) => {
             return;
         }
 
-        const nodeId = await createNodeMutation({
-            componentId,
-            environment: 'dev',
-            nodeId: componentsData.nodeId,
-            styles: transformStyles(componentsData.styles),
-            props: transformProps(componentsData.props),
-            layout: transformLayout(componentsData.layout) as ElementNode[],
-            meta: Object.values(componentsData.meta),
-            outsideProps: componentsData.outsideProps,
-        });
-
-        if (nodeId) {
+        if (componentsData.layout.length === 0 && componentsData.nodeId) {
+            await removeNode({
+                nodeId: componentsData.nodeId,
+            });
             updateSaveButton(false);
-            loadComponentsData({ ...componentsData, nodeId });
+            loadComponentsData({ ...componentsData, nodeId: undefined });
             toast({
                 description: 'Your element has been saved!',
             });
-
-            const savedDummyPropId = await addDummyPropMutation({
-                nodeId,
-                props: dummyProps,
-                dummyPropId: dummyPropsId,
+        } else {
+            const nodeId = await createNodeMutation({
+                componentId,
+                environment: 'dev',
+                nodeId: componentsData.nodeId,
+                styles: transformStyles(componentsData.styles),
+                props: transformProps(componentsData.props),
+                layout: transformLayout(componentsData.layout) as ElementNode[],
+                meta: Object.values(componentsData.meta),
+                outsideProps: componentsData.outsideProps,
             });
 
-            if (savedDummyPropId) {
-                if (dummyProps?.length) {
-                    loadDummyPropsId(savedDummyPropId);
-                }
-
+            if (nodeId) {
                 updateSaveButton(false);
+                loadComponentsData({ ...componentsData, nodeId });
                 toast({
-                    description: 'Dummy props have been saved!',
+                    description: 'Your element has been saved!',
                 });
+
+                const savedDummyPropId = await addDummyPropMutation({
+                    nodeId,
+                    props: dummyProps,
+                    dummyPropId: dummyPropsId,
+                });
+
+                if (savedDummyPropId) {
+                    if (dummyProps?.length) {
+                        loadDummyPropsId(savedDummyPropId);
+                    }
+
+                    updateSaveButton(false);
+                    toast({
+                        description: 'Dummy props have been saved!',
+                    });
+                }
             }
         }
     };
 
     return (
-        <Button type='button' onClick={handleSaveNode} disabled={!isSaveAllowed}>
+        <Button
+            type='button'
+            onClick={handleSaveNode}
+            disabled={!isSaveAllowed || (componentsData.layout.length === 0 && !componentsData.nodeId)}>
             Save
         </Button>
     );
