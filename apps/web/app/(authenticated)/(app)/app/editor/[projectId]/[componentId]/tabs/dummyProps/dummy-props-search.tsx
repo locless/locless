@@ -11,10 +11,11 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@repo/ui/components/ui/popover';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
-import useEditor, { DummyPropType } from '../../useEditor';
+import useEditor from '../../useEditor';
+import { OutsidePropType } from '@repo/backend/constants';
 
 interface IProps {
-    onChosen: (value: string, type: DummyPropType) => void;
+    onChosen: (value: string, type: OutsidePropType) => void;
 }
 
 export const DummyPropSearch = ({ onChosen }: IProps) => {

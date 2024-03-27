@@ -1,5 +1,6 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
+import { metaType, outsidePropType, propType, styleType } from '../constants';
 
 export const getSingle = query({
     args: {
@@ -137,7 +138,7 @@ export const save = mutation({
                     styles: v.array(
                         v.object({
                             name: v.string(),
-                            type: v.union(v.literal('custom'), v.literal('var'), v.literal('outside')),
+                            type: styleType,
                             value: v.string(),
                             varId: v.optional(v.id('variables')),
                         })
@@ -152,12 +153,7 @@ export const save = mutation({
                     props: v.array(
                         v.object({
                             name: v.string(),
-                            type: v.union(
-                                v.literal('custom'),
-                                v.literal('var'),
-                                v.literal('translation'),
-                                v.literal('outside')
-                            ),
+                            type: propType,
                             value: v.string(),
                             varId: v.optional(v.id('variables')),
                             translationId: v.optional(v.id('translations')),
@@ -170,42 +166,14 @@ export const save = mutation({
             v.object({
                 id: v.string(),
                 name: v.string(),
-                type: v.union(
-                    v.literal('textInput'),
-                    v.literal('view'),
-                    v.literal('activityIndicator'),
-                    v.literal('button'),
-                    v.literal('checkBox'),
-                    v.literal('flatList'),
-                    v.literal('image'),
-                    v.literal('imageBackground'),
-                    v.literal('keyboardAvoidingView'),
-                    v.literal('modal'),
-                    v.literal('picker'),
-                    v.literal('pressable'),
-                    v.literal('progressBar'),
-                    v.literal('refreshControl'),
-                    v.literal('safeAreaView'),
-                    v.literal('scrollView'),
-                    v.literal('sectionList'),
-                    v.literal('statusBar'),
-                    v.literal('switch'),
-                    v.literal('text'),
-                    v.literal('touchable'),
-                    v.literal('touchableHighlight'),
-                    v.literal('touchableNativeFeedback'),
-                    v.literal('touchableOpacity'),
-                    v.literal('touchableWithoutFeedback'),
-                    v.literal('virtualizedList'),
-                    v.literal('touchableOpacity')
-                ),
+                type: metaType,
             })
         ),
         layout: v.array(
             v.object({
                 id: v.string(),
                 value: v.string(),
-                connectionId: v.optional(v.id('components')),
+                connectionId: v.optional(v.id('nodes')),
                 canHaveChildren: v.optional(v.boolean()),
                 children: v.optional(v.array(v.any())),
             })
@@ -214,18 +182,15 @@ export const save = mutation({
             v.array(
                 v.object({
                     name: v.string(),
-                    type: v.union(
-                        v.literal('function'),
-                        v.literal('boolean'),
-                        v.literal('number'),
-                        v.literal('string'),
-                        v.literal('object'),
-                        v.literal('array'),
-                        v.literal('deeplink')
-                    ),
+                    type: outsidePropType,
+                    isServerFetch: v.optional(v.boolean()),
+                    defaultValue: v.optional(v.any()),
                 })
             )
         ),
+        connectedComponents: v.optional(v.array(v.id('nodes'))),
+        connectedVariables: v.optional(v.array(v.id('variables'))),
+        connectedTranslations: v.optional(v.array(v.id('translations'))),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -242,6 +207,9 @@ export const save = mutation({
                 meta: args.meta,
                 layout: args.layout,
                 outsideProps: args.outsideProps,
+                connectedComponents: args.connectedComponents,
+                connectedVariables: args.connectedVariables,
+                connectedTranslations: args.connectedTranslations,
             });
 
             return args.nodeId;
@@ -254,6 +222,9 @@ export const save = mutation({
                 meta: args.meta,
                 layout: args.layout,
                 outsideProps: args.outsideProps,
+                connectedComponents: args.connectedComponents,
+                connectedVariables: args.connectedVariables,
+                connectedTranslations: args.connectedTranslations,
             });
 
             return nodeId;
@@ -268,15 +239,7 @@ export const addDummyProp = mutation({
             v.array(
                 v.object({
                     name: v.string(),
-                    type: v.union(
-                        v.literal('function'),
-                        v.literal('boolean'),
-                        v.literal('number'),
-                        v.literal('string'),
-                        v.literal('object'),
-                        v.literal('array'),
-                        v.literal('deeplink')
-                    ),
+                    type: outsidePropType,
                     value: v.any(),
                 })
             )

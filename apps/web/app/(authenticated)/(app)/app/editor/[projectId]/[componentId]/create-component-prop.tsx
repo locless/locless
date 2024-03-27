@@ -16,9 +16,9 @@ import { Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import { Label } from '@repo/ui/components/ui/label';
 import useEditor from './useEditor';
-import { typesGlobalProps } from './constants';
+import { OutsidePropType, outsidePropTypeArray } from '@repo/backend/constants';
 
-type PropValue = 'string' | 'number' | 'boolean' | 'object' | 'function' | 'array' | '';
+type PropValue = OutsidePropType | '';
 
 export const CreateComponentProp = ({ ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) => {
     const { toast } = useToast();
@@ -92,7 +92,7 @@ export const CreateComponentProp = ({ ...rest }: React.ButtonHTMLAttributes<HTML
                     </div>
                     <div className='flex flex-col gap-4 mt-6'>
                         <div className='flex flex-wrap gap-4'>
-                            {typesGlobalProps.map(prop => (
+                            {outsidePropTypeArray.map(prop => (
                                 <Button
                                     key={prop}
                                     variant={value === prop ? 'default' : 'outline'}

@@ -1,10 +1,11 @@
+import { MetaType, OutsidePropType, PropType, StyleType } from '@repo/backend/constants';
 import { Id } from '@repo/backend/convex/_generated/dataModel';
 import { create } from 'zustand';
 
 export interface ElementNode {
     id: string;
     value: string;
-    connectionId?: Id<'components'>;
+    connectionId?: Id<'nodes'>;
     canHaveChildren?: boolean;
     children?: ElementNode[];
 }
@@ -14,35 +15,6 @@ export interface ElementNodeWithData extends ElementNode {
     styles: Record<string, any>;
     props: Record<string, any>;
 }
-
-export type MetaType =
-    | 'textInput'
-    | 'view'
-    | 'activityIndicator'
-    | 'button'
-    | 'checkBox'
-    | 'flatList'
-    | 'image'
-    | 'imageBackground'
-    | 'keyboardAvoidingView'
-    | 'modal'
-    | 'picker'
-    | 'pressable'
-    | 'progressBar'
-    | 'refreshControl'
-    | 'safeAreaView'
-    | 'scrollView'
-    | 'sectionList'
-    | 'statusBar'
-    | 'switch'
-    | 'text'
-    | 'touchable'
-    | 'touchableHighlight'
-    | 'touchableNativeFeedback'
-    | 'touchableOpacity'
-    | 'touchableWithoutFeedback'
-    | 'virtualizedList'
-    | 'touchableOpacity';
 
 export interface ElementData {
     id: string;
@@ -54,24 +26,24 @@ export type TabType = 'frames' | 'styles' | 'interactions';
 
 export interface ElementStyle {
     name: string;
-    type: 'custom' | 'var' | 'outside';
+    type: StyleType;
     value: string;
     varId?: Id<'variables'>;
 }
 
 export interface ElementProp {
     name: string;
-    type: 'custom' | 'var' | 'translation' | 'outside';
+    type: PropType;
     value: string;
     varId?: Id<'variables'>;
     translationId?: Id<'translations'>;
 }
 
-export type DummyPropType = 'string' | 'number' | 'boolean' | 'object' | 'function' | 'array' | 'deeplink';
-
 export interface OutsideProp {
     name: string;
-    type: DummyPropType;
+    type: OutsidePropType;
+    isServerFetch?: boolean;
+    defaultValue?: any;
 }
 
 export interface GlobalData {
@@ -81,11 +53,14 @@ export interface GlobalData {
     meta: Record<string, ElementData>;
     layout: ElementNode[];
     outsideProps?: OutsideProp[];
+    connectedComponents?: Id<'nodes'>[];
+    connectedVariables?: Id<'variables'>[];
+    connectedTranslations?: Id<'translations'>[];
 }
 
 export interface DummyProp {
     name: string;
-    type: DummyPropType;
+    type: OutsidePropType;
     value: any;
 }
 
@@ -115,12 +90,8 @@ interface EditorState {
 
 const useEditor = create<EditorState>(set => ({
     componentsData: {
-        nodeId: undefined,
-        styles: undefined,
-        props: undefined,
         meta: {},
         layout: [],
-        outsideProps: undefined,
     },
     dummyProps: undefined,
     isSaveAllowed: false,

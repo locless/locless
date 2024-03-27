@@ -15,10 +15,11 @@ import { useToast } from '@repo/ui/components/ui/use-toast';
 import { Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import { Label } from '@repo/ui/components/ui/label';
-import useEditor, { MetaType } from './useEditor';
+import useEditor from './useEditor';
 import { v4 as uuid } from 'uuid';
-import { initialReactNativeComponents, typesWithoutChildren } from './constants';
+import { typesWithoutChildren } from './constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/components/ui/tabs';
+import { MetaType, metaTypeArray } from '@repo/backend/constants';
 
 export const CreateNodeButton = ({ ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) => {
     const { toast } = useToast();
@@ -121,13 +122,13 @@ export const CreateNodeButton = ({ ...rest }: React.ButtonHTMLAttributes<HTMLBut
                             </TabsList>
                             <TabsContent value='native-components'>
                                 <div className='flex flex-wrap gap-4 mt-4'>
-                                    {initialReactNativeComponents.map(component => (
+                                    {metaTypeArray.map(type => (
                                         <Button
-                                            key={component.value}
-                                            variant={value === component.value ? 'default' : 'outline'}
-                                            className={`${value !== component.value ? 'text-black' : ''} h-14`}
-                                            onClick={() => handleSetActiveComponent(component.value)}>
-                                            {component.label}
+                                            key={type}
+                                            variant={value === type ? 'default' : 'outline'}
+                                            className={`${value !== type ? 'text-black' : ''} h-14`}
+                                            onClick={() => handleSetActiveComponent(type)}>
+                                            {`${type[0]?.toUpperCase()}${type.slice(1)}`}
                                         </Button>
                                     ))}
                                 </div>

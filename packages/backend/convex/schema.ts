@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
+import { metaType, outsidePropType, propType, styleType } from '../constants';
 
 export default defineSchema({
     projects: defineTable({
@@ -19,48 +20,49 @@ export default defineSchema({
         plan: v.union(v.literal('free'), v.literal('pro'), v.literal('enterprise')),
         deletedAt: v.optional(v.number()),
     }).index('by_token', ['tenantId']),
-    variablesGroupWorkspace: defineTable({
-        name: v.string(),
-        workspaceId: v.id('workspaces'),
-    }).index('by_workspace', ['workspaceId']),
-    variableWorkspace: defineTable({
-        name: v.string(),
-        value: v.string(),
-        groupId: v.id('variablesGroupWorkspace'),
-    }).index('by_group', ['groupId']),
     variableGroups: defineTable({
         name: v.string(),
-        projectId: v.id('projects'),
-    }).index('by_project', ['projectId']),
+        workspaceId: v.optional(v.id('workspaces')),
+        projectId: v.optional(v.id('projects')),
+    })
+        .index('by_project', ['projectId'])
+        .index('by_workspace', ['workspaceId']),
     variables: defineTable({
         name: v.string(),
         value: v.string(),
-        variableGroupId: v.id('variableGroups'),
-        variableWorkspaceId: v.optional(v.id('variableWorkspace')),
+        workspaceId: v.optional(v.id('workspaces')),
+        projectId: v.optional(v.id('projects')),
+        variableGroupId: v.optional(v.id('variableGroups')),
     })
         .index('by_group', ['variableGroupId'])
-        .index('by_workspace_and_group', ['variableWorkspaceId', 'variableGroupId']),
-    translationsGroupWorkspace: defineTable({
-        name: v.string(),
-        workspaceId: v.id('workspaces'),
-    }).index('by_workspace', ['workspaceId']),
-    translationsWorkspace: defineTable({
-        name: v.string(),
-        value: v.string(),
-        groupId: v.id('translationsGroupWorkspace'),
-    }).index('by_group', ['groupId']),
+        .index('by_project', ['projectId'])
+        .index('by_workspace', ['workspaceId'])
+        .index('by_workspace_and_group', ['workspaceId', 'variableGroupId'])
+        .index('by_project_and_group', ['projectId', 'variableGroupId']),
     translationGroups: defineTable({
         name: v.string(),
-        projectId: v.id('projects'),
-    }).index('by_project', ['projectId']),
+        workspaceId: v.optional(v.id('workspaces')),
+        projectId: v.optional(v.id('projects')),
+    })
+        .index('by_project', ['projectId'])
+        .index('by_workspace', ['workspaceId']),
     translations: defineTable({
         name: v.string(),
-        value: v.string(),
-        translationGroupId: v.id('translationGroups'),
-        translationWorkspaceId: v.optional(v.id('translationsWorkspace')),
+        value: v.array(
+            v.object({
+                lang: v.string(),
+                text: v.string(),
+            })
+        ),
+        workspaceId: v.optional(v.id('workspaces')),
+        projectId: v.optional(v.id('projects')),
+        translationGroupId: v.optional(v.id('translationGroups')),
     })
         .index('by_group', ['translationGroupId'])
-        .index('by_workspace_and_group', ['translationWorkspaceId', 'translationGroupId']),
+        .index('by_project', ['projectId'])
+        .index('by_workspace', ['workspaceId'])
+        .index('by_workspace_and_group', ['workspaceId', 'translationGroupId'])
+        .index('by_project_and_group', ['projectId', 'translationGroupId']),
     components: defineTable({
         name: v.string(),
         projectId: v.id('projects'),
@@ -75,7 +77,7 @@ export default defineSchema({
                     styles: v.array(
                         v.object({
                             name: v.string(),
-                            type: v.union(v.literal('custom'), v.literal('var'), v.literal('outside')),
+                            type: styleType,
                             value: v.string(),
                             varId: v.optional(v.id('variables')),
                         })
@@ -90,12 +92,7 @@ export default defineSchema({
                     props: v.array(
                         v.object({
                             name: v.string(),
-                            type: v.union(
-                                v.literal('custom'),
-                                v.literal('var'),
-                                v.literal('translation'),
-                                v.literal('outside')
-                            ),
+                            type: propType,
                             value: v.string(),
                             varId: v.optional(v.id('variables')),
                             translationId: v.optional(v.id('translations')),
@@ -108,15 +105,9 @@ export default defineSchema({
             v.array(
                 v.object({
                     name: v.string(),
-                    type: v.union(
-                        v.literal('function'),
-                        v.literal('boolean'),
-                        v.literal('number'),
-                        v.literal('string'),
-                        v.literal('object'),
-                        v.literal('array'),
-                        v.literal('deeplink')
-                    ),
+                    type: outsidePropType,
+                    isServerFetch: v.optional(v.boolean()),
+                    defaultValue: v.optional(v.any()),
                 })
             )
         ),
@@ -124,60 +115,27 @@ export default defineSchema({
             v.object({
                 id: v.string(),
                 name: v.string(),
-                type: v.union(
-                    v.literal('textInput'),
-                    v.literal('view'),
-                    v.literal('activityIndicator'),
-                    v.literal('button'),
-                    v.literal('checkBox'),
-                    v.literal('flatList'),
-                    v.literal('image'),
-                    v.literal('imageBackground'),
-                    v.literal('keyboardAvoidingView'),
-                    v.literal('modal'),
-                    v.literal('picker'),
-                    v.literal('pressable'),
-                    v.literal('progressBar'),
-                    v.literal('refreshControl'),
-                    v.literal('safeAreaView'),
-                    v.literal('scrollView'),
-                    v.literal('sectionList'),
-                    v.literal('statusBar'),
-                    v.literal('switch'),
-                    v.literal('text'),
-                    v.literal('touchable'),
-                    v.literal('touchableHighlight'),
-                    v.literal('touchableNativeFeedback'),
-                    v.literal('touchableOpacity'),
-                    v.literal('touchableWithoutFeedback'),
-                    v.literal('virtualizedList'),
-                    v.literal('touchableOpacity')
-                ),
+                type: metaType,
             })
         ),
         layout: v.array(
             v.object({
                 id: v.string(),
                 value: v.string(),
-                connectionId: v.optional(v.id('components')),
+                connectionId: v.optional(v.id('nodes')),
                 canHaveChildren: v.optional(v.boolean()),
                 children: v.optional(v.array(v.any())),
             })
         ),
+        connectedComponents: v.optional(v.array(v.id('nodes'))),
+        connectedVariables: v.optional(v.array(v.id('variables'))),
+        connectedTranslations: v.optional(v.array(v.id('translations'))),
     }).index('by_component_and_environment', ['componentId', 'environment']),
     nodeDummyProps: defineTable({
         props: v.array(
             v.object({
                 name: v.string(),
-                type: v.union(
-                    v.literal('function'),
-                    v.literal('boolean'),
-                    v.literal('number'),
-                    v.literal('string'),
-                    v.literal('object'),
-                    v.literal('array'),
-                    v.literal('deeplink')
-                ),
+                type: outsidePropType,
                 value: v.any(),
             })
         ),

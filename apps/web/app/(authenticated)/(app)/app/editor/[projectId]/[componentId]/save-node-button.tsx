@@ -6,6 +6,7 @@ import { Id } from '@repo/backend/convex/_generated/dataModel';
 import useEditor, { ElementNode, ElementProp, ElementStyle } from './useEditor';
 import { useMutation } from 'convex/react';
 import { api } from '@repo/backend/convex/_generated/api';
+import { PropType, StyleType } from '@repo/backend/constants';
 
 interface Props {
     componentId: Id<'components'>;
@@ -15,7 +16,7 @@ interface IStyles {
     id: string;
     styles: {
         varId?: Id<'variables'> | undefined;
-        type: 'var' | 'custom' | 'outside';
+        type: StyleType;
         name: string;
         value: string;
     }[];
@@ -27,7 +28,7 @@ interface IProps {
         varId?: Id<'variables'> | undefined;
         translationId?: Id<'translations'> | undefined;
         name: string;
-        type: 'var' | 'custom' | 'translation' | 'outside';
+        type: PropType;
         value: string;
     }[];
 }

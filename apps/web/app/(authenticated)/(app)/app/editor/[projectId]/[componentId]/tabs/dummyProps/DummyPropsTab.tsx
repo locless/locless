@@ -6,8 +6,9 @@ import { Input } from '@repo/ui/components/ui/input';
 import { TabsContent } from '@repo/ui/components/ui/tabs';
 import { CopyButton } from '@/components/dashboard/copy-button';
 import { RadioGroupDropdown } from '../../radio-group-dropdown';
-import useEditor, { DummyProp, DummyPropType } from '../../useEditor';
+import useEditor, { DummyProp } from '../../useEditor';
 import { DummyPropSearch } from './dummy-props-search';
+import { OutsidePropType, outsidePropTypeArray } from '@repo/backend/constants';
 
 export default function DummyPropsTab() {
     const { componentsData, dummyProps, loadDummyProps, updateSaveButton } = useEditor();
@@ -34,7 +35,7 @@ export default function DummyPropsTab() {
         }
     };
 
-    const handleUpdateDummyPropsType = (propTag: string, value: DummyPropType) => {
+    const handleUpdateDummyPropsType = (propTag: string, value: OutsidePropType) => {
         if (dummyProps) {
             let newProps = [...(dummyProps ?? [])];
 
@@ -48,7 +49,7 @@ export default function DummyPropsTab() {
         }
     };
 
-    const handleOnChosen = (value: string, type: DummyPropType) => {
+    const handleOnChosen = (value: string, type: OutsidePropType) => {
         let newProps = [...(dummyProps ?? [])];
 
         newProps.push({
@@ -86,17 +87,9 @@ export default function DummyPropsTab() {
                                   />
                                   <RadioGroupDropdown
                                       activeValue={prop.type}
-                                      values={[
-                                          'string',
-                                          'number',
-                                          'boolean',
-                                          'object',
-                                          'function',
-                                          'array',
-                                          'deeplink',
-                                      ]}
+                                      values={outsidePropTypeArray}
                                       onChange={value => {
-                                          handleUpdateDummyPropsType(prop.name, value as DummyPropType);
+                                          handleUpdateDummyPropsType(prop.name, value as OutsidePropType);
                                       }}
                                   />
                                   <div className='w-6 h-6'>

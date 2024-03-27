@@ -123,8 +123,6 @@ export default function ReactNativeApp() {
                         {item.children ? item.children.map(c => parseUI(c)) : null}
                     </Button>
                 );
-            case 'checkBox':
-                return <CheckBox key={item.id} style={parseStyles(styles)} {...parseProps(props)} />;
             case 'flatList':
                 return <FlatList key={item.id} style={parseStyles(styles)} {...parseProps(props)} />;
             case 'image':
@@ -147,20 +145,12 @@ export default function ReactNativeApp() {
                         {item.children ? item.children.map(c => parseUI(c)) : null}
                     </Modal>
                 );
-            case 'picker':
-                return (
-                    <Picker key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
-                        {item.children ? item.children.map(c => parseUI(c)) : null}
-                    </Picker>
-                );
             case 'pressable':
                 return (
                     <Pressable key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {item.children ? item.children.map(c => parseUI(c)) : null}
                     </Pressable>
                 );
-            case 'progressBar':
-                return <ProgressBar key={item.id} style={parseStyles(styles)} {...parseProps(props)} />;
             case 'refreshControl':
                 return <RefreshControl key={item.id} style={parseStyles(styles)} {...parseProps(props)} />;
             case 'safeAreaView':
@@ -187,12 +177,6 @@ export default function ReactNativeApp() {
                         {props.text?.value ?? ''}
                         {item.children ? item.children.map(c => parseUI(c)) : null}
                     </Text>
-                );
-            case 'touchable':
-                return (
-                    <Touchable key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
-                        {item.children ? item.children.map(c => parseUI(c)) : null}
-                    </Touchable>
                 );
             case 'touchableHighlight':
                 return (
