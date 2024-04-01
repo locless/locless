@@ -1,5 +1,5 @@
 import { MetaType, OutsidePropType, PropType, StyleType } from '@repo/backend/constants';
-import { Id } from '@repo/backend/convex/_generated/dataModel';
+import { Doc, Id } from '@repo/backend/convex/_generated/dataModel';
 import { create } from 'zustand';
 
 export interface ElementNode {
@@ -48,6 +48,7 @@ export interface OutsideProp {
 
 export interface GlobalData {
     nodeId?: Id<'nodes'>;
+    environmentId?: Id<'environments'>;
     styles?: Record<string, Record<string, ElementStyle>>;
     props?: Record<string, Record<string, ElementProp>>;
     meta: Record<string, ElementData>;
@@ -65,13 +66,18 @@ export interface DummyProp {
 }
 
 interface EditorState {
+    component?: Doc<'components'>;
+    environment?: Doc<'environments'>;
     componentsData: GlobalData;
     activeTabType: TabType;
     frameItem?: ElementNodeWithData;
     activeItem?: string;
     isSaveAllowed: boolean;
+    didLoadNode: boolean;
     dummyPropsId?: Id<'nodeDummyProps'>;
     dummyProps?: DummyProp[];
+    updateComponent: (component: Doc<'components'>) => void;
+    updateEnvironment: (environment: Doc<'environments'>) => void;
     updateSaveButton: (val: boolean) => void;
     updateTab: (newType: TabType) => void;
     updateFrameItem: (el: ElementNodeWithData) => void;
@@ -86,6 +92,8 @@ interface EditorState {
     loadComponentsData: (componentsData: GlobalData) => void;
     loadDummyPropsId: (dummyPropsId: Id<'nodeDummyProps'>) => void;
     loadDummyProps: (dummyProps?: DummyProp[]) => void;
+    updateDidLoadNode: (didLoadNode: boolean) => void;
+    resetEditor: () => void;
 }
 
 const useEditor = create<EditorState>(set => ({
@@ -93,6 +101,7 @@ const useEditor = create<EditorState>(set => ({
         meta: {},
         layout: [],
     },
+    didLoadNode: false,
     dummyProps: undefined,
     isSaveAllowed: false,
     activeTabType: 'frames',
@@ -130,6 +139,22 @@ const useEditor = create<EditorState>(set => ({
     loadComponentsData: componentsData => set({ componentsData }),
     loadDummyPropsId: dummyPropsId => set({ dummyPropsId }),
     loadDummyProps: dummyProps => set({ dummyProps }),
+    updateComponent: component => set({ component }),
+    updateEnvironment: environment => set({ environment }),
+    updateDidLoadNode: didLoadNode => set({ didLoadNode }),
+    resetEditor: () =>
+        set({
+            activeItem: undefined,
+            componentsData: {
+                meta: {},
+                layout: [],
+            },
+            didLoadNode: false,
+            dummyProps: undefined,
+            isSaveAllowed: false,
+            activeTabType: 'frames',
+            dummyPropsId: undefined,
+        }),
 }));
 
 export default useEditor;

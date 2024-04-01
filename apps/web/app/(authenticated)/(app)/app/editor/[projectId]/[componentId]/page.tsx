@@ -2,9 +2,8 @@
 import { Button } from '@repo/ui/components/ui/button';
 import { Plus, Minus, Trash2 } from 'lucide-react';
 import { Id } from '@repo/backend/convex/_generated/dataModel';
-import { useConvex, useQuery } from 'convex/react';
+import { useConvex } from 'convex/react';
 import { api } from '@repo/backend/convex/_generated/api';
-import { notFound } from 'next/navigation';
 import { Loading } from '@/components/dashboard/loading';
 import { SortableTree, TreeItems } from 'dnd-kit-sortable-tree';
 import { Label } from '@repo/ui/components/ui/label';
@@ -20,10 +19,11 @@ import ReactNativeApp from './react-native-app';
 import { useEffect } from 'react';
 import { PropSearch } from './prop-search';
 import { CopyButton } from '@/components/dashboard/copy-button';
-import { RadioGroupDropdown } from './radio-group-dropdown';
 import { ItemChangedReason } from 'dnd-kit-sortable-tree/dist/types';
 import DummyPropsTab from './tabs/dummyProps/DummyPropsTab';
 import { OutsidePropSearch } from './outside-prop-search';
+import { RadioGroupDropdown } from '@/components/radio-group-dropdown';
+import { transformMeta, transformProps, transformStyles } from './utils';
 
 interface Props {
     params: {
@@ -33,19 +33,16 @@ interface Props {
 }
 
 export default function EditorPage(props: Props) {
-    const component = useQuery(api.component.getSingle, {
-        projectId: props.params.projectId,
-        componentId: props.params.componentId,
-    });
-
     const convex = useConvex();
 
     const {
+        environment,
+        component,
         componentsData,
         activeTabType,
         frameItem,
         activeItem,
-        dummyProps,
+        didLoadNode,
         updateTab,
         clearActiveItem,
         updateFrameItem,
@@ -56,6 +53,7 @@ export default function EditorPage(props: Props) {
         updateSaveButton,
         loadDummyProps,
         loadDummyPropsId,
+        updateDidLoadNode,
     } = useEditor();
 
     const handleDeviceClick = (device: { title: string; width: number; height: number }) => {
@@ -212,110 +210,69 @@ export default function EditorPage(props: Props) {
         }
     };
 
-    const transformMeta = (array?: any[]) => {
-        let obj = {};
-
-        if (array) {
-            array.forEach(item => {
-                obj = { ...obj, [item.id]: item };
-            });
-        }
-
-        return obj;
-    };
-
-    const transformSubArrays = (array?: any[]) => {
-        let obj = {};
-
-        if (array) {
-            array.forEach(item => {
-                obj = { ...obj, [item.name]: item };
-            });
-        }
-
-        return obj;
-    };
-
-    const transformStyles = (array?: any[]) => {
-        let obj = {};
-
-        if (array) {
-            array.forEach(item => {
-                obj = { ...obj, [item.id]: transformSubArrays(item.styles) };
-            });
-        }
-
-        return obj;
-    };
-
-    const transformProps = (array?: any[]) => {
-        let obj = {};
-
-        if (array) {
-            array.forEach(item => {
-                obj = { ...obj, [item.id]: transformSubArrays(item.props) };
-            });
-        }
-
-        return obj;
-    };
-
-    const loadNode = async () => {
-        const node = await convex.query(api.node.getSingle, {
-            projectId: props.params.projectId,
-            componentId: props.params.componentId,
-            environment: 'dev',
-        });
-
-        if (node) {
-            const newData = {
-                nodeId: node._id,
-                meta: transformMeta(node.meta),
-                layout: node.layout as ElementNode[],
-                props: transformProps(node.props),
-                styles: transformStyles(node.styles),
-                outsideProps: node.outsideProps,
-            };
-
-            loadComponentsData(newData);
-
-            const serverDummyProps = await convex.query(api.node.getDummyProps, {
+    const loadNode = async (environmentId: Id<'environments'>) => {
+        if (componentsData.environmentId !== environmentId && !didLoadNode) {
+            const node = await convex.query(api.node.getSingle, {
                 projectId: props.params.projectId,
                 componentId: props.params.componentId,
-                nodeId: node._id,
+                environmentId,
             });
 
-            if (serverDummyProps) {
-                loadDummyPropsId(serverDummyProps._id);
-                loadDummyProps(serverDummyProps.props);
+            updateDidLoadNode(true);
+
+            if (node) {
+                const newData = {
+                    nodeId: node._id,
+                    meta: transformMeta(node.meta),
+                    layout: node.layout as ElementNode[],
+                    props: transformProps(node.props),
+                    styles: transformStyles(node.styles),
+                    outsideProps: node.outsideProps,
+                };
+
+                loadComponentsData(newData);
+                updateDidLoadNode(false);
+
+                const serverDummyProps = await convex.query(api.node.getDummyProps, {
+                    projectId: props.params.projectId,
+                    componentId: props.params.componentId,
+                    nodeId: node._id,
+                });
+
+                if (serverDummyProps) {
+                    loadDummyPropsId(serverDummyProps._id);
+                    loadDummyProps(serverDummyProps.props);
+                }
+            }
+
+            const savedFrameTitle = localStorage.getItem('frameItemTitle');
+            const frameDevice = deviceFrames.find(d => d.title === savedFrameTitle);
+
+            if (frameDevice) {
+                updateFrameItem({
+                    id: 'background-dummy',
+                    value: 'Frame',
+                    type: 'view',
+                    props: {},
+                    styles: {
+                        width: frameDevice.width,
+                        height: frameDevice.height,
+                        backgroundColor: 'white',
+                        overflow: 'hidden',
+                    },
+                });
+            }
+
+            updateTab('frames');
+            clearActiveItem();
+
+            if (AppRegistry.getAppKeys().length === 0) {
+                AppRegistry.registerComponent('App', () => ReactNativeApp);
+                AppRegistry.runApplication('App', {
+                    rootTag: document.getElementById('react-native-app'),
+                });
             }
         }
-
-        const savedFrameTitle = localStorage.getItem('frameItemTitle');
-        const frameDevice = deviceFrames.find(d => d.title === savedFrameTitle);
-
-        if (frameDevice) {
-            updateFrameItem({
-                id: 'background-dummy',
-                value: 'Frame',
-                type: 'view',
-                props: {},
-                styles: {
-                    width: frameDevice.width,
-                    height: frameDevice.height,
-                    backgroundColor: 'white',
-                    overflow: 'hidden',
-                },
-            });
-        }
-
-        updateTab('frames');
-        clearActiveItem();
-
-        AppRegistry.registerComponent('App', () => ReactNativeApp);
-        AppRegistry.runApplication('App', {
-            rootTag: document.getElementById('react-native-app'),
-        });
     };
 
     const handleRemoveItem = (idToRemove: string) => {
@@ -371,19 +328,16 @@ export default function EditorPage(props: Props) {
             styles: newStyles,
             meta: newMeta,
         });
+        updateSaveButton(true);
     };
 
     useEffect(() => {
-        if (component) {
-            loadNode();
+        if (component && environment) {
+            loadNode(environment._id);
         }
-    }, [component]);
+    }, [component, environment]);
 
-    if (component === null) {
-        return notFound();
-    }
-
-    if (component === undefined) {
+    if (component === undefined || environment === undefined) {
         return (
             <div className='flex h-screen items-center justify-center '>
                 <Loading />
@@ -483,11 +437,16 @@ export default function EditorPage(props: Props) {
                                         </Label>
                                         {StylesValues[style[0].toLowerCase()]?.values ? (
                                             <RadioGroupDropdown
-                                                activeValue={style[1].value}
-                                                values={StylesValues[style[0].toLowerCase()]?.values ?? []}
+                                                activeValue={{
+                                                    _id: style[1].value,
+                                                    name: style[1].value,
+                                                }}
+                                                values={(StylesValues[style[0].toLowerCase()]?.values ?? []).map(s => {
+                                                    return { _id: s, name: s };
+                                                })}
                                                 onChange={value => {
                                                     if (style[1].type !== 'outside') {
-                                                        handleUpdateActiveItemStyles(style[0], value);
+                                                        handleUpdateActiveItemStyles(style[0], value.name);
                                                     }
                                                 }}
                                             />

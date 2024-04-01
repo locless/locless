@@ -15,6 +15,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as component from "../component.js";
+import type * as environment from "../environment.js";
 import type * as node from "../node.js";
 import type * as project from "../project.js";
 import type * as workspace from "../workspace.js";
@@ -29,6 +30,7 @@ import type * as workspace from "../workspace.js";
  */
 declare const fullApi: ApiFromModules<{
   component: typeof component;
+  environment: typeof environment;
   node: typeof node;
   project: typeof project;
   workspace: typeof workspace;

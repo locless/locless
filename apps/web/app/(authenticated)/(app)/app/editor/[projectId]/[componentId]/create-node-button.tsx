@@ -20,12 +20,26 @@ import { v4 as uuid } from 'uuid';
 import { typesWithoutChildren } from './constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/components/ui/tabs';
 import { MetaType, metaTypeArray } from '@repo/backend/constants';
+import { Id } from '@repo/backend/convex/_generated/dataModel';
+import { InternalComponentsList } from './internal-components-list';
+import { useConvex } from 'convex/react';
+import { api } from '@repo/backend/convex/_generated/api';
 
-export const CreateNodeButton = ({ ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) => {
+interface Props {
+    projectId: Id<'projects'>;
+    componentId: Id<'components'>;
+}
+
+export const CreateNodeButton = ({ projectId, componentId }: Props) => {
     const { toast } = useToast();
 
     const [name, setName] = useState('');
     const [value, setValue] = useState('');
+
+    const [internalComponentId, setInternalComponentId] = useState<Id<'components'> | ''>('');
+    const [internalEnvId, setInternalEnvId] = useState<Id<'environments'> | ''>('');
+
+    const convex = useConvex();
 
     const [tab, setTab] = useState('native-components');
 
@@ -74,12 +88,66 @@ export const CreateNodeButton = ({ ...rest }: React.ButtonHTMLAttributes<HTMLBut
 
         setName('');
         setValue('');
+        setInternalComponentId('');
+        setInternalEnvId('');
+        setTab('native-components');
+    };
+
+    const handleLinkActiveComponent = async () => {
+        if (!internalComponentId || !internalEnvId) {
+            return;
+        }
+
+        const node = await convex.query(api.node.getWithoutProject, {
+            componentId: internalComponentId,
+            environmentId: internalEnvId,
+        });
+
+        if (node) {
+            const id = uuid();
+
+            updateMeta(id, {
+                id,
+                type: 'view',
+                name,
+            });
+
+            addToLayout({
+                id,
+                value: name,
+                canHaveChildren: false,
+                connectionId: node._id,
+            });
+
+            toast({
+                description: 'Your element has been linked!',
+            });
+        } else {
+            toast({
+                variant: 'destructive',
+                description: "Seems like the branch doesn't have any nodes.",
+            });
+        }
+
+        setName('');
+        setValue('');
+        setInternalComponentId('');
+        setInternalEnvId('');
+        setTab('native-components');
+    };
+
+    const onCreate = () => {
+        if (tab === 'internal-components') {
+            handleLinkActiveComponent();
+        } else {
+            handleCreateActiveComponent();
+        }
     };
 
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button className='flex-row items-center gap-1 font-semibold ' {...rest}>
+                <Button className='flex-row items-center gap-1 font-semibold '>
                     <Plus size={18} className='w-4 h-4 ' />
                     Create Element
                 </Button>
@@ -99,6 +167,7 @@ export const CreateNodeButton = ({ ...rest }: React.ButtonHTMLAttributes<HTMLBut
                         <Input
                             id='name'
                             value={name}
+                            disabled={tab === 'internal-components'}
                             className='col-span-3 text-black'
                             onChange={e => setName(e.currentTarget.value)}
                         />
@@ -118,6 +187,9 @@ export const CreateNodeButton = ({ ...rest }: React.ButtonHTMLAttributes<HTMLBut
                                 </TabsTrigger>
                                 <TabsTrigger value='created-components' className='flex-1'>
                                     Created
+                                </TabsTrigger>
+                                <TabsTrigger value='internal-components' className='flex-1'>
+                                    Internal
                                 </TabsTrigger>
                             </TabsList>
                             <TabsContent value='native-components'>
@@ -146,13 +218,26 @@ export const CreateNodeButton = ({ ...rest }: React.ButtonHTMLAttributes<HTMLBut
                                     ))}
                                 </div>
                             </TabsContent>
+                            <TabsContent value='internal-components'>
+                                {tab === 'internal-components' ? (
+                                    <InternalComponentsList
+                                        projectId={projectId}
+                                        componentId={componentId}
+                                        onUpdateComponent={(name, componentId) => {
+                                            setName(name);
+                                            setInternalComponentId(componentId);
+                                        }}
+                                        onUpdateEnv={envId => setInternalEnvId(envId)}
+                                    />
+                                ) : null}
+                            </TabsContent>
                         </Tabs>
                     </div>
                 </div>
                 <DialogFooter className='flex-row justify-end gap-2 pt-4 '>
                     <DialogClose asChild>
-                        <Button type='button' onClick={handleCreateActiveComponent}>
-                            Create
+                        <Button type='button' onClick={onCreate}>
+                            {tab === 'internal-components' ? 'Link' : 'Create'}
                         </Button>
                     </DialogClose>
                 </DialogFooter>

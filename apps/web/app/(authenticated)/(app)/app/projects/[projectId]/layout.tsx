@@ -10,6 +10,7 @@ import { useQuery } from 'convex/react';
 import { notFound } from 'next/navigation';
 import { PropsWithChildren } from 'react';
 import { Loading } from '@/components/dashboard/loading';
+import { DesktopTopBar } from '../../desktop-topbar';
 
 type Props = PropsWithChildren<{
     params: {
@@ -46,23 +47,26 @@ export default function ProjectPageLayout(props: Props) {
     ];
 
     return (
-        <div>
-            <PageHeader
-                title={project.name}
-                description='Manage your project'
-                actions={[
-                    <Badge
-                        key='projectId'
-                        variant='secondary'
-                        className='flex justify-between w-full gap-2 font-mono font-medium ph-no-capture'>
-                        {project._id}
-                        <CopyButton value={project._id} />
-                    </Badge>,
-                    <CreateComponentButton key='createComponent' projectId={props.params.projectId} />,
-                ]}
-            />
-            <Navbar navigation={navigation} className='z-20' />
-            <main className='relative mt-8 mb-20 '>{props.children}</main>
-        </div>
+        <>
+            <DesktopTopBar className='flex items-center' projectName={project.name} />
+            <div className='border-l bg-background border-border flex-1 p-8'>
+                <PageHeader
+                    title={project.name}
+                    description='Manage your project'
+                    actions={[
+                        <Badge
+                            key='projectId'
+                            variant='secondary'
+                            className='flex justify-between w-full gap-2 font-mono font-medium ph-no-capture'>
+                            {project._id}
+                            <CopyButton value={project._id} />
+                        </Badge>,
+                        <CreateComponentButton key='createComponent' projectId={props.params.projectId} />,
+                    ]}
+                />
+                <Navbar navigation={navigation} className='z-20' />
+                <main className='relative mt-8 mb-20 '>{props.children}</main>
+            </div>
+        </>
     );
 }

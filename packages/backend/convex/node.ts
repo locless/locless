@@ -6,7 +6,7 @@ export const getSingle = query({
     args: {
         projectId: v.id('projects'),
         componentId: v.id('components'),
-        environment: v.union(v.literal('dev'), v.literal('prod')),
+        environmentId: v.id('environments'),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -39,7 +39,7 @@ export const getSingle = query({
         const node = await ctx.db
             .query('nodes')
             .withIndex('by_component_and_environment', q =>
-                q.eq('componentId', component._id).eq('environment', args.environment)
+                q.eq('componentId', component._id).eq('environmentId', args.environmentId)
             )
             .first();
 
@@ -51,7 +51,7 @@ export const getPublic = query({
     args: {
         projectId: v.id('projects'),
         componentId: v.id('components'),
-        environment: v.union(v.literal('dev'), v.literal('prod')),
+        environmentId: v.id('environments'),
     },
     handler: async (ctx, args) => {
         const project = await ctx.db.get(args.projectId);
@@ -69,9 +69,54 @@ export const getPublic = query({
         const node = await ctx.db
             .query('nodes')
             .withIndex('by_component_and_environment', q =>
-                q.eq('componentId', component._id).eq('environment', args.environment)
+                q.eq('componentId', component._id).eq('environmentId', args.environmentId)
             )
             .first();
+
+        return node;
+    },
+});
+
+export const getWithoutProject = query({
+    args: {
+        componentId: v.id('components'),
+        environmentId: v.id('environments'),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (identity === null) {
+            throw new Error('Unauthenticated call to mutation');
+        }
+
+        const component = await ctx.db.get(args.componentId);
+
+        if (!component) {
+            return null;
+        }
+
+        const node = await ctx.db
+            .query('nodes')
+            .withIndex('by_component_and_environment', q =>
+                q.eq('componentId', component._id).eq('environmentId', args.environmentId)
+            )
+            .first();
+
+        return node;
+    },
+});
+
+export const get = query({
+    args: {
+        nodeId: v.id('nodes'),
+    },
+    handler: async (ctx, args) => {
+        // TODO: add auth check
+        /*const identity = await ctx.auth.getUserIdentity();
+        if (identity === null) {
+            throw new Error('Unauthenticated call to mutation');
+        }*/
+
+        const node = await ctx.db.get(args.nodeId);
 
         return node;
     },
@@ -130,7 +175,7 @@ export const save = mutation({
     args: {
         nodeId: v.optional(v.id('nodes')),
         componentId: v.id('components'),
-        environment: v.union(v.literal('dev'), v.literal('prod')),
+        environmentId: v.id('environments'),
         styles: v.optional(
             v.array(
                 v.object({
@@ -201,7 +246,7 @@ export const save = mutation({
         if (args.nodeId) {
             await ctx.db.patch(args.nodeId, {
                 componentId: args.componentId,
-                environment: args.environment,
+                environmentId: args.environmentId,
                 styles: args.styles,
                 props: args.props,
                 meta: args.meta,
@@ -216,7 +261,7 @@ export const save = mutation({
         } else {
             const nodeId = await ctx.db.insert('nodes', {
                 componentId: args.componentId,
-                environment: args.environment,
+                environmentId: args.environmentId,
                 styles: args.styles,
                 props: args.props,
                 meta: args.meta,

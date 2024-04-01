@@ -5,10 +5,10 @@ import { Label } from '@repo/ui/components/ui/label';
 import { Input } from '@repo/ui/components/ui/input';
 import { TabsContent } from '@repo/ui/components/ui/tabs';
 import { CopyButton } from '@/components/dashboard/copy-button';
-import { RadioGroupDropdown } from '../../radio-group-dropdown';
 import useEditor, { DummyProp } from '../../useEditor';
 import { DummyPropSearch } from './dummy-props-search';
 import { OutsidePropType, outsidePropTypeArray } from '@repo/backend/constants';
+import { RadioGroupDropdown } from '@/components/radio-group-dropdown';
 
 export default function DummyPropsTab() {
     const { componentsData, dummyProps, loadDummyProps, updateSaveButton } = useEditor();
@@ -86,10 +86,15 @@ export default function DummyPropsTab() {
                                       }}
                                   />
                                   <RadioGroupDropdown
-                                      activeValue={prop.type}
-                                      values={outsidePropTypeArray}
+                                      activeValue={{
+                                          _id: prop.type,
+                                          name: prop.type,
+                                      }}
+                                      values={outsidePropTypeArray.map(p => {
+                                          return { _id: p, name: p };
+                                      })}
                                       onChange={value => {
-                                          handleUpdateDummyPropsType(prop.name, value as OutsidePropType);
+                                          handleUpdateDummyPropsType(prop.name, value.name as OutsidePropType);
                                       }}
                                   />
                                   <div className='w-6 h-6'>

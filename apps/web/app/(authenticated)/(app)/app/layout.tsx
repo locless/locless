@@ -1,14 +1,13 @@
+import { PropsWithChildren } from 'react';
 import { DesktopSidebar } from './desktop-sidebar';
 
-interface LayoutProps {
-    children: React.ReactNode;
-}
-
-export default async function Layout({ children }: LayoutProps) {
+export default async function Layout({ children }: PropsWithChildren) {
     return (
-        <div className='relative flex flex-col min-h-screen bg-gray-100 lg:flex-row dark:bg-gray-950'>
-            <DesktopSidebar className='hidden lg:flex flex-col' />
-            <div className='p-4 border-l bg-background border-border lg:w-full lg:p-8'>{children}</div>
+        <div className='relative flex flex-col min-h-screen bg-gray-100 dark:bg-gray-950'>
+            <div className='relative flex flex-1 bg-gray-100 lg:flex-row dark:bg-gray-950'>
+                <DesktopSidebar className='hidden lg:flex flex-col' />
+                <div className='w-full flex flex-col'>{children}</div>
+            </div>
         </div>
     );
 }

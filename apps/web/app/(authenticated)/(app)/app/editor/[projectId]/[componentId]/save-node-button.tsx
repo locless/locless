@@ -38,6 +38,8 @@ export const SaveNodeButton = ({ componentId }: Props) => {
     const addDummyPropMutation = useMutation(api.node.addDummyProp);
     const removeNode = useMutation(api.node.deleteSingle);
 
+    const { environment } = useEditor();
+
     const { toast } = useToast();
 
     const {
@@ -118,10 +120,10 @@ export const SaveNodeButton = ({ componentId }: Props) => {
             toast({
                 description: 'Your element has been saved!',
             });
-        } else {
+        } else if (environment) {
             const nodeId = await createNodeMutation({
                 componentId,
-                environment: 'dev',
+                environmentId: environment._id,
                 nodeId: componentsData.nodeId,
                 styles: transformStyles(componentsData.styles),
                 props: transformProps(componentsData.props),

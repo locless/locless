@@ -18,7 +18,7 @@ export const get = query({
     },
 });
 
-export const getSingle = query({
+export const getWithProject = query({
     args: { componentId: v.id('components'), projectId: v.id('projects') },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -48,7 +48,10 @@ export const getSingle = query({
             return null;
         }
 
-        return component;
+        return {
+            projectName: project.name,
+            component,
+        };
     },
 });
 

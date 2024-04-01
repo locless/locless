@@ -67,9 +67,13 @@ export default defineSchema({
         name: v.string(),
         projectId: v.id('projects'),
     }).index('by_project', ['projectId']),
+    environments: defineTable({
+        name: v.string(),
+        componentId: v.id('components'),
+    }).index('by_component', ['componentId']),
     nodes: defineTable({
         componentId: v.id('components'),
-        environment: v.string(),
+        environmentId: v.id('environments'),
         styles: v.optional(
             v.array(
                 v.object({
@@ -130,7 +134,7 @@ export default defineSchema({
         connectedComponents: v.optional(v.array(v.id('nodes'))),
         connectedVariables: v.optional(v.array(v.id('variables'))),
         connectedTranslations: v.optional(v.array(v.id('translations'))),
-    }).index('by_component_and_environment', ['componentId', 'environment']),
+    }).index('by_component_and_environment', ['componentId', 'environmentId']),
     nodeDummyProps: defineTable({
         props: v.array(
             v.object({
