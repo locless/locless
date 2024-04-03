@@ -213,10 +213,10 @@ export default function NodePreview({ elementNode, parentData }: Props) {
         return parsedProps;
     };
 
-    const parseUI = (item: ElementNode) => {
-        const meta = (parentData ?? data).meta[item.id];
-        const props = (parentData ?? data).props?.[item.id];
-        const styles = (parentData ?? data).styles?.[item.id];
+    const parseUI = (item: ElementNode, sourceData: GlobalData) => {
+        const meta = sourceData.meta[item.id];
+        const props = sourceData.props?.[item.id];
+        const styles = sourceData.styles?.[item.id];
 
         if (!meta) {
             return null;
@@ -235,7 +235,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
                 return (
                     <View key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {item.children
-                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />)
+                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={sourceData} />)
                             : null}
                     </View>
                 );
@@ -266,7 +266,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
                 return (
                     <ImageBackground key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {item.children
-                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />)
+                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={sourceData} />)
                             : null}
                     </ImageBackground>
                 );
@@ -274,7 +274,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
                 return (
                     <KeyboardAvoidingView key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {item.children
-                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />)
+                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={sourceData} />)
                             : null}
                     </KeyboardAvoidingView>
                 );
@@ -282,7 +282,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
                 return (
                     <Modal key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {item.children
-                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />)
+                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={sourceData} />)
                             : null}
                     </Modal>
                 );
@@ -290,7 +290,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
                 return (
                     <Pressable key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {item.children
-                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />)
+                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={sourceData} />)
                             : null}
                     </Pressable>
                 );
@@ -307,7 +307,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
                 return (
                     <SafeAreaView key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {item.children
-                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />)
+                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={sourceData} />)
                             : null}
                     </SafeAreaView>
                 );
@@ -315,7 +315,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
                 return (
                     <ScrollView key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {item.children
-                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />)
+                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={sourceData} />)
                             : null}
                     </ScrollView>
                 );
@@ -337,7 +337,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
                     <Text key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {props?.text?.value ?? ''}
                         {item.children
-                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />)
+                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={sourceData} />)
                             : null}
                     </Text>
                 );
@@ -345,7 +345,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
                 return (
                     <TouchableHighlight key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {item.children
-                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />)
+                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={sourceData} />)
                             : null}
                     </TouchableHighlight>
                 );
@@ -353,7 +353,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
                 return (
                     <TouchableNativeFeedback key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {item.children
-                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />)
+                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={sourceData} />)
                             : null}
                     </TouchableNativeFeedback>
                 );
@@ -361,7 +361,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
                 return (
                     <TouchableOpacity key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {item.children
-                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />)
+                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={sourceData} />)
                             : null}
                     </TouchableOpacity>
                 );
@@ -369,7 +369,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
                 return (
                     <TouchableWithoutFeedback key={item.id} style={parseStyles(styles)} {...parseProps(props)}>
                         {item.children
-                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />)
+                            ? item.children.map(c => <NodePreview key={c.id} elementNode={c} parentData={sourceData} />)
                             : null}
                     </TouchableWithoutFeedback>
                 );
@@ -413,7 +413,7 @@ export default function NodePreview({ elementNode, parentData }: Props) {
             {elementNode.connectionId ? (
                 <>{data ? data.layout.map(c => <NodePreview key={c.id} elementNode={c} parentData={data} />) : null}</>
             ) : (
-                parseUI(elementNode)
+                parseUI(elementNode, parentData ?? data)
             )}
         </>
     );
