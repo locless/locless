@@ -152,8 +152,6 @@ export default function NodePreview({ elementNode, parentData }: Props) {
     const [isLoading, setIsLoading] = useState(false);
     const [data, setData] = useState<GlobalData>(null);
 
-    console.log(elementNode);
-
     const node = useQuery(
         api.node.get,
         elementNode.connectionId

@@ -20,10 +20,12 @@
     "expo-secure-store": "~12.8.1",
     "expo-status-bar": "~1.11.1",
     "expo-web-browser": "~12.8.2",
+    "immer": "^10.0.4",
     "react": "18.2.0",
     "react-dom": "^18.2.0",
     "react-native": "0.73.5",
-    "react-native-get-random-values": "^1.11.0"
+    "react-native-get-random-values": "^1.11.0",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
