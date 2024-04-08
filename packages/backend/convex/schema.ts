@@ -22,30 +22,26 @@ export default defineSchema({
     }).index('by_token', ['tenantId']),
     variableGroups: defineTable({
         name: v.string(),
-        workspaceId: v.optional(v.id('workspaces')),
-        projectId: v.optional(v.id('projects')),
-    })
-        .index('by_project', ['projectId'])
-        .index('by_workspace', ['workspaceId']),
+        workspaceId: v.id('workspaces'),
+        deletedAt: v.optional(v.number()),
+    }).index('by_workspace', ['workspaceId']),
     variables: defineTable({
         name: v.string(),
         value: v.string(),
-        workspaceId: v.optional(v.id('workspaces')),
-        projectId: v.optional(v.id('projects')),
+        workspaceId: v.id('workspaces'),
         variableGroupId: v.optional(v.id('variableGroups')),
     })
         .index('by_group', ['variableGroupId'])
-        .index('by_project', ['projectId'])
         .index('by_workspace', ['workspaceId'])
         .index('by_workspace_and_group', ['workspaceId', 'variableGroupId'])
-        .index('by_project_and_group', ['projectId', 'variableGroupId']),
+        .searchIndex('search_name', {
+            searchField: 'name',
+        }),
     translationGroups: defineTable({
         name: v.string(),
-        workspaceId: v.optional(v.id('workspaces')),
-        projectId: v.optional(v.id('projects')),
-    })
-        .index('by_project', ['projectId'])
-        .index('by_workspace', ['workspaceId']),
+        workspaceId: v.id('workspaces'),
+        deletedAt: v.optional(v.number()),
+    }).index('by_workspace', ['workspaceId']),
     translations: defineTable({
         name: v.string(),
         value: v.array(
@@ -54,22 +50,24 @@ export default defineSchema({
                 text: v.string(),
             })
         ),
-        workspaceId: v.optional(v.id('workspaces')),
-        projectId: v.optional(v.id('projects')),
+        workspaceId: v.id('workspaces'),
         translationGroupId: v.optional(v.id('translationGroups')),
     })
         .index('by_group', ['translationGroupId'])
-        .index('by_project', ['projectId'])
         .index('by_workspace', ['workspaceId'])
         .index('by_workspace_and_group', ['workspaceId', 'translationGroupId'])
-        .index('by_project_and_group', ['projectId', 'translationGroupId']),
+        .searchIndex('search_name', {
+            searchField: 'name',
+        }),
     components: defineTable({
         name: v.string(),
         projectId: v.id('projects'),
+        deletedAt: v.optional(v.number()),
     }).index('by_project', ['projectId']),
     environments: defineTable({
         name: v.string(),
         componentId: v.id('components'),
+        deletedAt: v.optional(v.number()),
     }).index('by_component', ['componentId']),
     nodes: defineTable({
         componentId: v.id('components'),
@@ -134,6 +132,7 @@ export default defineSchema({
         connectedComponents: v.optional(v.array(v.id('nodes'))),
         connectedVariables: v.optional(v.array(v.id('variables'))),
         connectedTranslations: v.optional(v.array(v.id('translations'))),
+        deletedAt: v.optional(v.number()),
     }).index('by_component_and_environment', ['componentId', 'environmentId']),
     nodeDummyProps: defineTable({
         props: v.array(
@@ -144,5 +143,6 @@ export default defineSchema({
             })
         ),
         nodeId: v.id('nodes'),
+        deletedAt: v.optional(v.number()),
     }).index('by_nodes', ['nodeId']),
 });

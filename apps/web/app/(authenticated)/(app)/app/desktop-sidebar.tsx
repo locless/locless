@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useSelectedLayoutSegments } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import React, { useTransition } from 'react';
-import { OrganizationSwitcher, UserButton } from '@clerk/clerk-react';
+import { OrganizationSwitcher } from '@clerk/clerk-react';
 
 type Props = {
     className?: string;
@@ -51,7 +51,7 @@ export const DesktopSidebar: React.FC<Props> = ({ className }) => {
             icon: ShieldHalf,
             label: 'Translations',
             href: '/app/translations',
-            active: segments.at(0) === 'variables',
+            active: segments.at(0) === 'translations',
         },
         {
             icon: Activity,

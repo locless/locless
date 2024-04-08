@@ -70,7 +70,7 @@ export const CreateProjectButton = ({ workspaceId, ...rest }: Props) => {
                                 name='name'
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Name</FormLabel>
+                                        <FormLabel>Name:</FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder='my-project'

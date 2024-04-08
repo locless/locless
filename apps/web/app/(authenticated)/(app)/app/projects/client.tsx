@@ -1,10 +1,8 @@
 'use client';
 import { EmptyPlaceholder } from '@/components/dashboard/empty-placeholder';
-import { PageHeader } from '@/components/dashboard/page-header';
 import { Button } from '@repo/ui/components/ui/button';
 import { Card, CardHeader, CardTitle } from '@repo/ui/components/ui/card';
-import { Separator } from '@repo/ui/components/ui/separator';
-import { BookOpen, Code, Search } from 'lucide-react';
+import { BookOpen, Code } from 'lucide-react';
 import Link from 'next/link';
 import { CreateProjectButton } from './create-project-button';
 import { Id } from '@repo/backend/convex/_generated/dataModel';
@@ -17,9 +15,9 @@ interface Props {
 }
 
 export function ProjectList({ workspaceId }: Props) {
-    const { results, status, loadMore } = usePaginatedQuery(api.project.get, { workspaceId }, { initialNumItems: 20 });
+    const { results, isLoading } = usePaginatedQuery(api.project.get, { workspaceId }, { initialNumItems: 20 });
 
-    if (status === 'LoadingFirstPage' || status === 'LoadingMore') {
+    if (isLoading) {
         return (
             <div className='flex h-screen items-center justify-center '>
                 <Loading />

@@ -18,6 +18,8 @@ import type * as component from "../component.js";
 import type * as environment from "../environment.js";
 import type * as node from "../node.js";
 import type * as project from "../project.js";
+import type * as translations from "../translations.js";
+import type * as variables from "../variables.js";
 import type * as workspace from "../workspace.js";
 
 /**
@@ -33,6 +35,8 @@ declare const fullApi: ApiFromModules<{
   environment: typeof environment;
   node: typeof node;
   project: typeof project;
+  translations: typeof translations;
+  variables: typeof variables;
   workspace: typeof workspace;
 }>;
 export declare const api: FilterApi<

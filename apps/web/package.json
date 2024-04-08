@@ -31,6 +31,7 @@
         "react-native-web": "^0.19.10",
         "react-zoom-pan-pinch": "^3.4.3",
         "uuid": "^9.0.1",
+        "zod": "^3.22.4",
         "zustand": "^4.5.2"
     },
     "devDependencies": {
