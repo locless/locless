@@ -25,7 +25,7 @@ export const deleteFile = internalMutation({
 export const createUrl = httpAction(async (ctx, request) => {
     const url = await ctx.storage.generateUploadUrl();
 
-    return new Response(url, {
+    return new Response(JSON.stringify({ url }), {
         status: 200,
     });
 });
