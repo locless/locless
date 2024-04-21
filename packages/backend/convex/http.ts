@@ -5,7 +5,7 @@ const http = httpRouter();
 
 http.route({
     path: '/serveFile',
-    method: 'GET',
+    method: 'POST',
     handler: getFile,
 });
 
