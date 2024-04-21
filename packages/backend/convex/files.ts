@@ -16,7 +16,7 @@ export const saveFile = internalMutation({
 export const createUrl = httpAction(async (ctx, request) => {
     const url = await ctx.storage.generateUploadUrl();
 
-    return new Response(JSON.stringify({ url }), {
+    return new Response(url, {
         status: 200,
     });
 });
