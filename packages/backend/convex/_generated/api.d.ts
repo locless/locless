@@ -16,6 +16,8 @@ import type {
 } from "convex/server";
 import type * as component from "../component.js";
 import type * as environment from "../environment.js";
+import type * as files from "../files.js";
+import type * as http from "../http.js";
 import type * as node from "../node.js";
 import type * as project from "../project.js";
 import type * as translations from "../translations.js";
@@ -33,6 +35,8 @@ import type * as workspace from "../workspace.js";
 declare const fullApi: ApiFromModules<{
   component: typeof component;
   environment: typeof environment;
+  files: typeof files;
+  http: typeof http;
   node: typeof node;
   project: typeof project;
   translations: typeof translations;

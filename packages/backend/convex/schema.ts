@@ -20,6 +20,10 @@ export default defineSchema({
         plan: v.union(v.literal('free'), v.literal('pro'), v.literal('enterprise')),
         deletedAt: v.optional(v.number()),
     }).index('by_token', ['tenantId']),
+    files: defineTable({
+        projectId: v.id('projects'),
+        urlId: v.id('_storage'),
+    }).index('by_project', ['projectId']),
     variableGroups: defineTable({
         name: v.string(),
         workspaceId: v.id('workspaces'),
