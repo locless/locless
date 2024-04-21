@@ -25,10 +25,11 @@
     "react-dom": "^18.2.0",
     "react-native": "0.73.5",
     "react-native-get-random-values": "^1.11.0",
+    "react-native-wormhole": "^0.2.0",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.24.4"
   },
   "private": true
 }

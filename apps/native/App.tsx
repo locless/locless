@@ -1,23 +1,42 @@
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { ConvexProviderWithClerk } from 'convex/react-clerk';
 import { ConvexReactClient } from 'convex/react';
 import 'react-native-get-random-values';
 import { BarcodeScanningResult, CameraView, useCameraPermissions } from 'expo-camera/next';
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 import { Id } from '@repo/backend/convex/_generated/dataModel';
 import Preview from './src/Preview';
+import { createWormhole } from './wormhole';
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL, {
     unsavedChangesWarning: false,
 });
 
+const { Wormhole } = createWormhole({
+    verify: async () => true,
+    global: {
+        require: (moduleId: string) => {
+            if (moduleId === 'react') {
+                return require('react');
+            } else if (moduleId === 'react-native') {
+                return require('react-native');
+            } else if (moduleId === 'react/jsx-runtime') {
+                return require('react/jsx-runtime');
+            }
+            return null;
+        },
+    },
+});
+
 export default function App() {
     const [_permission, requestPermission] = useCameraPermissions();
-    const [didScan, setDidScan] = useState(false);
-    const [componentId, setComponentId] = useState<Id<'components'> | null>(null);
-    const [projectId, setProjectId] = useState<Id<'projects'> | null>(null);
-    const [environmentId, setEnvironmentId] = useState<Id<'environments'> | null>(null);
+    const [didScan, setDidScan] = React.useState(false);
+    const [componentId, setComponentId] = React.useState<Id<'components'> | null>(null);
+    const [projectId, setProjectId] = React.useState<Id<'projects'> | null>(null);
+    const [environmentId, setEnvironmentId] = React.useState<Id<'environments'> | null>(null);
+
+    const [fileUrl, setFileUrl] = React.useState<string | null>(null);
 
     const handleBarcodeScanned = (scanningResult: BarcodeScanningResult) => {
         if (didScan) {
@@ -36,27 +55,29 @@ export default function App() {
         setDidScan(true);
     };
 
-    useEffect(() => {
+    const getFileUrl = async () => {
+        const response = await fetch('https://robust-dalmatian-29.convex.site/serveFile', {
+            method: 'POST',
+            body: JSON.stringify({ storageId: `kg2cz6z5xsw639tvvgb1ten94s6qn5yn` }),
+        });
+
+        const { url } = await response.json();
+
+        setFileUrl(url);
+    };
+
+    React.useEffect(() => {
         requestPermission();
+
+        if (!fileUrl) {
+            getFileUrl();
+        }
     }, []);
 
     return (
         <ClerkProvider publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!}>
             <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-                {projectId && componentId ? (
-                    <Preview componentId={componentId} projectId={projectId} environmentId={environmentId} />
-                ) : (
-                    <View style={styles.container}>
-                        <CameraView
-                            barcodeScannerSettings={{
-                                barcodeTypes: ['qr'],
-                            }}
-                            facing='back'
-                            style={{ flex: 1, width: '100%' }}
-                            onBarcodeScanned={handleBarcodeScanned}
-                        />
-                    </View>
-                )}
+                {fileUrl ? <Wormhole source={{ uri: fileUrl }} /> : <Text>123</Text>}
             </ConvexProviderWithClerk>
         </ClerkProvider>
     );
