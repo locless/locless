@@ -1,15 +1,9 @@
 import { v } from 'convex/values';
-import { httpAction, mutation } from './_generated/server';
+import { httpAction, internalMutation } from './_generated/server';
 import { Id } from './_generated/dataModel';
+import { internal } from './_generated/api';
 
-export const createUrl = mutation({
-    args: {},
-    handler: async (ctx, args) => {
-        return await ctx.storage.generateUploadUrl();
-    },
-});
-
-export const saveFile = mutation({
+export const saveFile = internalMutation({
     args: { storageId: v.id('_storage'), projectId: v.id('projects') },
     handler: async (ctx, args) => {
         await ctx.db.insert('files', {
@@ -17,6 +11,27 @@ export const saveFile = mutation({
             projectId: args.projectId,
         });
     },
+});
+
+export const createUrl = httpAction(async (ctx, request) => {
+    const url = await ctx.storage.generateUploadUrl();
+
+    return new Response(JSON.stringify({ url }), {
+        status: 200,
+    });
+});
+
+export const saveHTTPFile = httpAction(async (ctx, request) => {
+    const { storageId, projectId } = await request.json();
+
+    await ctx.runMutation(internal.files.saveFile, {
+        storageId,
+        projectId,
+    });
+
+    return new Response(null, {
+        status: 200,
+    });
 });
 
 export const getFile = httpAction(async (ctx, request) => {
