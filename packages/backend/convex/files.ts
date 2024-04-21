@@ -13,6 +13,15 @@ export const saveFile = internalMutation({
     },
 });
 
+export const deleteFile = internalMutation({
+    args: {
+        storageId: v.id('_storage'),
+    },
+    handler: async (ctx, args) => {
+        return await ctx.storage.delete(args.storageId);
+    },
+});
+
 export const createUrl = httpAction(async (ctx, request) => {
     const url = await ctx.storage.generateUploadUrl();
 
@@ -40,6 +49,18 @@ export const getFile = httpAction(async (ctx, request) => {
     const url = await ctx.storage.getUrl(storageId as Id<'_storage'>);
 
     return new Response(JSON.stringify({ url }), {
+        status: 200,
+    });
+});
+
+export const deleteHTTPFile = httpAction(async (ctx, request) => {
+    const { storageId } = await request.json();
+
+    await ctx.runMutation(internal.files.deleteFile, {
+        storageId,
+    });
+
+    return new Response(null, {
         status: 200,
     });
 });
