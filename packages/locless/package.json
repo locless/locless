@@ -1,6 +1,6 @@
 {
     "name": "locless",
-    "version": "0.0.2",
+    "version": "0.0.5",
     "description": "Locless CLI tool",
     "license": "Apache-2.0",
     "publishConfig": {
