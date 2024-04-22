@@ -3,40 +3,48 @@ const fs = require('fs');
 const PROJECT_ID = 'jh78ma42hvw94pm6xsavk8pqjd6mnb9w';
 
 const downloadFile = async () => {
-    const uploadUrl = await fetch('https://robust-dalmatian-29.convex.site/createUrl');
+    let fileName = '';
 
-    const { url } = await uploadUrl.json();
-
-    console.log(url);
-
-    const uploadFile = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'text/javascript',
-        },
-        body: fs.readFileSync('../build/MyNewWormhol.js'),
+    await process.argv.forEach(function (val, index, array) {
+        if (index === 2) {
+            fileName = val;
+        }
     });
 
-    const { storageId } = await uploadFile.json();
+    if (fileName) {
+        const uploadUrl = await fetch('https://robust-dalmatian-29.convex.site/createUrl');
 
-    const saveFile = await fetch(`https://robust-dalmatian-29.convex.site/saveFile`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            storageId,
-            projectId: PROJECT_ID,
-        }),
-    });
+        const { url } = await uploadUrl.json();
 
-    console.log(saveFile);
+        const uploadFile = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/javascript',
+            },
+            body: fs.readFileSync(`../build/${fileName}`),
+        });
 
-    if (!saveFile.ok) {
-        throw new Error('Failed to save file');
+        const { storageId } = await uploadFile.json();
+
+        const saveFile = await fetch(`https://robust-dalmatian-29.convex.site/saveFile`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                storageId,
+                projectId: PROJECT_ID,
+            }),
+        });
+
+        if (!saveFile.ok) {
+            throw new Error('Failed to save file');
+        }
+
+        console.log('File saved to storageId: ', storageId);
+    } else {
+        throw new Error('Please provide file name');
     }
-
-    console.log('File saved to storageId: ', storageId);
 };
 
 downloadFile();
