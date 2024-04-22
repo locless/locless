@@ -3,6 +3,7 @@ import ora from 'ora';
 import path from 'path';
 import * as fs from 'fs';
 import child_process from 'child_process';
+import chalk from 'chalk';
 
 const spinner = ora({
     text: 'Loading...',
@@ -19,37 +20,46 @@ export const deploy = new Command()
 export async function runExample() {
     spinner.start('Searching for locless folder...');
 
-    const __dirname = path.resolve();
+    try {
+        const __dirname = path.resolve();
 
-    const loclessFolderPath = path.join(__dirname, 'locless');
+        console.log(chalk.gray(`Current directory: ${__dirname}`));
 
-    if (!fs.existsSync(loclessFolderPath)) {
-        spinner.fail(`Locless folder not found in ${loclessFolderPath}`);
+        const loclessFolderPath = path.join(__dirname, 'locless');
+
+        console.log(chalk.gray(`Locless Path: ${loclessFolderPath}`));
+
+        if (!fs.existsSync(loclessFolderPath)) {
+            spinner.fail(`Locless folder not found in ${loclessFolderPath}`);
+            return;
+        }
+
+        spinner.text = 'Locless folder found...';
+
+        await fs.readdir(loclessFolderPath, (err, files) => {
+            spinner.text = 'Scanning Locless folder...';
+            files.forEach(file => {
+                if (file.includes('.jsx')) {
+                    spinner.text = `Found ${file}...`;
+
+                    const filePath = path.join(__dirname, 'locless', file);
+
+                    const buildPath = path.join(__dirname, 'locless', 'build', file.replace('.jsx', '.js'));
+
+                    try {
+                        child_process.execSync(`npx babel ${filePath} -o ${buildPath}`).toString();
+                        spinner.succeed(`Compiled ${file} to ${buildPath}`);
+                    } catch (e) {
+                        spinner.fail(`${e}`);
+                        return;
+                    }
+                }
+            });
+        });
+    } catch (e) {
+        spinner.fail(`${e}`);
         return;
     }
-
-    spinner.text = 'Locless folder found...';
-
-    await fs.readdir(loclessFolderPath, (err, files) => {
-        spinner.text = 'Scanning Locless folder...';
-        files.forEach(file => {
-            if (file.includes('.jsx')) {
-                spinner.text = `Found ${file}...`;
-
-                const filePath = path.join(__dirname, 'locless', file);
-
-                const buildPath = path.join(__dirname, 'locless', 'build', file.replace('.jsx', '.js'));
-
-                try {
-                    child_process.execSync(`npx babel ${filePath} -o ${buildPath}`).toString();
-                    spinner.succeed(`Compiled ${file} to ${buildPath}`);
-                } catch (e) {
-                    spinner.fail(`${e}`);
-                    return;
-                }
-            }
-        });
-    });
 
     return `Uploaded to Locless cloud`;
 }
