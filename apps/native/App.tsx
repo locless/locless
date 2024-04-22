@@ -7,7 +7,7 @@ import { BarcodeScanningResult, CameraView, useCameraPermissions } from 'expo-ca
 import * as React from 'react';
 import { Id } from '@repo/backend/convex/_generated/dataModel';
 import Preview from './src/Preview';
-import { createWormhole } from './wormhole';
+import { createWormhole } from './src/wormhole';
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL, {
     unsavedChangesWarning: false,
@@ -56,9 +56,9 @@ export default function App() {
     };
 
     const getFileUrl = async () => {
-        const response = await fetch('https://robust-dalmatian-29.convex.site/serveFile', {
+        const response = await fetch(`${process.env.EXPO_PUBLIC_HTTPS_ENDPOINT}/serveFile`, {
             method: 'POST',
-            body: JSON.stringify({ storageId: `kg2cz6z5xsw639tvvgb1ten94s6qn5yn` }),
+            body: JSON.stringify({ storageId: `kg27r0w6ba0f75nvneng527hh96qqsgz` }),
         });
 
         const { url } = await response.json();

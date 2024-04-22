@@ -3,13 +3,13 @@ import { Animated, Alert, TouchableOpacity } from 'react-native';
 
 function CustomButton() {
     return (
-        <TouchableOpacity onPress={() => Alert.alert('Hello!')}>
+        <TouchableOpacity onPress={() => Alert.alert('Hi!')}>
             <Animated.Text children='Click here!' />
         </TouchableOpacity>
     );
 }
 
-export default function MyNewWormhole() {
+export default function ServerComponent() {
     const message = React.useMemo(() => 'Hello, world!', []);
     return (
         <Animated.View style={{ flex: 1, backgroundColor: 'red' }}>
