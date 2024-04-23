@@ -43,7 +43,7 @@ const buildCreateComponent =
         const Component = await new Function(
             globalName,
             `${Object.keys(global)
-                .map(key => `console.log(${globalName}.${key});var ${key} = ${globalName}.${key};`)
+                .map(key => `var ${key} = ${globalName}.${key};`)
                 .join('\n')}; const exports = {}; ${src}; return exports.default;`
         )(global);
         if (typeof Component !== 'function') {
@@ -81,9 +81,7 @@ const buildRequestOpenUri =
             if ((await verify(result)) !== true) {
                 throw new Error(`[Locless]: Failed to verify "${uri}".`);
             }
-            console.log(`Before`);
             const Component = await shouldCreateComponent(data);
-            console.log(`After`);
             Object.assign(cache, { [uri]: Component });
             return shouldComplete(uri);
         } catch (e) {
@@ -91,7 +89,6 @@ const buildRequestOpenUri =
             if (typeof e === 'string') {
                 return shouldComplete(uri, new Error(e));
             } else if (typeof e.message === 'string') {
-                console.log(345);
                 return shouldComplete(uri, new Error(`${e.message}`));
             }
             return shouldComplete(uri, e);
