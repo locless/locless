@@ -14,10 +14,10 @@ export const deploy = new Command()
     .name('deploy')
     .description('Transform and deploy TS file to Locless cloud.')
     .action(async () => {
-        await runExample();
+        await runDeploy();
     });
 
-export async function runExample() {
+export async function runDeploy() {
     spinner.start('Searching for locless folder...');
 
     try {
