@@ -15,18 +15,13 @@ import { WormholeProps } from '../components/Wormhole';
 
 const globalName = '__WORMHOLE__';
 
-const defaultGlobal = Object.freeze({
-    require: (moduleId: string) => {
-        if (moduleId === 'react') {
-            // @ts-ignore
-            return require('react');
-        } else if (moduleId === 'react-native') {
-            // @ts-ignore
-            return require('react-native');
-        }
-        return null;
-    },
-});
+const defaultGlobalImports = {
+    '@babel/runtime/helpers/interopRequireDefault': require('@babel/runtime/helpers/interopRequireDefault'),
+    '@babel/runtime/helpers/slicedToArray': require('@babel/runtime/helpers/slicedToArray'),
+    react: require('react'),
+    'react-native': require('react-native'),
+    'react/jsx-runtime': require('react/jsx-runtime'),
+};
 
 const buildCompletionHandler =
     (cache: WormholeComponentCache, tasks: WormholeTasks) =>
@@ -38,7 +33,7 @@ const buildCompletionHandler =
             if (!!maybeComponent) {
                 return resolve(maybeComponent);
             }
-            return reject(error || new Error(`[Wormhole]: Failed to allocate for uri "${uri}".`));
+            return reject(error || new Error(`[Locless]: Failed to allocate for uri "${uri}".`));
         });
     };
 
@@ -53,7 +48,7 @@ const buildCreateComponent =
         )(global);
         if (typeof Component !== 'function') {
             throw new Error(
-                `[Wormhole]: Expected function, encountered ${typeof Component}. Did you forget to mark your Wormhole as a default export?`
+                `[Locless]: Expected function, encountered ${typeof Component}. Did you forget to mark your Locless as a default export?`
             );
         }
         return Component;
@@ -81,10 +76,10 @@ const buildRequestOpenUri =
             });
             const { data } = result;
             if (typeof data !== 'string') {
-                throw new Error(`[Wormhole]: Expected string data, encountered ${typeof data}.`);
+                throw new Error(`[Locless]: Expected string data, encountered ${typeof data}.`);
             }
             if ((await verify(result)) !== true) {
-                throw new Error(`[Wormhole]: Failed to verify "${uri}".`);
+                throw new Error(`[Locless]: Failed to verify "${uri}".`);
             }
             const Component = await shouldCreateComponent(data);
             Object.assign(cache, { [uri]: Component });
@@ -114,7 +109,7 @@ const buildOpenUri =
         const { [uri]: Component } = cache;
         const { resolve, reject } = callback;
         if (Component === null) {
-            return reject(new Error(`[Wormhole]: Component at uri "${uri}" could not be instantiated.`));
+            return reject(new Error(`[Locless]: Component at uri "${uri}" could not be instantiated.`));
         } else if (typeof Component === 'function') {
             return resolve(Component);
         }
@@ -151,7 +146,7 @@ const buildOpenWormhole =
                 return shouldOpenString(source as string);
             }
             throw new Error(
-                `[Wormhole]: Attempted to instantiate a Wormhole using a string, but dangerouslySetInnerJSX was not true.`
+                `[Locless]: Attempted to instantiate a Locless using a string, but dangerouslySetInnerJSX was not true.`
             );
         } else if (source && typeof source === 'object') {
             const { uri } = source;
@@ -159,23 +154,35 @@ const buildOpenWormhole =
                 return new Promise<React.Component>((resolve, reject) => shouldOpenUri(uri, { resolve, reject }));
             }
         }
-        throw new Error(`[Wormhole]: Expected valid source, encountered ${typeof source}.`);
+        throw new Error(`[Locless]: Expected valid source, encountered ${typeof source}.`);
     };
 
 export default function createWormhole({
     buildRequestForUri = (config: AxiosRequestConfig) => axios(config),
-    global = defaultGlobal,
+    global,
     verify,
 }: WormholeContextConfig) {
     if (typeof verify !== 'function') {
-        throw new Error('[Wormhole]: To create a Wormhole, you **must** pass a verify() function.');
+        throw new Error('[Locless]: To create a Locless, you **must** pass a verify() function.');
     }
 
     const cache: WormholeComponentCache = {};
     const tasks: WormholeTasks = {};
 
+    const mergedGlobal = { ...defaultGlobalImports, ...(global ?? {}) };
+
+    const defaultGlobal = Object.freeze({
+        require: (moduleId: string) => {
+            if (typeof mergedGlobal[moduleId] === 'undefined') {
+                throw new Error(`[Locless]: Please add require(${moduleId}) to global prop.`);
+            }
+
+            return mergedGlobal[moduleId] ?? null;
+        },
+    });
+
     const shouldComplete = buildCompletionHandler(cache, tasks);
-    const shouldCreateComponent = buildCreateComponent(global);
+    const shouldCreateComponent = buildCreateComponent(defaultGlobal);
     const shouldRequestOpenUri = buildRequestOpenUri({
         cache,
         buildRequestForUri,

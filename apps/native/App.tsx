@@ -15,18 +15,6 @@ const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL, {
 
 const { Wormhole } = createWormhole({
     verify: async () => true,
-    global: {
-        require: (moduleId: string) => {
-            if (moduleId === 'react') {
-                return require('react');
-            } else if (moduleId === 'react-native') {
-                return require('react-native');
-            } else if (moduleId === 'react/jsx-runtime') {
-                return require('react/jsx-runtime');
-            }
-            return null;
-        },
-    },
 });
 
 export default function App() {
@@ -58,7 +46,7 @@ export default function App() {
     const getFileUrl = async () => {
         const response = await fetch(`${process.env.EXPO_PUBLIC_HTTPS_ENDPOINT}/serveFile`, {
             method: 'POST',
-            body: JSON.stringify({ storageId: `kg27r0w6ba0f75nvneng527hh96qqsgz` }),
+            body: JSON.stringify({ storageId: `kg27f8sr85zsd0bg4nna4hvtzx6qswse` }),
         });
 
         const { url } = await response.json();
