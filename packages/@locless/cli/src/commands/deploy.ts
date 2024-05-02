@@ -5,6 +5,13 @@ import * as fs from 'fs';
 import child_process from 'child_process';
 import chalk from 'chalk';
 
+const PROJECT_ID = '2e018eec-7429-4cd2-976a-4d7f3d976a8b';
+
+const DEV_WEBSITE_URL = 'http://127.0.0.1:8787';
+const PROD_WEBSITE_URL = 'https://robust-dalmatian-29.convex.site';
+
+const SERVER_URL = DEV_WEBSITE_URL;
+
 const spinner = ora({
     text: 'Loading...',
     color: 'yellow',
@@ -25,38 +32,111 @@ export async function runDeploy() {
 
         const loclessFolderPath = path.join(__dirname, 'locless');
 
-        console.log(chalk.gray(`\nChecking path: ${loclessFolderPath}...`));
-
         if (!fs.existsSync(loclessFolderPath)) {
             spinner.fail(`Locless folder not found in ${loclessFolderPath}`);
             return;
         }
 
-        console.log(chalk.gray(`\nLocless folder found...`));
+        spinner.succeed(`Found Locless folder: ${loclessFolderPath}`);
 
-        console.log(chalk.gray(`\nScanning Locless folder...`));
+        spinner.start('Scanning Locless folder...');
 
         const fileList = fs.readdirSync(loclessFolderPath, { withFileTypes: true });
 
-        console.log(chalk.gray(`\nScan result: ${fileList.length} files`));
+        spinner.succeed(`Scan result: ${fileList.length} files`);
 
-        fileList.forEach(file => {
-            if (file.isFile() && file.name.includes('.jsx')) {
-                console.log(chalk.gray(`\nFound ${file.path}...`));
+        const loclessConfigPath = path.join(__dirname, 'locless', 'locless.json');
 
-                const filePath = path.join(file.path, file.name);
+        let fileComponentsObject = fs.existsSync(loclessConfigPath)
+            ? JSON.parse(fs.readFileSync(loclessConfigPath, 'utf8'))
+            : {};
 
-                const buildPath = path.join(__dirname, 'locless', 'build', file.name.replace('.jsx', '.js'));
+        spinner.start('Compiling...');
+        for (const file of fileList) {
+            const { name: fileName } = file;
+            const fileExt = fileName.split('.').pop();
+            if (file.isFile() && (fileExt === 'tsx' || fileExt === 'jsx')) {
+                console.log(chalk.gray(`Found ${fileName}...`));
 
-                try {
-                    child_process.execSync(`npx babel ${filePath} -o ${buildPath}`).toString();
-                    spinner.succeed(`Compiled ${filePath} to ${buildPath}`);
-                } catch (e) {
-                    spinner.fail(`${e}`);
-                    return;
+                const fileNameWithoutExt = fileName.slice(0, fileName.length - 4);
+
+                if (fileComponentsObject[fileNameWithoutExt]) {
+                    console.log(chalk.yellow(`Skip ${fileName} because it's already uploaded!`));
+                } else {
+                    const filePath = path.join(file.path, fileName);
+
+                    const buildPath = path.join(__dirname, 'locless', 'build', `${fileNameWithoutExt}.js`);
+
+                    try {
+                        child_process.execSync(`npx babel ${filePath} -o ${buildPath}`).toString();
+                        console.log(chalk.green(`Compiled ${fileName} to ${fileNameWithoutExt}.js`));
+
+                        const content = await fs.readFileSync(buildPath);
+
+                        console.log(chalk.green(`Got file content for upload!`));
+
+                        /*const uploadUrl = await fetch(`${SERVER_URL}/createUrl`); // TODO: Fix fetch inside CLI
+
+                        const { url } = await uploadUrl.json();
+
+                        console.log(chalk.green(`Got upload link!`));
+
+                        const uploadFile = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'text/javascript',
+                            },
+                            body: content,
+                        });
+
+                        const { storageId } = await uploadFile.json();
+
+                        console.log(chalk.green(`File uploaded!`));
+
+                        const saveFile = await fetch(`${SERVER_URL}/saveFile`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                storageId,
+                                projectId: PROJECT_ID,
+                            }),
+                        });
+
+                        if (!saveFile.ok) {
+                            throw new Error('Failed to save file');
+                        }*/
+
+                        const form = new FormData();
+                        const blob = new Blob([content]);
+                        form.set('name', fileNameWithoutExt);
+                        form.set('projectId', PROJECT_ID);
+
+                        form.set('file', blob, fileName);
+
+                        const res = await fetch(`${DEV_WEBSITE_URL}/components`, {
+                            method: 'POST',
+                            body: form,
+                        });
+
+                        const uploadRes = await res.json();
+                        const component = uploadRes[0];
+
+                        console.log(chalk.green(`File saved to storageId...`));
+                        fileComponentsObject[fileNameWithoutExt] = component.id;
+                    } catch (e) {
+                        spinner.fail(`${e}`);
+                        return;
+                    }
                 }
             }
-        });
+        }
+        spinner.succeed(`All files compiled!`);
+
+        spinner.start(`Changing locless.json...`);
+        fs.writeFileSync(loclessConfigPath, JSON.stringify(fileComponentsObject));
+        spinner.succeed(`Build is done!`);
     } catch (e) {
         spinner.fail(`${e}`);
         return;

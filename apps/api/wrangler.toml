@@ -1,0 +1,21 @@
+name = "api"
+compatibility_date = "2023-12-01"
+
+# [vars]
+# MY_VAR = "my-variable"
+
+# [[kv_namespaces]]
+# binding = "MY_KV_NAMESPACE"
+# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+[[r2_buckets]]
+binding = "MY_BUCKET"
+bucket_name = "locless-bucket-r2"
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "locless-database-d1"
+database_id = "505490e1-206f-4bfd-a1d8-16aa82a2dc2a"
+
+# [ai]
+# binding = "AI"

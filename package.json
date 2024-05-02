@@ -15,8 +15,13 @@
         "turbo": "latest"
     },
     "workspaces": {
-        "packages": ["packages/*", "apps/*"],
-        "nohoist": ["**/react-native", "**/react-native/**", "**/expo", "**/expo/**", "**/@clerk", "**/@clerk/**"]
+        "packages": [
+            "packages/*",
+            "apps/*"
+        ],
+        "nohoist": [
+            "*"
+        ]
     },
     "packageManager": "yarn@1.22.22",
     "engines": {
