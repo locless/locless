@@ -1,31 +1,17 @@
-'use client';
-
 import { PageHeader } from '@/components/dashboard/page-header';
 import { CreateProjectButton } from './create-project-button';
 
 import { Separator } from '@repo/ui/components/ui/separator';
 import Link from 'next/link';
 import { ProjectList } from './client';
-import { useConvexAuth, useMutation, useQuery } from 'convex/react';
-import { api } from '@repo/backend/convex/_generated/api';
-import { useEffect } from 'react';
 import { Loading } from '@/components/dashboard/loading';
 import { DesktopTopBar } from '../desktop-topbar';
+import { getTenantId } from '@/lib/auth';
+import { findWorkspace } from '@/lib/api';
 
-export default function ApisOverviewPage() {
-    const workspace = useQuery(api.workspace.getWorkspace);
-    const createPersonal = useMutation(api.workspace.createPersonal);
-    const { isLoading } = useConvexAuth();
-
-    useEffect(() => {
-        const createSpace = async () => {
-            await createPersonal();
-        };
-
-        if (!isLoading && workspace === null) {
-            createSpace();
-        }
-    }, [workspace, isLoading]);
+export default async function ApisOverviewPage() {
+    const tenantId = getTenantId();
+    const workspace = await findWorkspace({ tenantId });
 
     if (workspace === null) {
         return null;
@@ -48,7 +34,7 @@ export default function ApisOverviewPage() {
                 <PageHeader
                     title='Dashboard'
                     description='Manage your projects'
-                    actions={[<CreateProjectButton workspaceId={workspace?._id} disabled={unpaid} />]}
+                    actions={[<CreateProjectButton workspaceId={workspace?.id} disabled={unpaid} />]}
                 />
                 <Separator className='my-6' />
                 {unpaid ? (
@@ -70,7 +56,7 @@ export default function ApisOverviewPage() {
                         </div>
                     </div>
                 ) : (
-                    <ProjectList workspaceId={workspace?._id} />
+                    <ProjectList workspaceId={workspace?.id} />
                 )}
             </div>
         </>

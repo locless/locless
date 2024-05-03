@@ -1,6 +1,6 @@
 'use client';
 import { FadeIn } from '@/components/landing/fade-in';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/nextjs';
 import { EmailCode } from '../email-code';
 import { EmailSignUp } from '../email-signup';
 import { OAuthSignUp } from '../oauth-signup';

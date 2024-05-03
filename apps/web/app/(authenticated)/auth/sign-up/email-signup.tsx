@@ -1,6 +1,6 @@
 'use client';
 
-import { useSignUp } from '@clerk/clerk-react';
+import { useSignUp } from '@clerk/nextjs';
 import * as React from 'react';
 
 import { Loading } from '@/components/dashboard/loading';

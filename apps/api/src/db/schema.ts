@@ -9,6 +9,9 @@ export const workspaces = sqliteTable('workspaces', {
     name: text('name', { length: 256 }).notNull(),
     plan: text('plan', { length: 256 }).notNull(),
     isPersonal: integer('isPersonal', { mode: 'boolean' }).notNull(),
+    stripeCustomerId: text('stripeCustomerId', { length: 256 }),
+    stripeSubscriptionId: text('stripeSubscriptionId', { length: 256 }),
+    subscriptions: text('subscriptions'),
     createdAt: text('createdAt')
         .default(sql`CURRENT_TIMESTAMP`)
         .notNull(),

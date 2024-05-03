@@ -3,7 +3,7 @@ import { Loading } from '@/components/dashboard/loading';
 import { Button } from '@repo/ui/components/ui/button';
 import { Icons } from '@repo/ui/components/ui/icons';
 import { useToast } from '@repo/ui/components/ui/use-toast';
-import { useSignUp } from '@clerk/clerk-react';
+import { useSignUp } from '@clerk/nextjs';
 import { useState } from 'react';
 
 export function OAuthSignUp() {

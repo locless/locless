@@ -5,17 +5,40 @@ import { Card, CardHeader, CardTitle } from '@repo/ui/components/ui/card';
 import { BookOpen, Code } from 'lucide-react';
 import Link from 'next/link';
 import { CreateProjectButton } from './create-project-button';
-import { Id } from '@repo/backend/convex/_generated/dataModel';
-import { usePaginatedQuery } from 'convex/react';
-import { api } from '@repo/backend/convex/_generated/api';
 import { Loading } from '@/components/dashboard/loading';
+import { useEffect, useState } from 'react';
+import { getProjects } from '@/lib/api';
 
 interface Props {
-    workspaceId: Id<'workspaces'>;
+    workspaceId: string;
+}
+
+interface Projects {
+    name: string;
+    id: string;
 }
 
 export function ProjectList({ workspaceId }: Props) {
-    const { results, isLoading } = usePaginatedQuery(api.project.get, { workspaceId }, { initialNumItems: 20 });
+    const [projects, setProjects] = useState<Projects[]>([]);
+    const [isLoading, setLoading] = useState(true);
+    const [offset, setOffset] = useState(0);
+
+    useEffect(() => {
+        const fetchProjects = async () => {
+            setLoading(true);
+
+            const newProjects = await getProjects({
+                workspaceId,
+                offset,
+            });
+
+            setProjects(newProjects);
+            setOffset(20);
+            setLoading(false);
+        };
+
+        fetchProjects();
+    }, [workspaceId]);
 
     if (isLoading) {
         return (
@@ -27,10 +50,10 @@ export function ProjectList({ workspaceId }: Props) {
 
     return (
         <div>
-            {results.length ? (
+            {projects?.length ? (
                 <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-2 xl:grid-cols-3'>
-                    {results.map(project => (
-                        <Link key={project._id} href={`/app/projects/${project._id}`}>
+                    {projects.map(project => (
+                        <Link key={project.id} href={`/app/projects/${project.id}`}>
                             <Card className='hover:border-primary/50 group relative overflow-hidden duration-500 '>
                                 <CardHeader>
                                     <div className='flex items-center justify-between'>

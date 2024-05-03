@@ -1,12 +1,12 @@
 'use client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@repo/ui/components/ui/tooltip';
 import { cn } from '@repo/ui/lib/utils';
-import { Activity, BookOpen, Code, Loader2, LucideIcon, Settings, ShieldHalf } from 'lucide-react';
+import { BookOpen, Code, Loader2, LucideIcon, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { useSelectedLayoutSegments } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import React, { useTransition } from 'react';
-import { OrganizationSwitcher } from '@clerk/clerk-react';
+import { OrganizationSwitcher } from '@clerk/nextjs';
 
 type Props = {
     className?: string;
@@ -46,18 +46,6 @@ export const DesktopSidebar: React.FC<Props> = ({ className }) => {
             href: '/app/projects',
             label: 'Projects',
             active: segments.length === 1 && segments.at(0) === 'projects',
-        },
-        {
-            icon: ShieldHalf,
-            label: 'Translations',
-            href: '/app/translations',
-            active: segments.at(0) === 'translations',
-        },
-        {
-            icon: Activity,
-            href: '/app/variables',
-            label: 'Variables',
-            active: segments.at(0) === 'variables',
         },
     ];
 

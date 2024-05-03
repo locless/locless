@@ -2,11 +2,14 @@ name = "api"
 compatibility_date = "2023-12-01"
 
 # [vars]
-# MY_VAR = "my-variable"
+# ALLOWED_ORIGINS = "my-variable"
 
-# [[kv_namespaces]]
-# binding = "MY_KV_NAMESPACE"
-# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+[[kv_namespaces]]
+binding = "API_KEYS"
+id = "cf329e2e9fad406e9fd2c40f1a7bc29f"
+[[kv_namespaces]]
+binding = "API_KEYS_PRIVATE"
+id = "f527c4025971472989f93163288483e0"
 
 [[r2_buckets]]
 binding = "MY_BUCKET"

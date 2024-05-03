@@ -22,6 +22,9 @@ CREATE TABLE `workspaces` (
 	`name` text(256) NOT NULL,
 	`plan` text(256) NOT NULL,
 	`isPersonal` integer NOT NULL,
+	`stripeCustomerId` text(256),
+	`stripeSubscriptionId` text(256),
+	`subscriptions` text,
 	`createdAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint

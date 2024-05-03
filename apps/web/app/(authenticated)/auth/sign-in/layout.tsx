@@ -1,6 +1,6 @@
 'use client';
 import { FadeIn } from '@/components/landing/fade-in';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 
 export default function AuthLayout(props: { children: React.ReactNode }) {

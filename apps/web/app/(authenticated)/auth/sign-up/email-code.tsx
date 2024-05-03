@@ -1,6 +1,6 @@
 'use client';
 
-import { useSignUp } from '@clerk/clerk-react';
+import { useSignUp } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 

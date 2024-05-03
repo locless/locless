@@ -9,16 +9,14 @@ import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useMutation } from 'convex/react';
-import { api } from '@repo/backend/convex/_generated/api';
-import { Id } from '@repo/backend/convex/_generated/dataModel';
+import { createProject } from '@/lib/api';
 
 interface FormData {
     name: string;
 }
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    workspaceId: Id<'workspaces'>;
+    workspaceId: string;
 }
 
 export const CreateProjectButton = ({ workspaceId, ...rest }: Props) => {
@@ -27,19 +25,22 @@ export const CreateProjectButton = ({ workspaceId, ...rest }: Props) => {
 
     const [loading, setLoading] = useState(false);
 
-    const createProject = useMutation(api.project.create);
-
     const onSubmit = async ({ name }: FormData) => {
         setLoading(true);
         try {
-            const projectId = await createProject({
+            const project = await createProject({
                 name,
                 workspaceId,
             });
             toast({
                 description: 'Your project has been created!',
             });
-            router.push(`/app/projects/${projectId}`);
+
+            if (!project) {
+                throw Error('Failed to create project');
+            }
+
+            router.push(`/app/projects/${project.id}`);
         } catch (err: any) {
             console.error(err);
             toast({
