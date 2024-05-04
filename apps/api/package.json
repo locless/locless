@@ -9,6 +9,7 @@
         "db:up": "drizzle-kit up:sqlite"
     },
     "dependencies": {
+        "@clerk/backend": "^1.1.1",
         "@hono/zod-validator": "^0.2.1",
         "@libsql/client": "^0.6.0",
         "drizzle-orm": "^0.30.10",

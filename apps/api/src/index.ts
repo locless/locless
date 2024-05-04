@@ -4,12 +4,14 @@ import * as schema from './db/schema';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { cors } from 'hono/cors';
+import { createClerkClient } from '@clerk/backend';
 
 export type Env = {
     DB: D1Database;
     MY_BUCKET: R2Bucket;
     API_KEYS: KVNamespace;
     API_KEYS_PRIVATE: KVNamespace;
+    CLERK_API_KEY: string;
     ALLOWED_ORIGINS?: string;
 };
 
@@ -61,17 +63,38 @@ const verifyAuthKey = async (env: Env, key?: string): Promise<Record<string, str
     return value;
 };
 
+const verifyAuthToken = async (env: Env, userId?: string) => {
+    //If there is no session token, return null
+    if (!userId) {
+        return { session: null };
+    }
+
+    const clerk = createClerkClient({ secretKey: env.CLERK_API_KEY });
+
+    // otherwise, get the session
+    const user = await clerk.users.getUser(userId);
+    return {
+        user,
+    };
+};
+
 app.use(
     '/workspace/*',
     cors({
         origin: ['https://locless.com', 'http://localhost:3000'],
-        allowHeaders: ['x-api-key', 'Content-Type'],
+        allowHeaders: ['x-api-key', 'Content-Type', 'authorization'],
         allowMethods: ['POST', 'GET', 'PUT', 'DELETE'],
         maxAge: 86400,
     })
 );
 
 app.get('/workspace/:tenantId', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+
     const { tenantId } = await c.req.param();
     const db = drizzle(c.env.DB, { schema });
     const result = await db.query.workspaces.findFirst({
@@ -90,7 +113,7 @@ app.use(
     '/projects/*',
     cors({
         origin: ['https://locless.com', 'http://localhost:3000'],
-        allowHeaders: ['x-api-key', 'Content-Type'],
+        allowHeaders: ['x-api-key', 'Content-Type', 'authorization'],
         allowMethods: ['POST', 'GET', 'PUT', 'DELETE'],
         maxAge: 86400,
     })
@@ -100,13 +123,19 @@ app.use(
     '/components/*',
     cors({
         origin: ['https://locless.com', 'http://localhost:3000'],
-        allowHeaders: ['x-api-key', 'Content-Type'],
+        allowHeaders: ['x-api-key', 'Content-Type', 'authorization'],
         allowMethods: ['POST', 'GET', 'PUT', 'DELETE'],
         maxAge: 86400,
     })
 );
 
 app.get('/projects/getAll/:workspaceId', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+
     const { offset } = await c.req.query();
     const { workspaceId } = await c.req.param();
 
@@ -129,6 +158,12 @@ app.get('/projects/getAll/:workspaceId', async c => {
 });
 
 app.get('/projects/:projectId', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+    
     const { projectId } = await c.req.param();
     const db = drizzle(c.env.DB, { schema });
     const result = await db.query.projects.findFirst({
@@ -144,6 +179,12 @@ app.get('/projects/:projectId', async c => {
 });
 
 app.get('/components', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+    
     const { offset, projectId } = await c.req.query();
     const db = drizzle(c.env.DB, { schema });
     const result = await db.query.components.findMany({
@@ -160,6 +201,12 @@ app.get('/components', async c => {
 });
 
 app.get('/components/:componentId', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+    
     const { componentId } = await c.req.param();
     const db = drizzle(c.env.DB, { schema });
     const result = await db.query.components.findFirst({
@@ -197,6 +244,12 @@ app.get('/file/:fileName', async c => {
 });
 
 app.post('/workspace', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+    
     const { name, tenantId, plan, isPersonal } = await c.req.json();
     const db = drizzle(c.env.DB, { schema });
     const result = await db
@@ -212,6 +265,12 @@ app.post('/workspace', async c => {
 });
 
 app.post('/projects', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+    
     const { name, workspaceId } = await c.req.json();
     const db = drizzle(c.env.DB, { schema });
     const result = await db
@@ -278,6 +337,12 @@ app.post('/generate', async c => {
 });
 
 app.delete('/workspace', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+    
     const { id } = await c.req.json();
     const db = drizzle(c.env.DB, { schema });
     await db.delete(schema.workspaces).values({
@@ -286,6 +351,12 @@ app.delete('/workspace', async c => {
 });
 
 app.delete('/projects', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+    
     const { id } = await c.req.json();
     const db = drizzle(c.env.DB, { schema });
     await db.delete(schema.projects).values({
@@ -294,6 +365,12 @@ app.delete('/projects', async c => {
 });
 
 app.delete('/components', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+    
     const { id } = await c.req.json();
     const db = drizzle(c.env.DB, { schema });
     await db.delete(schema.components).values({
@@ -307,7 +384,7 @@ app.use(
     '/keys/*',
     cors({
         origin: ['https://locless.com', 'http://localhost:3000'],
-        allowHeaders: ['x-api-key', 'Content-Type'],
+        allowHeaders: ['x-api-key', 'Content-Type', 'authorization'],
         allowMethods: ['POST', 'GET', 'PUT', 'DELETE'],
         maxAge: 86400,
     })
@@ -322,6 +399,12 @@ app.get(
         })
     ),
     async c => {
+        const userId = c.req.header('authorization');
+        const res = await verifyAuthToken(c.env, userId);
+        if (!res.user) {
+            return c.text('Invalid Auth Token', 400);
+        }
+        
         const { projectId } = c.req.valid('form');
 
         const publicKeyPrefix = `loc_pub_${projectId}_`;
@@ -350,6 +433,12 @@ app.post(
         })
     ),
     async c => {
+        const userId = c.req.header('authorization');
+        const res = await verifyAuthToken(c.env, userId);
+        if (!res.user) {
+            return c.text('Invalid Auth Token', 400);
+        }
+        
         const { tenantId, projectId } = c.req.valid('form');
 
         const publicKey = `loc_pub_${projectId}_${crypto.randomUUID()}`;
@@ -391,6 +480,12 @@ app.post(
         })
     ),
     async c => {
+        const userId = c.req.header('authorization');
+        const res = await verifyAuthToken(c.env, userId);
+        if (!res.user) {
+            return c.text('Invalid Auth Token', 400);
+        }
+        
         const { tenantId, projectId } = c.req.valid('form');
 
         const publicKey = `loc_pub_${projectId}_${crypto.randomUUID()}`;
@@ -423,6 +518,12 @@ app.put(
         })
     ),
     async c => {
+        const userId = c.req.header('authorization');
+        const res = await verifyAuthToken(c.env, userId);
+        if (!res.user) {
+            return c.text('Invalid Auth Token', 400);
+        }
+        
         const { key, tenantId, projectId } = c.req.valid('form');
 
         await c.env.API_KEYS.delete(key);
@@ -456,6 +557,12 @@ app.post(
         })
     ),
     async c => {
+        const userId = c.req.header('authorization');
+        const res = await verifyAuthToken(c.env, userId);
+        if (!res.user) {
+            return c.text('Invalid Auth Token', 400);
+        }
+        
         const { tenantId, projectId } = c.req.valid('form');
 
         const privateKey = `loc_auth_${projectId}_${crypto.randomUUID()}`;
@@ -488,6 +595,12 @@ app.put(
         })
     ),
     async c => {
+        const userId = c.req.header('authorization');
+        const res = await verifyAuthToken(c.env, userId);
+        if (!res.user) {
+            return c.text('Invalid Auth Token', 400);
+        }
+        
         const { key, tenantId, projectId } = c.req.valid('form');
 
         await c.env.API_KEYS_PRIVATE.delete(key);

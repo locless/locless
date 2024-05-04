@@ -1,5 +1,13 @@
+import { getTenantId } from "./auth"; // TODO: Fix import for use client components
+
+
 export const findWorkspace = async ({ tenantId }: { tenantId: string }) => {
-    const result = await fetch(`http://127.0.0.1:8787/workspace/${tenantId}`);
+    const authId = getTenantId();
+    const result = await fetch(`http://127.0.0.1:8787/workspace/${tenantId}`, {
+        headers: {
+            authorization: `${authId}`,
+        },
+    });
 
     if (!result.ok) {
         return null;
@@ -20,9 +28,13 @@ export const createWorkspace = async (params: {
     isPersonal: boolean;
     plan: string;
 }) => {
+    const authId = getTenantId();
     const result = await fetch(`http://127.0.0.1:8787/workspace`, {
         method: 'POST',
         body: JSON.stringify(params),
+        headers: {
+            authorization: `${authId}`,
+        },
     });
 
     if (!result.ok) {
@@ -39,9 +51,13 @@ export const createWorkspace = async (params: {
 };
 
 export const createProject = async (params: { workspaceId: string; name: string }) => {
+    const authId = getTenantId();
     const result = await fetch(`http://127.0.0.1:8787/projects`, {
         method: 'POST',
         body: JSON.stringify(params),
+        headers: {
+            authorization: `${authId}`,
+        },
     });
 
     if (!result.ok) {
@@ -58,8 +74,12 @@ export const createProject = async (params: { workspaceId: string; name: string 
 };
 
 export const getProjects = async ({ workspaceId, offset }: { workspaceId: string; offset: number }) => {
-    console.log(123);
-    const result = await fetch(`http://127.0.0.1:8787/projects/getAll/${workspaceId}?offset=${offset}`);
+    const authId = getTenantId();
+    const result = await fetch(`http://127.0.0.1:8787/projects/getAll/${workspaceId}?offset=${offset}`, {
+        headers: {
+            authorization: `${authId}`,
+        },
+    });
 
     if (!result.ok) {
         return null;
@@ -75,7 +95,12 @@ export const getProjects = async ({ workspaceId, offset }: { workspaceId: string
 };
 
 export const getProject = async ({ projectId }: { projectId: string }) => {
-    const result = await fetch(`http://127.0.0.1:8787/projects/${projectId}`);
+    const authId = getTenantId();
+    const result = await fetch(`http://127.0.0.1:8787/projects/${projectId}`, {
+        headers: {
+            authorization: `${authId}`,
+        },
+    });
 
     if (!result.ok) {
         return null;
@@ -91,7 +116,12 @@ export const getProject = async ({ projectId }: { projectId: string }) => {
 };
 
 export const getComponents = async ({ projectId, offset }: { projectId: string; offset: number }) => {
-    const result = await fetch(`http://127.0.0.1:8787/components?projectId=${projectId}&offset=${offset}`);
+    const authId = getTenantId();
+    const result = await fetch(`http://127.0.0.1:8787/components?projectId=${projectId}&offset=${offset}`, {
+        headers: {
+            authorization: `${authId}`,
+        },
+    });
 
     if (!result.ok) {
         return null;
@@ -107,7 +137,12 @@ export const getComponents = async ({ projectId, offset }: { projectId: string; 
 };
 
 export const getComponent = async ({ componentId }: { componentId: string }) => {
-    const result = await fetch(`http://127.0.0.1:8787/components/${componentId}`);
+    const authId = getTenantId();
+    const result = await fetch(`http://127.0.0.1:8787/components/${componentId}`, {
+        headers: {
+            authorization: `${authId}`,
+        },
+    });
 
     if (!result.ok) {
         return null;
