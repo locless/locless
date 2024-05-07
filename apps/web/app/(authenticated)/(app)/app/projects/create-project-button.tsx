@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { createProject } from '@/lib/api';
+import { useAuth } from '@clerk/nextjs';
 
 interface FormData {
     name: string;
@@ -22,6 +23,7 @@ interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const CreateProjectButton = ({ workspaceId, ...rest }: Props) => {
     const form = useForm<FormData>();
     const { toast } = useToast();
+    const { userId } = useAuth();
 
     const [loading, setLoading] = useState(false);
 
@@ -31,6 +33,9 @@ export const CreateProjectButton = ({ workspaceId, ...rest }: Props) => {
             const project = await createProject({
                 name,
                 workspaceId,
+                headers: {
+                    authorization: `${userId}`,
+                },
             });
             toast({
                 description: 'Your project has been created!',

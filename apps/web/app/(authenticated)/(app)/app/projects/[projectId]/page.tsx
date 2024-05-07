@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Loading } from '@/components/dashboard/loading';
 import { useEffect, useState } from 'react';
 import { getComponents } from '@/lib/api';
+import { useAuth } from '@clerk/nextjs';
 
 interface Props {
     params: {
@@ -24,6 +25,8 @@ export default function ProjectPage(props: Props) {
     const [isLoading, setLoading] = useState(true);
     const [offset, setOffset] = useState(0);
 
+    const { userId } = useAuth();
+
     useEffect(() => {
         const fetchProject = async () => {
             setLoading(true);
@@ -31,6 +34,9 @@ export default function ProjectPage(props: Props) {
             const newComponents = await getComponents({
                 projectId: props.params.projectId,
                 offset,
+                headers: {
+                    authorization: `${userId}`,
+                },
             });
 
             setComponents(newComponents);

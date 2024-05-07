@@ -4,7 +4,12 @@ import { redirect } from 'next/navigation';
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
     const tenantId = getTenantId();
-    const workspace = await findWorkspace({ tenantId });
+    const workspace = await findWorkspace({
+        tenantId,
+        headers: {
+            authorization: `${tenantId}`,
+        },
+    });
 
     if (!workspace) {
         const newWorkspace = await createWorkspace({
@@ -12,6 +17,9 @@ export default async function Layout({ children }: { children: React.ReactNode }
             name: tenantId.includes('org') ? 'Organization' : 'Personal',
             plan: 'free', // TODO: probably change plan for orgs
             isPersonal: !tenantId.includes('org'),
+            headers: {
+                authorization: `${tenantId}`,
+            },
         });
 
         if (newWorkspace) {

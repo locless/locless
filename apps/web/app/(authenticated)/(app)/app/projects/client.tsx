@@ -8,6 +8,7 @@ import { CreateProjectButton } from './create-project-button';
 import { Loading } from '@/components/dashboard/loading';
 import { useEffect, useState } from 'react';
 import { getProjects } from '@/lib/api';
+import { useAuth } from '@clerk/nextjs';
 
 interface Props {
     workspaceId: string;
@@ -23,6 +24,8 @@ export function ProjectList({ workspaceId }: Props) {
     const [isLoading, setLoading] = useState(true);
     const [offset, setOffset] = useState(0);
 
+    const { userId } = useAuth();
+
     useEffect(() => {
         const fetchProjects = async () => {
             setLoading(true);
@@ -30,6 +33,9 @@ export function ProjectList({ workspaceId }: Props) {
             const newProjects = await getProjects({
                 workspaceId,
                 offset,
+                headers: {
+                    authorization: `${userId}`,
+                },
             });
 
             setProjects(newProjects);

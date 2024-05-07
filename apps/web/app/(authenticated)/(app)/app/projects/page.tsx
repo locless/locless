@@ -11,7 +11,12 @@ import { findWorkspace } from '@/lib/api';
 
 export default async function ApisOverviewPage() {
     const tenantId = getTenantId();
-    const workspace = await findWorkspace({ tenantId });
+    const workspace = await findWorkspace({
+        tenantId,
+        headers: {
+            authorization: `${tenantId}`,
+        },
+    });
 
     if (workspace === null) {
         return null;

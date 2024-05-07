@@ -12,7 +12,12 @@ export default clerkMiddleware(async (auth, req) => {
         }
 
         if (orgId) {
-            const workspace = await findWorkspace({ tenantId: orgId });
+            const workspace = await findWorkspace({
+                tenantId: orgId,
+                headers: {
+                    authorization: `${userId}`,
+                },
+            });
             // this stops users if they haven't paid.
             if (workspace && !['/settings/billing/stripe', '/app/projects', '/'].includes(req.nextUrl.pathname)) {
                 if (workspace.plan === 'free') {

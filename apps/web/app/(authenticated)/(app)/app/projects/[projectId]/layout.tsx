@@ -7,6 +7,7 @@ import { PropsWithChildren } from 'react';
 import { Loading } from '@/components/dashboard/loading';
 import { DesktopTopBar } from '../../desktop-topbar';
 import { getProject } from '@/lib/api';
+import { getTenantId } from '@/lib/auth';
 
 type Props = PropsWithChildren<{
     params: {
@@ -15,7 +16,13 @@ type Props = PropsWithChildren<{
 }>;
 
 export default async function ProjectPageLayout(props: Props) {
-    const project = await getProject({ projectId: props.params.projectId });
+    const tenantId = getTenantId();
+    const project = await getProject({
+        projectId: props.params.projectId,
+        headers: {
+            authorization: `${tenantId}`,
+        },
+    });
 
     if (project === null) {
         return notFound();
