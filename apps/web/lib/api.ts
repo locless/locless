@@ -128,6 +128,44 @@ export const getProject = async ({ projectId, headers }: { projectId: string; he
     return project;
 };
 
+export const removeProject = async ({ projectId, headers }: { projectId: string; headers?: HeadersInit }) => {
+    const result = await fetch(`http://127.0.0.1:8787/projects/${projectId}`, {
+        method: 'DELETE',
+        headers,
+    });
+
+    if (!result.ok) {
+        return null;
+    }
+
+    return projectId;
+};
+
+export const renameProject = async ({
+    name,
+    projectId,
+    headers,
+}: {
+    name: string;
+    projectId: string;
+    headers?: HeadersInit;
+}) => {
+    const result = await fetch(`http://127.0.0.1:8787/projects`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({
+            name,
+            projectId,
+        }),
+    });
+
+    if (!result.ok) {
+        return null;
+    }
+
+    return projectId;
+};
+
 export const getComponents = async ({
     projectId,
     offset,
@@ -170,4 +208,53 @@ export const getComponent = async ({ componentId, headers }: { componentId: stri
     }
 
     return component;
+};
+
+export const getKeys = async ({ projectId, headers }: { projectId: string; headers?: HeadersInit }) => {
+    const result = await fetch(`http://127.0.0.1:8787/keys/${projectId}`, {
+        headers,
+    });
+
+    if (!result.ok) {
+        return null;
+    }
+
+    const keys = await result.json();
+
+    if (!keys) {
+        return null;
+    }
+
+    return keys;
+};
+
+export const generateKeys = async ({
+    projectId,
+    tenantId,
+    headers,
+}: {
+    projectId: string;
+    tenantId: string;
+    headers?: HeadersInit;
+}) => {
+    const result = await fetch(`http://127.0.0.1:8787/keys/generate`, {
+        method: 'POST',
+        body: JSON.stringify({
+            projectId,
+            tenantId,
+        }),
+        headers,
+    });
+
+    if (!result.ok) {
+        return null;
+    }
+
+    const keys = await result.json();
+
+    if (!keys) {
+        return null;
+    }
+
+    return keys;
 };

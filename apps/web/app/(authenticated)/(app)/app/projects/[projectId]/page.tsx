@@ -25,7 +25,7 @@ export default function ProjectPage(props: Props) {
     const [isLoading, setLoading] = useState(true);
     const [offset, setOffset] = useState(0);
 
-    const { userId } = useAuth();
+    const { userId, isLoaded } = useAuth();
 
     useEffect(() => {
         const fetchProject = async () => {
@@ -44,10 +44,12 @@ export default function ProjectPage(props: Props) {
             setLoading(false);
         };
 
-        fetchProject();
-    }, [props.params.projectId]);
+        if (isLoaded) {
+            fetchProject();
+        }
+    }, [props.params.projectId, isLoaded]);
 
-    if (isLoading) {
+    if (isLoading || !isLoaded) {
         return (
             <div className='flex h-screen items-center justify-center '>
                 <Loading />

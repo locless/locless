@@ -24,7 +24,7 @@ export function ProjectList({ workspaceId }: Props) {
     const [isLoading, setLoading] = useState(true);
     const [offset, setOffset] = useState(0);
 
-    const { userId } = useAuth();
+    const { userId, isLoaded } = useAuth();
 
     useEffect(() => {
         const fetchProjects = async () => {
@@ -43,10 +43,12 @@ export function ProjectList({ workspaceId }: Props) {
             setLoading(false);
         };
 
-        fetchProjects();
-    }, [workspaceId]);
+        if (isLoaded) {
+            fetchProjects();
+        }
+    }, [workspaceId, isLoaded]);
 
-    if (isLoading) {
+    if (isLoading || !isLoaded) {
         return (
             <div className='flex h-screen items-center justify-center '>
                 <Loading />

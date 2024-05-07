@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { cors } from 'hono/cors';
 import { createClerkClient } from '@clerk/backend';
+import { eq } from 'drizzle-orm';
 
 export type Env = {
     DB: D1Database;
@@ -163,7 +164,7 @@ app.get('/projects/:projectId', async c => {
     if (!res.user) {
         return c.text('Invalid Auth Token', 400);
     }
-    
+
     const { projectId } = await c.req.param();
     const db = drizzle(c.env.DB, { schema });
     const result = await db.query.projects.findFirst({
@@ -184,7 +185,7 @@ app.get('/components', async c => {
     if (!res.user) {
         return c.text('Invalid Auth Token', 400);
     }
-    
+
     const { offset, projectId } = await c.req.query();
     const db = drizzle(c.env.DB, { schema });
     const result = await db.query.components.findMany({
@@ -206,7 +207,7 @@ app.get('/components/:componentId', async c => {
     if (!res.user) {
         return c.text('Invalid Auth Token', 400);
     }
-    
+
     const { componentId } = await c.req.param();
     const db = drizzle(c.env.DB, { schema });
     const result = await db.query.components.findFirst({
@@ -221,7 +222,7 @@ app.get('/components/:componentId', async c => {
     return c.json(result);
 });
 
-app.get('/file/:fileName', async c => {
+app.get('/file/:componentId', async c => {
     const apiKeyPublic = c.req.header('x-api-key');
     const metaDataKey = await verifyKey(c.env, apiKeyPublic);
 
@@ -229,8 +230,17 @@ app.get('/file/:fileName', async c => {
         return c.text('Invalid Api Key', 400);
     }
 
-    const { fileName } = await c.req.param();
-    const object = await c.env.MY_BUCKET.get(fileName);
+    const { componentId } = await c.req.param();
+    const db = drizzle(c.env.DB, { schema });
+    const result = await db.query.components.findFirst({
+        where: (components, { eq }) => eq(components.id, componentId),
+    });
+
+    if (!result) {
+        return c.text('Component not found', 404);
+    }
+
+    const object = await c.env.MY_BUCKET.get(result.fileUrl);
 
     if (!object) {
         return c.text("File doesn't exists", 404);
@@ -249,7 +259,7 @@ app.post('/workspace', async c => {
     if (!res.user) {
         return c.text('Invalid Auth Token', 400);
     }
-    
+
     const { name, tenantId, plan, isPersonal } = await c.req.json();
     const db = drizzle(c.env.DB, { schema });
     const result = await db
@@ -270,7 +280,7 @@ app.post('/projects', async c => {
     if (!res.user) {
         return c.text('Invalid Auth Token', 400);
     }
-    
+
     const { name, workspaceId } = await c.req.json();
     const db = drizzle(c.env.DB, { schema });
     const result = await db
@@ -294,6 +304,7 @@ app.post('/generate', async c => {
     const formData = await c.req.formData();
     const file: any = formData.get('file');
     const name = formData.get('name');
+    const componentId = formData.get('componentId');
     const projectId = metaDataKey['projectId'];
 
     if (file && file instanceof File && name && projectId) {
@@ -302,80 +313,105 @@ app.post('/generate', async c => {
         const ext = file.name.split('.').pop();
 
         const path = `${projectId}/${name}.${ext}`;
-        await c.env.MY_BUCKET.put(path, file);
 
-        const result = await db
-            .insert(schema.components)
-            .values({
-                name,
-                projectId,
-                size: file.size,
-                fileUrl: name,
-            })
-            .returning();
+        let result;
 
-        console.log(file);
-        console.log(name);
+        if (componentId) {
+            result = await db
+                .update(schema.components)
+                .set({
+                    name,
+                    size: file.size,
+                    fileUrl: path,
+                })
+                .where(eq(schema.components.id, componentId))
+                .returning();
+        } else {
+            result = await db
+                .insert(schema.components)
+                .values({
+                    name,
+                    projectId,
+                    size: file.size,
+                    fileUrl: path,
+                })
+                .returning();
+        }
+
+        if (result[0]) {
+            if (componentId) {
+                await c.env.MY_BUCKET.delete(componentId);
+            }
+
+            await c.env.MY_BUCKET.put(result[0].id, file);
+        }
+
         return c.json(result);
     } else {
         return c.text('Invalid file', 400);
     }
-
-    /*const { name, projectId, size, fileUrl } = await c.req.json(); // TODO: We need to parse arrived file for all metadata
-    const db = drizzle(c.env.DB, { schema });
-    // TODO: perform insert only after R2 upload
-    const result = await db
-        .insert(schema.components)
-        .values({
-            name,
-            projectId,
-            size,
-            fileUrl,
-        })
-        .returning();
-    return c.json(result);*/
 });
 
-app.delete('/workspace', async c => {
+app.delete('/workspace/:workspaceId', async c => {
     const userId = c.req.header('authorization');
     const res = await verifyAuthToken(c.env, userId);
     if (!res.user) {
         return c.text('Invalid Auth Token', 400);
     }
-    
-    const { id } = await c.req.json();
+
+    const { workspaceId } = await c.req.param();
     const db = drizzle(c.env.DB, { schema });
     await db.delete(schema.workspaces).values({
-        id,
+        id: workspaceId,
     });
 });
 
-app.delete('/projects', async c => {
+app.delete('/projects/:projectId', async c => {
     const userId = c.req.header('authorization');
     const res = await verifyAuthToken(c.env, userId);
     if (!res.user) {
         return c.text('Invalid Auth Token', 400);
     }
-    
-    const { id } = await c.req.json();
+
+    const { projectId } = await c.req.param();
     const db = drizzle(c.env.DB, { schema });
     await db.delete(schema.projects).values({
-        id,
+        id: projectId,
     });
 });
 
-app.delete('/components', async c => {
+app.delete('/components/:componentId', async c => {
     const userId = c.req.header('authorization');
     const res = await verifyAuthToken(c.env, userId);
     if (!res.user) {
         return c.text('Invalid Auth Token', 400);
     }
-    
-    const { id } = await c.req.json();
+
+    const { componentId } = await c.req.param();
     const db = drizzle(c.env.DB, { schema });
     await db.delete(schema.components).values({
-        id,
+        id: componentId,
     });
+});
+
+app.put('/projects', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+
+    const { projectId, name } = await c.req.json();
+    const db = drizzle(c.env.DB, { schema });
+    const result = await db
+        .update(schema.projects)
+        .set({
+            name,
+        })
+        .where(eq(schema.projects.id, projectId))
+        .returning();
+
+    return c.json(result);
 });
 
 // API KEYS //
@@ -390,85 +426,74 @@ app.use(
     })
 );
 
-app.get(
-    '/keys',
-    zValidator(
-        'form',
-        z.object({
-            projectId: z.string(),
-        })
-    ),
-    async c => {
-        const userId = c.req.header('authorization');
-        const res = await verifyAuthToken(c.env, userId);
-        if (!res.user) {
-            return c.text('Invalid Auth Token', 400);
-        }
-        
-        const { projectId } = c.req.valid('form');
-
-        const publicKeyPrefix = `loc_pub_${projectId}_`;
-        const privateKeyPrefix = `loc_auth_${projectId}_`;
-
-        const publicKey = await c.env.API_KEYS.list({ prefix: publicKeyPrefix });
-        const privateKey = await c.env.API_KEYS_PRIVATE.list({ prefix: privateKeyPrefix });
-
-        return c.json(
-            {
-                publicKey,
-                privateKey,
-            },
-            201
-        );
+app.get('/keys/:projectId', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
     }
-);
 
-app.post(
-    '/keys/generate',
-    zValidator(
-        'form',
-        z.object({
-            tenantId: z.string(),
-            projectId: z.string(),
+    const { projectId } = c.req.param();
+
+    const publicKeyPrefix = `loc_pub_${projectId}_`;
+    const privateKeyPrefix = `loc_auth_${projectId}_`;
+
+    const publicKey = await c.env.API_KEYS.list({ prefix: publicKeyPrefix });
+    const privateKey = await c.env.API_KEYS_PRIVATE.list({ prefix: privateKeyPrefix });
+
+    if (!publicKey?.keys?.length || !privateKey.keys?.length) {
+        return c.text('Keys not found', 404);
+    }
+
+    return c.json(
+        {
+            publicKey: publicKey.keys[0].name,
+            privateKey: privateKey.keys[0].name,
+        },
+        201
+    );
+});
+
+app.post('/keys/generate', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+
+    const { tenantId, projectId } = await c.req.json();
+
+    if (!tenantId || !projectId) {
+        return c.text('Invalid Params', 404);
+    }
+
+    const publicKey = `loc_pub_${projectId}_${crypto.randomUUID()}`;
+    const privateKey = `loc_auth_${projectId}_${crypto.randomUUID()}`;
+
+    await c.env.API_KEYS.put(
+        publicKey,
+        JSON.stringify({
+            tenantId,
+            projectId,
         })
-    ),
-    async c => {
-        const userId = c.req.header('authorization');
-        const res = await verifyAuthToken(c.env, userId);
-        if (!res.user) {
-            return c.text('Invalid Auth Token', 400);
-        }
-        
-        const { tenantId, projectId } = c.req.valid('form');
+    );
 
-        const publicKey = `loc_pub_${projectId}_${crypto.randomUUID()}`;
-        const privateKey = `loc_auth_${projectId}_${crypto.randomUUID()}`;
+    await c.env.API_KEYS_PRIVATE.put(
+        privateKey,
+        JSON.stringify({
+            tenantId,
+            projectId,
+        })
+    );
 
-        await c.env.API_KEYS.put(
+    return c.json(
+        {
             publicKey,
-            JSON.stringify({
-                tenantId,
-                projectId,
-            })
-        );
-
-        await c.env.API_KEYS_PRIVATE.put(
             privateKey,
-            JSON.stringify({
-                tenantId,
-                projectId,
-            })
-        );
-
-        return c.json(
-            {
-                publicKey,
-                privateKey,
-            },
-            201
-        );
-    }
-);
+        },
+        201
+    );
+});
 
 app.post(
     '/keys/public',
@@ -485,7 +510,7 @@ app.post(
         if (!res.user) {
             return c.text('Invalid Auth Token', 400);
         }
-        
+
         const { tenantId, projectId } = c.req.valid('form');
 
         const publicKey = `loc_pub_${projectId}_${crypto.randomUUID()}`;
@@ -523,7 +548,7 @@ app.put(
         if (!res.user) {
             return c.text('Invalid Auth Token', 400);
         }
-        
+
         const { key, tenantId, projectId } = c.req.valid('form');
 
         await c.env.API_KEYS.delete(key);
@@ -562,7 +587,7 @@ app.post(
         if (!res.user) {
             return c.text('Invalid Auth Token', 400);
         }
-        
+
         const { tenantId, projectId } = c.req.valid('form');
 
         const privateKey = `loc_auth_${projectId}_${crypto.randomUUID()}`;
@@ -600,7 +625,7 @@ app.put(
         if (!res.user) {
             return c.text('Invalid Auth Token', 400);
         }
-        
+
         const { key, tenantId, projectId } = c.req.valid('form');
 
         await c.env.API_KEYS_PRIVATE.delete(key);

@@ -60,22 +60,19 @@ export async function runDeploy() {
 
                 const fileNameWithoutExt = fileName.slice(0, fileName.length - 4);
 
-                if (fileComponentsObject[fileNameWithoutExt]) {
-                    console.log(chalk.yellow(`Skip ${fileName} because it's already uploaded!`));
-                } else {
-                    const filePath = path.join(file.path, fileName);
+                const filePath = path.join(file.path, fileName);
 
-                    const buildPath = path.join(__dirname, 'locless', 'build', `${fileNameWithoutExt}.js`);
+                const buildPath = path.join(__dirname, 'locless', 'build', `${fileNameWithoutExt}.js`);
 
-                    try {
-                        child_process.execSync(`npx babel ${filePath} -o ${buildPath}`).toString();
-                        console.log(chalk.green(`Compiled ${fileName} to ${fileNameWithoutExt}.js`));
+                try {
+                    child_process.execSync(`npx babel ${filePath} -o ${buildPath}`).toString();
+                    console.log(chalk.green(`Compiled ${fileName} to ${fileNameWithoutExt}.js`));
 
-                        const content = await fs.readFileSync(buildPath);
+                    const content = await fs.readFileSync(buildPath);
 
-                        console.log(chalk.green(`Got file content for upload!`));
+                    console.log(chalk.green(`Got file content for upload!`));
 
-                        /*const uploadUrl = await fetch(`${SERVER_URL}/createUrl`); // TODO: Fix fetch inside CLI
+                    /*const uploadUrl = await fetch(`${SERVER_URL}/createUrl`); // TODO: Fix fetch inside CLI
 
                         const { url } = await uploadUrl.json();
 
@@ -108,27 +105,32 @@ export async function runDeploy() {
                             throw new Error('Failed to save file');
                         }*/
 
-                        const form = new FormData();
-                        const blob = new Blob([content]);
-                        form.set('name', fileNameWithoutExt);
-                        form.set('projectId', PROJECT_ID);
+                    const componentId = fileComponentsObject[fileNameWithoutExt];
 
-                        form.set('file', blob, fileName);
+                    const form = new FormData();
+                    const blob = new Blob([content]);
+                    form.set('name', fileNameWithoutExt);
 
-                        const res = await fetch(`${DEV_WEBSITE_URL}/components`, {
-                            method: 'POST',
-                            body: form,
-                        });
-
-                        const uploadRes = await res.json();
-                        const component = uploadRes[0];
-
-                        console.log(chalk.green(`File saved to storageId...`));
-                        fileComponentsObject[fileNameWithoutExt] = component.id;
-                    } catch (e) {
-                        spinner.fail(`${e}`);
-                        return;
+                    if (componentId) {
+                        form.set('componentId', componentId);
                     }
+
+                    form.set('file', blob, fileName);
+
+                    // TODO: Add auth key header from conf
+                    const res = await fetch(`${DEV_WEBSITE_URL}/generate`, {
+                        method: 'POST',
+                        body: form,
+                    });
+
+                    const uploadRes = await res.json();
+                    const component = uploadRes[0];
+
+                    console.log(chalk.green(`File saved to storageId...`));
+                    fileComponentsObject[fileNameWithoutExt] = component.id;
+                } catch (e) {
+                    spinner.fail(`${e}`);
+                    return;
                 }
             }
         }

@@ -5,46 +5,62 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { FormField } from '@repo/ui/components/ui/form';
 import { Input } from '@repo/ui/components/ui/input';
 import { useToast } from '@repo/ui/components/ui/use-toast';
-import { api } from '@repo/backend/convex/_generated/api';
-import { Doc } from '@repo/backend/convex/_generated/dataModel';
-import { useMutation } from 'convex/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { renameProject } from '@/lib/api';
+import { useAuth } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
 type Props = {
-    project: Doc<'projects'>;
+    projectName: string;
+    projectId: string;
 };
 
 interface FormData {
     name: string;
 }
 
-export const UpdateProjectName: React.FC<Props> = ({ project }) => {
+export const UpdateProjectName: React.FC<Props> = ({ projectId, projectName }) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const form = useForm<FormData>({
         defaultValues: {
-            name: project.name,
+            name: projectName,
         },
     });
 
     const { toast } = useToast();
-    const renameProject = useMutation(api.project.rename);
+
+    const { userId, isLoaded } = useAuth();
+
+    const router = useRouter();
 
     const onSubmit = async ({ name }: FormData) => {
+        if (!isLoaded) {
+            return;
+        }
+
         setIsLoading(true);
         try {
-            if (name === project.name || !name) {
+            if (name === projectName || !name) {
                 toast({
                     variant: 'destructive',
                     description: 'Please provide a valid name before saving.',
                 });
             }
 
-            await renameProject({ name, projectId: project._id });
+            await renameProject({
+                name,
+                projectId,
+                headers: {
+                    authorization: `${userId}`,
+                },
+            });
             toast({
                 description: 'Your project name has been renamed!',
             });
+
+            router.refresh();
         } catch (err: any) {
             console.error(err);
             toast({

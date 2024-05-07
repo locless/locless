@@ -21,12 +21,12 @@ import { useForm } from 'react-hook-form';
 
 import { revalidate } from './actions';
 import { useToast } from '@repo/ui/components/ui/use-toast';
-import { Doc } from '@repo/backend/convex/_generated/dataModel';
-import { useMutation } from 'convex/react';
-import { api } from '@repo/backend/convex/_generated/api';
+import { removeProject } from '@/lib/api';
+import { useAuth } from '@clerk/nextjs';
 
 type Props = {
-    project: Doc<'projects'>;
+    id: string;
+    name: string;
 };
 
 interface FormData {
@@ -36,7 +36,7 @@ interface FormData {
 
 const intent = 'delete my project';
 
-export const DeleteProject: React.FC<Props> = ({ project }) => {
+export const DeleteProject: React.FC<Props> = ({ id, name }) => {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -45,14 +45,19 @@ export const DeleteProject: React.FC<Props> = ({ project }) => {
     const form = useForm<FormData>();
     const router = useRouter();
 
-    const removeProject = useMutation(api.project.remove);
+    const { userId } = useAuth();
 
-    const isValid = form.watch('intent') === intent && form.watch('name') === project._id;
+    const isValid = form.watch('intent') === intent && form.watch('name') === name;
 
     const onSubmit = async (_values: FormData) => {
         setIsLoading(true);
         try {
-            await removeProject({ projectId: project._id });
+            await removeProject({
+                projectId: id,
+                headers: {
+                    authorization: `${userId}`,
+                },
+            });
             toast({
                 title: 'Project Deleted',
                 description: 'Your project and all its components has been deleted.',
@@ -82,7 +87,6 @@ export const DeleteProject: React.FC<Props> = ({ project }) => {
                         undone.
                     </CardDescription>
                 </CardHeader>
-
                 <CardFooter className='z-10 justify-end'>
                     <Button type='button' onClick={() => setOpen(!open)}>
                         Delete Project
@@ -104,7 +108,6 @@ export const DeleteProject: React.FC<Props> = ({ project }) => {
                                 <AlertTitle>Warning</AlertTitle>
                                 <AlertDescription>This action is not reversible. Please be certain.</AlertDescription>
                             </Alert>
-
                             <FormField
                                 control={form.control}
                                 name='name'
@@ -113,13 +116,11 @@ export const DeleteProject: React.FC<Props> = ({ project }) => {
                                         <FormLabel className='font-normal text-content-subtle'>
                                             {' '}
                                             Enter the Project name{' '}
-                                            <span className='font-medium text-content'>{project.name}</span> to
-                                            continue:
+                                            <span className='font-medium text-content'>{name}</span> to continue:
                                         </FormLabel>
                                         <FormControl>
                                             <Input {...field} autoComplete='off' />
                                         </FormControl>
-
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -136,12 +137,10 @@ export const DeleteProject: React.FC<Props> = ({ project }) => {
                                         <FormControl>
                                             <Input {...field} autoComplete='off' />
                                         </FormControl>
-
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-
                             <DialogFooter className='justify-end gap-4'>
                                 <Button
                                     type='button'

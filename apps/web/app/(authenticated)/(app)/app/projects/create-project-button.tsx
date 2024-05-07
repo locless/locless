@@ -23,11 +23,15 @@ interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const CreateProjectButton = ({ workspaceId, ...rest }: Props) => {
     const form = useForm<FormData>();
     const { toast } = useToast();
-    const { userId } = useAuth();
+    const { userId, isLoaded } = useAuth();
 
     const [loading, setLoading] = useState(false);
 
     const onSubmit = async ({ name }: FormData) => {
+        if (!isLoaded) {
+            return;
+        }
+
         setLoading(true);
         try {
             const project = await createProject({
