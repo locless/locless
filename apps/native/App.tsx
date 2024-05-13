@@ -1,13 +1,13 @@
 import { StyleSheet } from 'react-native';
 import * as React from 'react';
-import { createWormhole } from './src/wormhole';
+import { createWormhole } from './src/react-lib';
 
 const { Wormhole } = createWormhole({
     verify: async () => true,
 });
 
 export default function App() {
-    return <Wormhole source={{ componentId: '1265e370-3b02-4266-9388-c6bbfd69b1d9' }} />;
+    return <Wormhole source={{ componentId: '9a896e45-6d24-4ecd-83f9-ef15cb937f64' }} />;
 }
 
 const styles = StyleSheet.create({

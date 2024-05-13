@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text, index } from 'drizzle-orm/sqlite-core';
 
 export const workspaces = sqliteTable('workspaces', {
     id: text('id', { length: 36 })
@@ -32,7 +32,7 @@ export const projects = sqliteTable(
             .notNull(),
     },
     projects => ({
-        workspaceIdx: uniqueIndex('workspaceIdx').on(projects.workspaceId),
+        workspaceIdx: index('workspaceIdx').on(projects.workspaceId),
     })
 );
 
@@ -53,6 +53,6 @@ export const components = sqliteTable(
             .notNull(),
     },
     components => ({
-        projectIdx: uniqueIndex('projectIdx').on(components.projectId),
+        projectIdx: index('projectIdx').on(components.projectId),
     })
 );

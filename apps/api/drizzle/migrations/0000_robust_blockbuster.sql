@@ -28,6 +28,6 @@ CREATE TABLE `workspaces` (
 	`createdAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `projectIdx` ON `components` (`projectId`);--> statement-breakpoint
-CREATE UNIQUE INDEX `workspaceIdx` ON `projects` (`workspaceId`);--> statement-breakpoint
+CREATE INDEX `projectIdx` ON `components` (`projectId`);--> statement-breakpoint
+CREATE INDEX `workspaceIdx` ON `projects` (`workspaceId`);--> statement-breakpoint
 CREATE UNIQUE INDEX `workspaces_tenantId_unique` ON `workspaces` (`tenantId`);

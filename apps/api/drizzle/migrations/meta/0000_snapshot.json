@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "df9f398c-89a0-4cf7-a0fa-9b0656f20404",
+  "id": "da919ca8-b6dc-45d5-8e7e-6d6cd0c2a0f9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "components": {
@@ -57,7 +57,7 @@
           "columns": [
             "projectId"
           ],
-          "isUnique": true
+          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -117,7 +117,7 @@
           "columns": [
             "workspaceId"
           ],
-          "isUnique": true
+          "isUnique": false
         }
       },
       "foreignKeys": {

@@ -1,5 +1,5 @@
 export const findWorkspace = async ({ tenantId, headers }: { tenantId: string; headers?: HeadersInit }) => {
-    const result = await fetch(`http://127.0.0.1:8787/workspace/${tenantId}`, {
+    const result = await fetch(`${process.env.NEXT_PUBLIC_LOCLESS_URL}/workspace/${tenantId}`, {
         headers,
     });
 
@@ -29,7 +29,7 @@ export const createWorkspace = async ({
     plan: string;
     headers?: HeadersInit;
 }) => {
-    const result = await fetch(`http://127.0.0.1:8787/workspace`, {
+    const result = await fetch(`${process.env.NEXT_PUBLIC_LOCLESS_URL}/workspace`, {
         method: 'POST',
         body: JSON.stringify({
             tenantId,
@@ -62,7 +62,7 @@ export const createProject = async ({
     name: string;
     headers?: HeadersInit;
 }) => {
-    const result = await fetch(`http://127.0.0.1:8787/projects`, {
+    const result = await fetch(`${process.env.NEXT_PUBLIC_LOCLESS_URL}/projects`, {
         method: 'POST',
         body: JSON.stringify({
             workspaceId,
@@ -93,9 +93,12 @@ export const getProjects = async ({
     offset: number;
     headers?: HeadersInit;
 }) => {
-    const result = await fetch(`http://127.0.0.1:8787/projects/getAll/${workspaceId}?offset=${offset}`, {
-        headers,
-    });
+    const result = await fetch(
+        `${process.env.NEXT_PUBLIC_LOCLESS_URL}/projects/getAll/${workspaceId}?offset=${offset}`,
+        {
+            headers,
+        }
+    );
 
     if (!result.ok) {
         return null;
@@ -111,7 +114,7 @@ export const getProjects = async ({
 };
 
 export const getProject = async ({ projectId, headers }: { projectId: string; headers?: HeadersInit }) => {
-    const result = await fetch(`http://127.0.0.1:8787/projects/${projectId}`, {
+    const result = await fetch(`${process.env.NEXT_PUBLIC_LOCLESS_URL}/projects/${projectId}`, {
         headers,
     });
 
@@ -129,7 +132,7 @@ export const getProject = async ({ projectId, headers }: { projectId: string; he
 };
 
 export const removeProject = async ({ projectId, headers }: { projectId: string; headers?: HeadersInit }) => {
-    const result = await fetch(`http://127.0.0.1:8787/projects/${projectId}`, {
+    const result = await fetch(`${process.env.NEXT_PUBLIC_LOCLESS_URL}/projects/${projectId}`, {
         method: 'DELETE',
         headers,
     });
@@ -150,7 +153,7 @@ export const renameProject = async ({
     projectId: string;
     headers?: HeadersInit;
 }) => {
-    const result = await fetch(`http://127.0.0.1:8787/projects`, {
+    const result = await fetch(`${process.env.NEXT_PUBLIC_LOCLESS_URL}/projects`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({
@@ -175,9 +178,12 @@ export const getComponents = async ({
     offset: number;
     headers?: HeadersInit;
 }) => {
-    const result = await fetch(`http://127.0.0.1:8787/components?projectId=${projectId}&offset=${offset}`, {
-        headers,
-    });
+    const result = await fetch(
+        `${process.env.NEXT_PUBLIC_LOCLESS_URL}/components?projectId=${projectId}&offset=${offset}`,
+        {
+            headers,
+        }
+    );
 
     if (!result.ok) {
         return null;
@@ -193,7 +199,7 @@ export const getComponents = async ({
 };
 
 export const getComponent = async ({ componentId, headers }: { componentId: string; headers?: HeadersInit }) => {
-    const result = await fetch(`http://127.0.0.1:8787/components/${componentId}`, {
+    const result = await fetch(`${process.env.NEXT_PUBLIC_LOCLESS_URL}/components/${componentId}`, {
         headers,
     });
 
@@ -211,7 +217,7 @@ export const getComponent = async ({ componentId, headers }: { componentId: stri
 };
 
 export const getKeys = async ({ projectId, headers }: { projectId: string; headers?: HeadersInit }) => {
-    const result = await fetch(`http://127.0.0.1:8787/keys/${projectId}`, {
+    const result = await fetch(`${process.env.NEXT_PUBLIC_LOCLESS_URL}/keys/${projectId}`, {
         headers,
     });
 
@@ -237,7 +243,7 @@ export const generateKeys = async ({
     tenantId: string;
     headers?: HeadersInit;
 }) => {
-    const result = await fetch(`http://127.0.0.1:8787/keys/generate`, {
+    const result = await fetch(`${process.env.NEXT_PUBLIC_LOCLESS_URL}/keys/generate`, {
         method: 'POST',
         body: JSON.stringify({
             projectId,

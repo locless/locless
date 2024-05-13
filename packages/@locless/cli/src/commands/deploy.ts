@@ -7,9 +7,9 @@ import chalk from 'chalk';
 import Conf from 'conf';
 
 const DEV_WEBSITE_URL = 'http://127.0.0.1:8787';
-const PROD_WEBSITE_URL = 'https://robust-dalmatian-29.convex.site';
+const PROD_WEBSITE_URL = 'https://api.xan50rus.workers.dev';
 
-const SERVER_URL = DEV_WEBSITE_URL;
+const SERVER_URL = PROD_WEBSITE_URL;
 
 const spinner = ora({
     text: 'Loading...',

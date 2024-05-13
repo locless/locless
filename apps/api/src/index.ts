@@ -32,7 +32,7 @@ const verifyKey = async (env: Env, key?: string): Promise<Record<string, string>
     }
 
     // Limit the size of the key and reject non-alphanumeric characters.
-    if (!isValidKey(key) || key.startsWith('loc_pub_')) {
+    if (!isValidKey(key) || !key.startsWith('loc_pub_')) {
         return null;
     }
 
@@ -106,7 +106,6 @@ app.get('/workspace/:tenantId', async c => {
         return c.text('Workspace not found', 404);
     }
 
-    c.res.headers.set('Cache-Control', 'max-age=3600');
     return c.json(result);
 });
 
@@ -151,7 +150,6 @@ app.get('/projects/getAll/:workspaceId', async c => {
                 name: true,
             },
         });
-        c.res.headers.set('Cache-Control', 'max-age=3600');
         return c.json(result);
     }
 
@@ -175,7 +173,6 @@ app.get('/projects/:projectId', async c => {
         return c.text('Project not found', 404);
     }
 
-    c.res.headers.set('Cache-Control', 'max-age=3600');
     return c.json(result);
 });
 
@@ -197,7 +194,6 @@ app.get('/components', async c => {
             name: true,
         },
     });
-    c.res.headers.set('Cache-Control', 'max-age=3600');
     return c.json(result);
 });
 
@@ -218,7 +214,6 @@ app.get('/components/:componentId', async c => {
         return c.text('Component not found', 404);
     }
 
-    c.res.headers.set('Cache-Control', 'max-age=3600');
     return c.json(result);
 });
 
@@ -240,7 +235,7 @@ app.get('/file/:componentId', async c => {
         return c.text('Component not found', 404);
     }
 
-    const object = await c.env.MY_BUCKET.get(result.fileUrl);
+    const object = await c.env.MY_BUCKET.get(componentId);
 
     if (!object) {
         return c.text("File doesn't exists", 404);
@@ -248,7 +243,6 @@ app.get('/file/:componentId', async c => {
 
     object.writeHttpMetadata(c.res.headers);
     c.res.headers.set('etag', object.httpEtag);
-    c.res.headers.set('Cache-Control', 'max-age=3600');
 
     return c.body(object.body, 201);
 });
@@ -366,6 +360,8 @@ app.delete('/workspace/:workspaceId', async c => {
     await db.delete(schema.workspaces).values({
         id: workspaceId,
     });
+
+    return c.text('Workspace was deleted!', 200);
 });
 
 app.delete('/projects/:projectId', async c => {
@@ -380,6 +376,8 @@ app.delete('/projects/:projectId', async c => {
     await db.delete(schema.projects).values({
         id: projectId,
     });
+
+    return c.text('Project was deleted!', 200);
 });
 
 app.delete('/components/:componentId', async c => {
@@ -394,6 +392,8 @@ app.delete('/components/:componentId', async c => {
     await db.delete(schema.components).values({
         id: componentId,
     });
+
+    return c.text('Component was deleted!', 200);
 });
 
 app.put('/projects', async c => {
