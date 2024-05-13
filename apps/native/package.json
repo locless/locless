@@ -9,24 +9,18 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@clerk/clerk-expo": "^0.20.10",
-    "convex": "^1.10.0",
     "expo": "~50.0.13",
     "expo-application": "~5.8.3",
     "expo-auth-session": "~5.4.0",
-    "expo-camera": "~14.1.1",
     "expo-constants": "~15.4.5",
     "expo-crypto": "~12.8.1",
     "expo-secure-store": "~12.8.1",
     "expo-status-bar": "~1.11.1",
     "expo-web-browser": "~12.8.2",
-    "immer": "^10.0.4",
     "react": "18.2.0",
     "react-dom": "^18.2.0",
     "react-native": "0.73.5",
-    "react-native-get-random-values": "^1.11.0",
-    "react-native-wormhole": "^0.2.0",
-    "zustand": "^4.5.2"
+    "react-native-wormhole": "^0.2.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.24.1",

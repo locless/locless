@@ -7,16 +7,16 @@ export type PromiseCallback<T> = {
 
 export type WormholeSource =
     | {
-          readonly uri: string;
+          readonly componentId: string;
       }
     | string;
 
 export type WormholeComponentCache = {
-    readonly [uri: string]: React.Component | null;
+    readonly [componentId: string]: React.Component | null;
 };
 
 export type WormholeTasks = {
-    readonly [uri: string]: PromiseCallback<React.Component>[];
+    readonly [componentId: string]: PromiseCallback<React.Component>[];
 };
 
 export type WormholeOptions = {

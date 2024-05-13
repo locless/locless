@@ -25,15 +25,15 @@ const defaultGlobalImports = {
 
 const buildCompletionHandler =
     (cache: WormholeComponentCache, tasks: WormholeTasks) =>
-    (uri: string, error?: Error): void => {
-        const { [uri]: maybeComponent } = cache;
-        const { [uri]: callbacks } = tasks;
-        Object.assign(tasks, { [uri]: null });
+    (componentId: string, error?: Error): void => {
+        const { [componentId]: maybeComponent } = cache;
+        const { [componentId]: callbacks } = tasks;
+        Object.assign(tasks, { [componentId]: null });
         callbacks.forEach(({ resolve, reject }) => {
             if (!!maybeComponent) {
                 return resolve(maybeComponent);
             }
-            return reject(error || new Error(`[Locless]: Failed to allocate for uri "${uri}".`));
+            return reject(error || new Error(`[Locless]: Failed to allocate for componentId "${componentId}".`));
         });
     };
 
@@ -66,32 +66,35 @@ const buildRequestOpenUri =
         readonly buildRequestForUri: (config: AxiosRequestConfig) => AxiosPromise<string>;
         readonly verify: (response: AxiosResponse<string>) => Promise<boolean>;
         readonly shouldCreateComponent: (src: string) => Promise<React.Component>;
-        readonly shouldComplete: (uri: string, error?: Error) => void;
+        readonly shouldComplete: (componentId: string, error?: Error) => void;
     }) =>
-    async (uri: string) => {
+    async (componentId: string) => {
         try {
             const result = await buildRequestForUri({
-                url: uri,
+                url: `${process.env.EXPO_PUBLIC_DEV_WEBSITE}/file/${componentId}`,
                 method: 'get',
+                headers: {
+                    'x-api-key': process.env.EXPO_PUBLIC_LOCLESS_PUBLIC_KEY,
+                },
             });
             const { data } = result;
             if (typeof data !== 'string') {
                 throw new Error(`[Locless]: Expected string data, encountered ${typeof data}.`);
             }
             if ((await verify(result)) !== true) {
-                throw new Error(`[Locless]: Failed to verify "${uri}".`);
+                throw new Error(`[Locless]: Failed to verify "${componentId}".`);
             }
             const Component = await shouldCreateComponent(data);
-            Object.assign(cache, { [uri]: Component });
-            return shouldComplete(uri);
+            Object.assign(cache, { [componentId]: Component });
+            return shouldComplete(componentId);
         } catch (e) {
-            Object.assign(cache, { [uri]: null });
+            Object.assign(cache, { [componentId]: null });
             if (typeof e === 'string') {
-                return shouldComplete(uri, new Error(e));
+                return shouldComplete(componentId, new Error(e));
             } else if (typeof e.message === 'string') {
-                return shouldComplete(uri, new Error(`${e.message}`));
+                return shouldComplete(componentId, new Error(`${e.message}`));
             }
-            return shouldComplete(uri, e);
+            return shouldComplete(componentId, e);
         }
     };
 
@@ -103,26 +106,26 @@ const buildOpenUri =
     }: {
         readonly cache: WormholeComponentCache;
         readonly tasks: WormholeTasks;
-        readonly shouldRequestOpenUri: (uri: string) => void;
+        readonly shouldRequestOpenUri: (componentId: string) => void;
     }) =>
-    (uri: string, callback: PromiseCallback<React.Component>): void => {
-        const { [uri]: Component } = cache;
+    (componentId: string, callback: PromiseCallback<React.Component>): void => {
+        const { [componentId]: Component } = cache;
         const { resolve, reject } = callback;
         if (Component === null) {
-            return reject(new Error(`[Locless]: Component at uri "${uri}" could not be instantiated.`));
+            return reject(new Error(`[Locless]: Component with ID "${componentId}" could not be instantiated.`));
         } else if (typeof Component === 'function') {
             return resolve(Component);
         }
 
-        const { [uri]: queue } = tasks;
+        const { [componentId]: queue } = tasks;
         if (Array.isArray(queue)) {
             queue.push(callback);
             return;
         }
 
-        Object.assign(tasks, { [uri]: [callback] });
+        Object.assign(tasks, { [componentId]: [callback] });
 
-        return shouldRequestOpenUri(uri);
+        return shouldRequestOpenUri(componentId);
     };
 
 const buildOpenString =
@@ -137,7 +140,7 @@ const buildOpenWormhole =
         shouldOpenUri,
     }: {
         readonly shouldOpenString: (src: string) => Promise<React.Component>;
-        readonly shouldOpenUri: (uri: string, callback: PromiseCallback<React.Component>) => void;
+        readonly shouldOpenUri: (componentId: string, callback: PromiseCallback<React.Component>) => void;
     }) =>
     async (source: WormholeSource, options: WormholeOptions): Promise<React.Component> => {
         const { dangerouslySetInnerJSX } = options;
@@ -149,9 +152,11 @@ const buildOpenWormhole =
                 `[Locless]: Attempted to instantiate a Locless using a string, but dangerouslySetInnerJSX was not true.`
             );
         } else if (source && typeof source === 'object') {
-            const { uri } = source;
-            if (typeof uri === 'string') {
-                return new Promise<React.Component>((resolve, reject) => shouldOpenUri(uri, { resolve, reject }));
+            const { componentId } = source;
+            if (typeof componentId === 'string') {
+                return new Promise<React.Component>((resolve, reject) =>
+                    shouldOpenUri(componentId, { resolve, reject })
+                );
             }
         }
         throw new Error(`[Locless]: Expected valid source, encountered ${typeof source}.`);
@@ -206,8 +211,8 @@ export default function createWormhole({
 
     const Wormhole = (props: WormholeProps) => <BaseWormhole {...props} shouldOpenWormhole={shouldOpenWormhole} />;
 
-    const preload = async (uri: string): Promise<void> => {
-        await shouldOpenWormhole({ uri }, { dangerouslySetInnerJSX: false });
+    const preload = async (componentId: string): Promise<void> => {
+        await shouldOpenWormhole({ componentId }, { dangerouslySetInnerJSX: false });
     };
 
     return Object.freeze({
