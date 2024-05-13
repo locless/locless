@@ -9,17 +9,16 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "expo": "~50.0.13",
-    "expo-application": "~5.8.3",
-    "expo-auth-session": "~5.4.0",
-    "expo-constants": "~15.4.5",
-    "expo-crypto": "~12.8.1",
-    "expo-secure-store": "~12.8.1",
-    "expo-status-bar": "~1.11.1",
-    "expo-web-browser": "~12.8.2",
+    "expo": "~51.0.4",
+    "expo-application": "~5.9.1",
+    "expo-auth-session": "~5.5.2",
+    "expo-constants": "~16.0.1",
+    "expo-crypto": "~13.0.2",
+    "expo-status-bar": "~1.12.1",
+    "expo-web-browser": "~13.0.3",
     "react": "18.2.0",
     "react-dom": "^18.2.0",
-    "react-native": "0.73.5",
+    "react-native": "0.74.1",
     "react-native-wormhole": "^0.2.0"
   },
   "devDependencies": {
