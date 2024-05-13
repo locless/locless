@@ -18,7 +18,7 @@ export type Env = {
 
 const KEY_MIN_SIZE = 10;
 const KEY_MAX_SIZE = 500;
-const KEY_REGEX = /^[a-zA-Z0-9]+$/;
+const KEY_REGEX = /^[a-zA-Z0-9\-\_]+$/;
 
 const isAlphaNumeric = (x: string): boolean => KEY_REGEX.test(x);
 export const isValidKey = (x: string): boolean =>
@@ -32,7 +32,7 @@ const verifyKey = async (env: Env, key?: string): Promise<Record<string, string>
     }
 
     // Limit the size of the key and reject non-alphanumeric characters.
-    if (!isValidKey(key)) {
+    if (!isValidKey(key) || key.startsWith('loc_pub_')) {
         return null;
     }
 
@@ -51,7 +51,7 @@ const verifyAuthKey = async (env: Env, key?: string): Promise<Record<string, str
     }
 
     // Limit the size of the key and reject non-alphanumeric characters.
-    if (!isValidKey(key)) {
+    if (!isValidKey(key) || !key.startsWith('loc_auth_')) {
         return null;
     }
 
@@ -344,6 +344,8 @@ app.post('/generate', async c => {
             }
 
             await c.env.MY_BUCKET.put(result[0].id, file);
+        } else {
+            return c.text("Couldn't create a component", 500);
         }
 
         return c.json(result);

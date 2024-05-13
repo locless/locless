@@ -4,8 +4,7 @@ import path from 'path';
 import * as fs from 'fs';
 import child_process from 'child_process';
 import chalk from 'chalk';
-
-const PROJECT_ID = '2e018eec-7429-4cd2-976a-4d7f3d976a8b';
+import Conf from 'conf';
 
 const DEV_WEBSITE_URL = 'http://127.0.0.1:8787';
 const PROD_WEBSITE_URL = 'https://robust-dalmatian-29.convex.site';
@@ -25,6 +24,17 @@ export const deploy = new Command()
     });
 
 export async function runDeploy() {
+    spinner.start('Searching for auth key locally...');
+    const config: Conf<Record<string, string | undefined>> = new Conf({ projectName: 'loclessCLI' });
+    const authKey = config.get('auth-key');
+
+    if (!authKey?.startsWith('loc_auth_')) {
+        spinner.fail('Invalid Auth Key! Try to run `npx locless set-key <authKey>` before deploy');
+        return;
+    }
+
+    spinner.succeed(`Found Auth Key!`);
+
     spinner.start('Searching for locless folder...');
 
     try {
@@ -117,14 +127,26 @@ export async function runDeploy() {
 
                     form.set('file', blob, fileName);
 
-                    // TODO: Add auth key header from conf
-                    const res = await fetch(`${DEV_WEBSITE_URL}/generate`, {
+                    const res = await fetch(`${SERVER_URL}/generate`, {
                         method: 'POST',
                         body: form,
+                        headers: {
+                            'x-api-key': authKey,
+                        },
                     });
+
+                    if (!res.ok) {
+                        spinner.fail(`Failed to get a component from the cloud!`);
+                        return;
+                    }
 
                     const uploadRes = await res.json();
                     const component = uploadRes[0];
+
+                    if (!component) {
+                        spinner.fail(`Failed to get a component from the cloud!`);
+                        return;
+                    }
 
                     console.log(chalk.green(`File saved to storageId...`));
                     fileComponentsObject[fileNameWithoutExt] = component.id;
@@ -138,7 +160,7 @@ export async function runDeploy() {
 
         spinner.start(`Changing locless.json...`);
         fs.writeFileSync(loclessConfigPath, JSON.stringify(fileComponentsObject));
-        spinner.succeed(`Build is done!`);
+        spinner.succeed(`Changed locless.json!`);
     } catch (e) {
         spinner.fail(`${e}`);
         return;
