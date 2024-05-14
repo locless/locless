@@ -357,9 +357,7 @@ app.delete('/workspace/:workspaceId', async c => {
 
     const { workspaceId } = await c.req.param();
     const db = drizzle(c.env.DB, { schema });
-    await db.delete(schema.workspaces).values({
-        id: workspaceId,
-    });
+    await db.delete(schema.workspaces).where(eq(schema.workspaces.id, workspaceId));
 
     return c.text('Workspace was deleted!', 200);
 });
@@ -373,9 +371,7 @@ app.delete('/projects/:projectId', async c => {
 
     const { projectId } = await c.req.param();
     const db = drizzle(c.env.DB, { schema });
-    await db.delete(schema.projects).values({
-        id: projectId,
-    });
+    await db.delete(schema.projects).where(eq(schema.projects.id, projectId)); // TODO: delete KV keys after project removal
 
     return c.text('Project was deleted!', 200);
 });
@@ -389,9 +385,18 @@ app.delete('/components/:componentId', async c => {
 
     const { componentId } = await c.req.param();
     const db = drizzle(c.env.DB, { schema });
-    await db.delete(schema.components).values({
-        id: componentId,
-    });
+    const deletedIds: { id: string }[] = await db
+        .delete(schema.components)
+        .where(eq(schema.components.id, componentId))
+        .returning({ id: schema.components.id });
+
+    if (deletedIds?.length > 0) {
+        for (const item of deletedIds) {
+            if (item.id) {
+                await c.env.MY_BUCKET.delete(item.id);
+            }
+        }
+    }
 
     return c.text('Component was deleted!', 200);
 });
