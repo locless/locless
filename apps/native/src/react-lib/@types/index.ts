@@ -1,5 +1,3 @@
-import { AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios';
-
 export type PromiseCallback<T> = {
     readonly resolve: (result: T) => void;
     readonly reject: (error: Error) => void;
@@ -24,7 +22,5 @@ export type WormholeOptions = {
 };
 
 export type WormholeContextConfig = {
-    readonly verify: (response: AxiosResponse<string>) => Promise<boolean>;
-    readonly buildRequestForUri?: (config: AxiosRequestConfig) => AxiosPromise<string>;
     readonly global?: any;
 };

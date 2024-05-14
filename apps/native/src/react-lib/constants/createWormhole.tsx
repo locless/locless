@@ -1,5 +1,5 @@
 import * as React from 'react';
-import axios, { AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosPromise, AxiosRequestConfig } from 'axios';
 
 import {
     PromiseCallback,
@@ -57,20 +57,16 @@ const buildCreateComponent =
 const buildRequestOpenUri =
     ({
         cache,
-        buildRequestForUri,
-        verify,
         shouldCreateComponent,
         shouldComplete,
     }: {
         readonly cache: WormholeComponentCache;
-        readonly buildRequestForUri: (config: AxiosRequestConfig) => AxiosPromise<string>;
-        readonly verify: (response: AxiosResponse<string>) => Promise<boolean>;
         readonly shouldCreateComponent: (src: string) => Promise<React.Component>;
         readonly shouldComplete: (componentId: string, error?: Error) => void;
     }) =>
     async (componentId: string) => {
         try {
-            const result = await buildRequestForUri({
+            const result = await axios({
                 url: `${process.env.EXPO_PUBLIC_DEV_WEBSITE}/file/${componentId}`,
                 method: 'get',
                 headers: {
@@ -80,9 +76,6 @@ const buildRequestOpenUri =
             const { data } = result;
             if (typeof data !== 'string') {
                 throw new Error(`[Locless]: Expected string data, encountered ${typeof data}.`);
-            }
-            if ((await verify(result)) !== true) {
-                throw new Error(`[Locless]: Failed to verify "${componentId}".`);
             }
             const Component = await shouldCreateComponent(data);
             Object.assign(cache, { [componentId]: Component });
@@ -162,19 +155,11 @@ const buildOpenWormhole =
         throw new Error(`[Locless]: Expected valid source, encountered ${typeof source}.`);
     };
 
-export default function createWormhole({
-    buildRequestForUri = (config: AxiosRequestConfig) => axios(config),
-    global,
-    verify,
-}: WormholeContextConfig) {
-    if (typeof verify !== 'function') {
-        throw new Error('[Locless]: To create a Locless, you **must** pass a verify() function.');
-    }
-
+export default function createWormhole(options?: WormholeContextConfig) {
     const cache: WormholeComponentCache = {};
     const tasks: WormholeTasks = {};
 
-    const mergedGlobal = { ...defaultGlobalImports, ...(global ?? {}) };
+    const mergedGlobal = { ...defaultGlobalImports, ...(options?.global ?? {}) };
 
     const defaultGlobal = Object.freeze({
         require: (moduleId: string) => {
@@ -190,8 +175,6 @@ export default function createWormhole({
     const shouldCreateComponent = buildCreateComponent(defaultGlobal);
     const shouldRequestOpenUri = buildRequestOpenUri({
         cache,
-        buildRequestForUri,
-        verify,
         shouldCreateComponent,
         shouldComplete,
     });

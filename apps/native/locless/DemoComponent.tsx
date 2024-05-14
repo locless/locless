@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Animated, Alert, TouchableOpacity } from 'react-native';
+import { Animated, Alert, TouchableOpacity, StyleSheet } from 'react-native';
 
 interface Props {
     count: number;
@@ -31,10 +31,17 @@ export default function ServerComponent() {
     }, []);
 
     return (
-        <Animated.View
-            style={{ flex: 1, backgroundColor: state ?? 'red', justifyContent: 'center', alignItems: 'center' }}>
+        <Animated.View style={[styles.container, { backgroundColor: state ?? 'red' }]}>
             <Animated.Text>{message}</Animated.Text>
             <CustomButton onPressCallback={onPressCallback} count={count} />
         </Animated.View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+});
