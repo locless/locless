@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import child_process from 'child_process';
 import chalk from 'chalk';
 import Conf from 'conf';
+import inquirer from 'inquirer';
 
 const DEV_WEBSITE_URL = 'http://127.0.0.1:8787';
 const PROD_WEBSITE_URL = 'https://api.xan50rus.workers.dev';
@@ -24,16 +25,38 @@ export const deploy = new Command()
     });
 
 export async function runDeploy() {
-    spinner.start('Searching for auth key locally...');
-    const config: Conf<Record<string, string | undefined>> = new Conf({ projectName: 'loclessCLI' });
-    const authKey = config.get('auth-key');
+    const config: Conf<Record<string, Record<string, string | undefined> | undefined>> = new Conf({
+        projectName: 'loclessCLI',
+    });
+    const authKeys = config.get('auth-key') ?? {};
+
+    if (!Object.keys(authKeys).length) {
+        console.log(chalk.red("Couldn't find Auth Key! Try to run `npx locless set-key <authKey>` before deploy"));
+        return;
+    }
+
+    const projectInputAnswer = await inquirer.prompt([
+        {
+            type: 'search-list',
+            message: 'Select project name:',
+            name: 'projectName',
+            choices: Object.keys(authKeys),
+            validate: function () {
+                return true;
+            },
+        },
+    ]);
+
+    spinner.start('Validating Auth Key...');
+
+    const authKey = authKeys[projectInputAnswer.projectName];
 
     if (!authKey?.startsWith('loc_auth_')) {
         spinner.fail('Invalid Auth Key! Try to run `npx locless set-key <authKey>` before deploy');
         return;
     }
 
-    spinner.succeed(`Found Auth Key!`);
+    spinner.succeed(`Auth Key is valid!`);
 
     spinner.start('Searching for locless folder...');
 
@@ -60,6 +83,8 @@ export async function runDeploy() {
         let fileComponentsObject = fs.existsSync(loclessConfigPath)
             ? JSON.parse(fs.readFileSync(loclessConfigPath, 'utf8'))
             : {};
+
+        const projectObject = { ...(fileComponentsObject[projectInputAnswer.projectName] ?? {}) };
 
         spinner.start('Compiling...');
         for (const file of fileList) {
@@ -115,7 +140,7 @@ export async function runDeploy() {
                             throw new Error('Failed to save file');
                         }*/
 
-                    const componentId = fileComponentsObject[fileNameWithoutExt];
+                    const componentId = projectObject[fileNameWithoutExt];
 
                     const form = new FormData();
                     const blob = new Blob([content]);
@@ -149,7 +174,8 @@ export async function runDeploy() {
                     }
 
                     console.log(chalk.green(`File saved to storageId...`));
-                    fileComponentsObject[fileNameWithoutExt] = component.id;
+                    projectObject[fileNameWithoutExt] = component.id;
+                    fileComponentsObject[projectInputAnswer.projectName] = projectObject;
                 } catch (e) {
                     spinner.fail(`${e}`);
                     return;
