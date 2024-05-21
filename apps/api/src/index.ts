@@ -371,7 +371,27 @@ app.delete('/projects/:projectId', async c => {
 
     const { projectId } = await c.req.param();
     const db = drizzle(c.env.DB, { schema });
-    await db.delete(schema.projects).where(eq(schema.projects.id, projectId)); // TODO: delete KV keys after project removal
+    const deleteResult = await db.delete(schema.projects).where(eq(schema.projects.id, projectId)).returning(); // TODO: delete KV keys after project removal
+
+    if (deleteResult?.length) {
+        const publicKeyPrefix = `loc_pub_${projectId}_`;
+        const privateKeyPrefix = `loc_auth_${projectId}_`;
+
+        const publicKey = await c.env.API_KEYS.list({ prefix: publicKeyPrefix });
+        const privateKey = await c.env.API_KEYS_PRIVATE.list({ prefix: privateKeyPrefix });
+
+        if (publicKey.keys.length) {
+            for (const pubKey of publicKey.keys) {
+                await c.env.API_KEYS.delete(pubKey.name);
+            }
+        }
+
+        if (privateKey.keys.length) {
+            for (const prKey of privateKey.keys) {
+                await c.env.API_KEYS_PRIVATE.delete(prKey.name);
+            }
+        }
+    }
 
     return c.text('Project was deleted!', 200);
 });
