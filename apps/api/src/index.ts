@@ -486,6 +486,61 @@ app.use(
     })
 );
 
+app.put('/keys/refresh', async c => {
+    const userId = c.req.header('authorization');
+    const res = await verifyAuthToken(c.env, userId);
+    if (!res.user) {
+        return c.text('Invalid Auth Token', 400);
+    }
+
+    const { projectId, prevKey } = await c.req.json();
+
+    const isPublicKey = prevKey.startsWith('loc_pub_');
+    const isPrivateKey = prevKey.startsWith('loc_auth_');
+
+    if (!isPublicKey && !isPrivateKey) {
+        return c.text('Invalid API key', 404);
+    }
+
+    const db = drizzle(c.env.DB, { schema });
+    const result = await db.query.projects.findFirst({
+        where: (projects, { eq }) => eq(projects.id, projectId),
+    });
+
+    if (!result) {
+        return c.text('Project not found', 404);
+    }
+
+    const metaData = JSON.stringify({
+        workspaceId: result.workspaceId,
+        projectId,
+    });
+
+    if (isPublicKey) {
+        const publicKey = `loc_pub_${projectId}_${crypto.randomUUID()}`;
+
+        await c.env.API_KEYS.delete(prevKey);
+        await c.env.API_KEYS.put(publicKey, metaData);
+
+        return c.json({
+            key: publicKey,
+        });
+    }
+
+    if (isPrivateKey) {
+        const privateKey = `loc_auth_${projectId}_${crypto.randomUUID()}`;
+
+        await c.env.API_KEYS_PRIVATE.delete(prevKey);
+        await c.env.API_KEYS_PRIVATE.put(privateKey, metaData);
+
+        return c.json({
+            key: privateKey,
+        });
+    }
+
+    return c.text('Something went wrong', 500);
+});
+
 app.post(
     '/keys/public',
     zValidator(

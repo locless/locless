@@ -6,6 +6,7 @@ import { DeleteProject } from './delete-project';
 import { UpdateProjectName } from './update-project-name';
 import { getTenantId } from '@/lib/auth';
 import { getProject } from '@/lib/api';
+import KeyCard from './key-card';
 
 type Props = {
     params: {
@@ -48,29 +49,19 @@ export default async function SettingsPage(props: Props) {
                     <CardTitle>Project Keys</CardTitle>
                     <CardDescription>This are your project keys.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    {data.publicKey ? (
-                        <>
-                            <CardDescription className='mb-2'>Public key:</CardDescription>
-                            <Code className='flex items-center justify-between h-8 gap-4'>
-                                <pre className='block'>{data.publicKey}</pre>
-                                <div className='flex items-start justify-between gap-4'>
-                                    <CopyButton value={data.publicKey} />
-                                </div>
-                            </Code>
-                        </>
-                    ) : null}
-                    {data.privateKey ? (
-                        <>
-                            <CardDescription className='mt-4 mb-2'>Private key:</CardDescription>
-                            <Code className='flex items-center justify-between gap-4'>
-                                <pre>{data.privateKey}</pre>
-                                <div className='flex items-start justify-between gap-4'>
-                                    <CopyButton value={data.privateKey} />
-                                </div>
-                            </Code>
-                        </>
-                    ) : null}
+                <CardContent className='gap-4'>
+                    <KeyCard
+                        key='public-key'
+                        title='Public key:'
+                        projectId={data.project.id}
+                        serverKey={data.publicKey}
+                    />
+                    <KeyCard
+                        key='private-key'
+                        title='Private key:'
+                        projectId={data.project.id}
+                        serverKey={data.privateKey}
+                    />
                 </CardContent>
             </Card>
             <DeleteProject name={data.project.name} id={data.project.id} />

@@ -215,3 +215,30 @@ export const getComponent = async ({ componentId, headers }: { componentId: stri
 
     return component;
 };
+
+export const refreshKey = async ({
+    projectId,
+    prevKey,
+    headers,
+}: {
+    projectId: string;
+    prevKey: string;
+    headers?: HeadersInit;
+}) => {
+    const result = await fetch(`${process.env.NEXT_PUBLIC_LOCLESS_URL}/keys/refresh`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({
+            projectId,
+            prevKey,
+        }),
+    });
+
+    if (!result.ok) {
+        return null;
+    }
+
+    const data = await result.json();
+
+    return data?.key;
+};
