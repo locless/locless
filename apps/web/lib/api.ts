@@ -122,13 +122,13 @@ export const getProject = async ({ projectId, headers }: { projectId: string; he
         return null;
     }
 
-    const project = await result.json();
+    const data = await result.json();
 
-    if (!project?.id) {
+    if (!data?.project.id) {
         return null;
     }
 
-    return project;
+    return data;
 };
 
 export const removeProject = async ({ projectId, headers }: { projectId: string; headers?: HeadersInit }) => {
@@ -214,53 +214,4 @@ export const getComponent = async ({ componentId, headers }: { componentId: stri
     }
 
     return component;
-};
-
-export const getKeys = async ({ projectId, headers }: { projectId: string; headers?: HeadersInit }) => {
-    const result = await fetch(`${process.env.NEXT_PUBLIC_LOCLESS_URL}/keys/${projectId}`, {
-        headers,
-    });
-
-    if (!result.ok) {
-        return null;
-    }
-
-    const keys = await result.json();
-
-    if (!keys) {
-        return null;
-    }
-
-    return keys;
-};
-
-export const generateKeys = async ({
-    projectId,
-    tenantId,
-    headers,
-}: {
-    projectId: string;
-    tenantId: string;
-    headers?: HeadersInit;
-}) => {
-    const result = await fetch(`${process.env.NEXT_PUBLIC_LOCLESS_URL}/keys/generate`, {
-        method: 'POST',
-        body: JSON.stringify({
-            projectId,
-            tenantId,
-        }),
-        headers,
-    });
-
-    if (!result.ok) {
-        return null;
-    }
-
-    const keys = await result.json();
-
-    if (!keys) {
-        return null;
-    }
-
-    return keys;
 };

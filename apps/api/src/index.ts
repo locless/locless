@@ -173,7 +173,17 @@ app.get('/projects/:projectId', async c => {
         return c.text('Project not found', 404);
     }
 
-    return c.json(result);
+    const publicKeyPrefix = `loc_pub_${projectId}_`;
+    const privateKeyPrefix = `loc_auth_${projectId}_`;
+
+    const publicKey = await c.env.API_KEYS.list({ prefix: publicKeyPrefix });
+    const privateKey = await c.env.API_KEYS_PRIVATE.list({ prefix: privateKeyPrefix });
+
+    return c.json({
+        project: result,
+        publicKey: publicKey.keys[0]?.name,
+        privateKey: privateKey.keys[0]?.name,
+    });
 });
 
 app.get('/components', async c => {
@@ -284,6 +294,29 @@ app.post('/projects', async c => {
             workspaceId,
         })
         .returning();
+
+    if (result.length) {
+        const project = result[0];
+        const publicKey = `loc_pub_${project.id}_${crypto.randomUUID()}`;
+        const privateKey = `loc_auth_${project.id}_${crypto.randomUUID()}`;
+
+        await c.env.API_KEYS.put(
+            publicKey,
+            JSON.stringify({
+                workspaceId,
+                projectId: project.id,
+            })
+        );
+
+        await c.env.API_KEYS_PRIVATE.put(
+            privateKey,
+            JSON.stringify({
+                workspaceId,
+                projectId: project.id,
+            })
+        );
+    }
+
     return c.json(result);
 });
 
@@ -452,75 +485,6 @@ app.use(
         maxAge: 86400,
     })
 );
-
-app.get('/keys/:projectId', async c => {
-    const userId = c.req.header('authorization');
-    const res = await verifyAuthToken(c.env, userId);
-    if (!res.user) {
-        return c.text('Invalid Auth Token', 400);
-    }
-
-    const { projectId } = c.req.param();
-
-    const publicKeyPrefix = `loc_pub_${projectId}_`;
-    const privateKeyPrefix = `loc_auth_${projectId}_`;
-
-    const publicKey = await c.env.API_KEYS.list({ prefix: publicKeyPrefix });
-    const privateKey = await c.env.API_KEYS_PRIVATE.list({ prefix: privateKeyPrefix });
-
-    if (!publicKey?.keys?.length || !privateKey.keys?.length) {
-        return c.text('Keys not found', 404);
-    }
-
-    return c.json(
-        {
-            publicKey: publicKey.keys[0].name,
-            privateKey: privateKey.keys[0].name,
-        },
-        201
-    );
-});
-
-app.post('/keys/generate', async c => {
-    const userId = c.req.header('authorization');
-    const res = await verifyAuthToken(c.env, userId);
-    if (!res.user) {
-        return c.text('Invalid Auth Token', 400);
-    }
-
-    const { tenantId, projectId } = await c.req.json();
-
-    if (!tenantId || !projectId) {
-        return c.text('Invalid Params', 404);
-    }
-
-    const publicKey = `loc_pub_${projectId}_${crypto.randomUUID()}`;
-    const privateKey = `loc_auth_${projectId}_${crypto.randomUUID()}`;
-
-    await c.env.API_KEYS.put(
-        publicKey,
-        JSON.stringify({
-            tenantId,
-            projectId,
-        })
-    );
-
-    await c.env.API_KEYS_PRIVATE.put(
-        privateKey,
-        JSON.stringify({
-            tenantId,
-            projectId,
-        })
-    );
-
-    return c.json(
-        {
-            publicKey,
-            privateKey,
-        },
-        201
-    );
-});
 
 app.post(
     '/keys/public',

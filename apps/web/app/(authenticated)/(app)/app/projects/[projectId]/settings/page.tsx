@@ -5,8 +5,7 @@ import { notFound } from 'next/navigation';
 import { DeleteProject } from './delete-project';
 import { UpdateProjectName } from './update-project-name';
 import { getTenantId } from '@/lib/auth';
-import { getKeys, getProject } from '@/lib/api';
-import { GenerateProjectKeys } from './generate-keys-button';
+import { getProject } from '@/lib/api';
 
 type Props = {
     params: {
@@ -16,27 +15,20 @@ type Props = {
 
 export default async function SettingsPage(props: Props) {
     const tenantId = getTenantId();
-    const project = await getProject({
+    const data = await getProject({
         projectId: props.params.projectId,
         headers: {
             authorization: `${tenantId}`,
         },
     });
 
-    const keys = await getKeys({
-        projectId: props.params.projectId,
-        headers: {
-            authorization: `${tenantId}`,
-        },
-    });
-
-    if (!project) {
+    if (!data) {
         return notFound();
     }
 
     return (
         <div className='flex flex-col gap-8 mb-20 '>
-            <UpdateProjectName projectName={project.name} projectId={project.id} />
+            <UpdateProjectName projectName={data.project.name} projectId={data.project.id} />
             <Card>
                 <CardHeader>
                     <CardTitle>Project ID</CardTitle>
@@ -44,9 +36,9 @@ export default async function SettingsPage(props: Props) {
                 </CardHeader>
                 <CardContent>
                     <Code className='flex items-center justify-between w-full h-8 max-w-sm gap-4'>
-                        <pre>{project.id}</pre>
+                        <pre>{data.project.id}</pre>
                         <div className='flex items-start justify-between gap-4'>
-                            <CopyButton value={project.id} />
+                            <CopyButton value={data.project.id} />
                         </div>
                     </Code>
                 </CardContent>
@@ -57,29 +49,31 @@ export default async function SettingsPage(props: Props) {
                     <CardDescription>This are your project keys.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {keys ? (
+                    {data.publicKey ? (
                         <>
                             <CardDescription className='mb-2'>Public key:</CardDescription>
                             <Code className='flex items-center justify-between h-8 gap-4'>
-                                <pre className='block'>{keys.publicKey}</pre>
+                                <pre className='block'>{data.publicKey}</pre>
                                 <div className='flex items-start justify-between gap-4'>
-                                    <CopyButton value={keys.publicKey} />
-                                </div>
-                            </Code>
-                            <CardDescription className='mt-4 mb-2'>Private key:</CardDescription>
-                            <Code className='flex items-center justify-between gap-4'>
-                                <pre>{keys.privateKey}</pre>
-                                <div className='flex items-start justify-between gap-4'>
-                                    <CopyButton value={keys.privateKey} />
+                                    <CopyButton value={data.publicKey} />
                                 </div>
                             </Code>
                         </>
-                    ) : (
-                        <GenerateProjectKeys projectId={project.id} tenantId={tenantId} />
-                    )}
+                    ) : null}
+                    {data.privateKey ? (
+                        <>
+                            <CardDescription className='mt-4 mb-2'>Private key:</CardDescription>
+                            <Code className='flex items-center justify-between gap-4'>
+                                <pre>{data.privateKey}</pre>
+                                <div className='flex items-start justify-between gap-4'>
+                                    <CopyButton value={data.privateKey} />
+                                </div>
+                            </Code>
+                        </>
+                    ) : null}
                 </CardContent>
             </Card>
-            <DeleteProject name={project.name} id={project.id} />
+            <DeleteProject name={data.project.name} id={data.project.id} />
         </div>
     );
 }
