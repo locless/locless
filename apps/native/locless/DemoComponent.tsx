@@ -14,8 +14,12 @@ function CustomButton({ count, onPressCallback }: Props) {
     );
 }
 
-export default function ServerComponent() {
-    const message = useMemo(() => 'Hello, world!', []);
+interface ILocProps {
+    name?: string;
+}
+
+export default function ServerComponent({ name = 'world' }: ILocProps) {
+    const message = useMemo(() => `Hello, ${name}!`, []);
 
     const [state, setState] = useState<string | null>(null);
     const [count, setCount] = useState(0);

@@ -35,7 +35,8 @@
         "conf": "^12.0.0",
         "inquirer": "^9.2.19",
         "inquirer-search-list": "^1.2.6",
-        "ora": "^8.0.1"
+        "ora": "^8.0.1",
+        "prettier": "^3.2.5"
     },
     "devDependencies": {
         "@types/commander": "^2.12.2",

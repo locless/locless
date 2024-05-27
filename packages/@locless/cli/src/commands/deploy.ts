@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import prettier from 'prettier';
 import ora from 'ora';
 import path from 'path';
 import * as fs from 'fs';
@@ -6,6 +7,7 @@ import child_process from 'child_process';
 import chalk from 'chalk';
 import Conf from 'conf';
 import inquirer from 'inquirer';
+import { componentCodegen } from '../templates/component';
 
 const DEV_WEBSITE_URL = 'http://127.0.0.1:8787';
 const PROD_WEBSITE_URL = 'https://api.xan50rus.workers.dev';
@@ -17,6 +19,27 @@ const spinner = ora({
     color: 'yellow',
 });
 
+const format = (source: string, filetype: string): Promise<string> => {
+    return prettier.format(source, { parser: filetype, pluginSearchDirs: false });
+};
+
+interface WriteFileParams {
+    filename: string;
+    source: string;
+    folderPath: string;
+    filetype?: string;
+    ctx: typeof fs;
+}
+
+const writeFile = async ({ ctx, filename, source, folderPath, filetype = 'typescript' }: WriteFileParams) => {
+    const formattedSource = await format(source, filetype);
+    const dest = path.join(folderPath, `${filename}.tsx`);
+
+    console.log(chalk.yellow(`writing ${filename}`));
+
+    ctx.writeFileSync(dest, formattedSource, 'utf-8');
+};
+
 export const deploy = new Command()
     .name('deploy')
     .description('Transform and deploy TS file to Locless cloud.')
@@ -24,7 +47,7 @@ export const deploy = new Command()
         await runDeploy();
     });
 
-export async function runDeploy() {
+export const runDeploy = async () => {
     const config: Conf<Record<string, Record<string, string | undefined> | undefined>> = new Conf({
         projectName: 'loclessCLI',
     });
@@ -85,6 +108,12 @@ export async function runDeploy() {
             : {};
 
         const projectObject = { ...(fileComponentsObject[projectInputAnswer.projectName] ?? {}) };
+
+        const generatedFolderPath = path.join(__dirname, 'locless', 'generated');
+
+        if (!fs.existsSync(generatedFolderPath)) {
+            fs.mkdirSync(generatedFolderPath);
+        }
 
         spinner.start('Compiling...');
         for (const file of fileList) {
@@ -176,6 +205,19 @@ export async function runDeploy() {
                     console.log(chalk.green(`File saved to storageId...`));
                     projectObject[fileNameWithoutExt] = component.id;
                     fileComponentsObject[projectInputAnswer.projectName] = projectObject;
+
+                    const locComponentFileName = `LocComponent${fileNameWithoutExt}`;
+
+                    await writeFile({
+                        ctx: fs,
+                        filename: locComponentFileName,
+                        folderPath: generatedFolderPath,
+                        source: componentCodegen({
+                            componentId: component.id,
+                            fileName: locComponentFileName,
+                            userProps: [],
+                        }),
+                    });
                 } catch (e) {
                     spinner.fail(`${e}`);
                     return;
@@ -193,4 +235,4 @@ export async function runDeploy() {
     }
 
     return 'Upload completed';
-}
+};
