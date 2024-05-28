@@ -1,30 +1,7 @@
 import axios from 'axios';
-import type { PromiseCallback, TunnelComponentCache, TunnelOptions, TunnelSource, TunnelTasks } from '../@types';
+import type { PromiseCallback, TunnelOptions, TunnelSource } from '../@types';
 
 const globalName = '__LOCLESS__';
-
-export const completionHandler =
-  (
-    cache: TunnelComponentCache,
-    tasks: TunnelTasks,
-    onTaskUpdate: (key: string, callback: PromiseCallback<React.Component> | null) => void
-  ) =>
-  (componentId: string, error?: Error): void => {
-    const maybeComponent = cache[componentId];
-    const { [componentId]: callbacks } = tasks;
-
-    Object.assign(tasks, { [componentId]: null });
-    onTaskUpdate(componentId, null);
-
-    if (callbacks) {
-      callbacks.forEach(({ resolve, reject }) => {
-        if (!!maybeComponent) {
-          return resolve(maybeComponent);
-        }
-        return reject(error || new Error(`[Locless]: Failed to allocate for componentId "${componentId}".`));
-      });
-    }
-  };
 
 export const createComponent =
   (global: any) =>
@@ -79,31 +56,6 @@ export const requestOpenUri = ({
     }
   };
 };
-
-export const openUri =
-  ({
-    cache,
-    onTasksUpdate,
-    shouldRequestOpenUri,
-  }: {
-    cache: TunnelComponentCache;
-    onTasksUpdate: (key: string, callback: PromiseCallback<React.Component> | null) => void;
-    shouldRequestOpenUri: (componentId: string) => void;
-  }) =>
-  (componentId: string, callback: PromiseCallback<React.Component>): void => {
-    const Component = cache[componentId];
-    const { resolve, reject } = callback;
-
-    if (Component === null) {
-      return reject(new Error(`[Locless]: Component with ID "${componentId}" could not be instantiated.`));
-    } else if (typeof Component === 'function') {
-      return resolve(Component);
-    }
-
-    onTasksUpdate(componentId, callback);
-
-    return shouldRequestOpenUri(componentId);
-  };
 
 export const openString =
   ({ shouldCreateComponent }: { shouldCreateComponent: (src: string) => Promise<React.Component> }) =>

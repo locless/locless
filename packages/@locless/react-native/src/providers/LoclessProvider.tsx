@@ -1,8 +1,8 @@
 import type { PropsWithChildren } from 'react';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import LoclessContext from './LoclessContext';
 import type { LoclessContextState } from './types';
-import { completionHandler, createComponent, openString, openUri, requestOpenUri, openTunnel } from '../utils';
+import { createComponent, openString, requestOpenUri, openTunnel } from '../utils';
 import type { PromiseCallback } from '../@types';
 
 const defaultGlobalImports = {
@@ -19,12 +19,11 @@ interface Props extends PropsWithChildren {
 }
 
 const LoclessProvider = ({ children, preloadArray, customImports }: Props) => {
-  const [cacheData, setCacheData] = useState<Record<string, React.Component>>({});
-  const [tasks, setTasks] = useState<Record<string, PromiseCallback<React.Component>[]>>({});
+  const [__, setCacheData] = useState<Record<string, React.Component>>({});
+  const [_, setTasks] = useState<Record<string, PromiseCallback<React.Component>[]>>({});
 
-  const getCache = (key: string) => {
-    return cacheData[key];
-  };
+  const cacheRef = useRef<Record<string, React.Component>>({});
+  const tasksRef = useRef<Record<string, PromiseCallback<React.Component>[]>>({});
 
   const onCacheUpdate = (key: string, component: React.Component | null) => {
     setCacheData(current => {
@@ -35,6 +34,8 @@ const LoclessProvider = ({ children, preloadArray, customImports }: Props) => {
       } else {
         dataCopy[key] = component;
       }
+
+      cacheRef.current = dataCopy;
 
       return dataCopy;
     });
@@ -51,12 +52,47 @@ const LoclessProvider = ({ children, preloadArray, customImports }: Props) => {
         dataCopy[key] = [...(oldCallback ?? []), callback];
       }
 
+      tasksRef.current = dataCopy;
+
       return dataCopy;
     });
   };
 
+  const completionHandler = (componentId: string, error?: Error): void => {
+    const maybeComponent = cacheRef.current[componentId];
+    const callbacks = tasksRef.current[componentId];
+
+    onTasksUpdate(componentId, null);
+
+    if (callbacks) {
+      callbacks.forEach(({ resolve, reject }) => {
+        if (!!maybeComponent) {
+          return resolve(maybeComponent);
+        }
+        return reject(error || new Error(`[Locless]: Failed to allocate for componentId "${componentId}".`));
+      });
+    }
+  };
+
+  const openUri =
+    (shouldRequestOpenUri: (componentId: string) => void) =>
+    (componentId: string, callback: PromiseCallback<React.Component>): void => {
+      const Component = cacheRef.current[componentId];
+      const { resolve, reject } = callback;
+
+      if (Component === null) {
+        return reject(new Error(`[Locless]: Component with ID "${componentId}" could not be instantiated.`));
+      } else if (typeof Component === 'function') {
+        return resolve(Component);
+      }
+
+      onTasksUpdate(componentId, callback);
+
+      return shouldRequestOpenUri(componentId);
+    };
+
   const preloadCache = async (key: string, dangerouslySetInnerJSX = false) => {
-    const component = cacheData[key];
+    const component = cacheRef.current[key];
 
     if (component) {
       return component;
@@ -75,21 +111,15 @@ const LoclessProvider = ({ children, preloadArray, customImports }: Props) => {
         },
       });
 
-      const shouldComplete = completionHandler(cacheData, tasks, onTasksUpdate);
-
       const shouldCreateComponent = createComponent(defaultGlobal);
 
       const shouldRequestOpenUri = requestOpenUri({
         onCacheUpdate,
         shouldCreateComponent,
-        shouldComplete,
+        shouldComplete: completionHandler,
       });
 
-      const shouldOpenUri = openUri({
-        cache: cacheData,
-        onTasksUpdate,
-        shouldRequestOpenUri,
-      });
+      const shouldOpenUri = openUri(shouldRequestOpenUri);
 
       const shouldOpenString = openString({
         shouldCreateComponent,
@@ -111,8 +141,7 @@ const LoclessProvider = ({ children, preloadArray, customImports }: Props) => {
 
   const contextValue = useMemo<LoclessContextState>(
     () => ({
-      data: cacheData,
-      getCache,
+      data: cacheRef.current,
       preloadCache,
     }),
     []
