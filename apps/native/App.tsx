@@ -1,8 +1,13 @@
 import * as React from 'react';
-import { createWormhole } from './src/react-lib';
+import { LoclessProvider } from '@locless/react-native';
+import LocComponentDemoComponent from './locless/generated/LocComponentDemoComponent';
 
-const { Wormhole } = createWormhole();
+//9a896e45-6d24-4ecd-83f9-ef15cb937f64
 
 export default function App() {
-    return <Wormhole source={{ componentId: '9a896e45-6d24-4ecd-83f9-ef15cb937f64' }} />;
+  return (
+    <LoclessProvider>
+      <LocComponentDemoComponent />
+    </LoclessProvider>
+  );
 }

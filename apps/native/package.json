@@ -19,7 +19,8 @@
     "react": "18.2.0",
     "react-dom": "^18.2.0",
     "react-native": "0.74.1",
-    "react-native-wormhole": "^0.2.0"
+    "react-native-wormhole": "^0.2.0",
+    "@locless/react-native": "*"
   },
   "devDependencies": {
     "@babel/cli": "^7.24.1",
