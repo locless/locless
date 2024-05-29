@@ -1,18 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Animated, Alert, TouchableOpacity, StyleSheet } from 'react-native';
-
-interface Props {
-  count: number;
-  onPressCallback: () => void;
-}
-
-function CustomButton({ count, onPressCallback }: Props) {
-  return (
-    <TouchableOpacity onPress={() => onPressCallback()}>
-      <Animated.Text children={`Click here! Clicks: ${count}`} />
-    </TouchableOpacity>
-  );
-}
+import { Animated, Alert, StyleSheet } from 'react-native';
+import CustomButton from './CustomButton';
 
 interface ILocProps {
   name?: string;
