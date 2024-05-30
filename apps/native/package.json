@@ -9,6 +9,8 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@locless/react-native": "*",
+    "axios": "^1.7.2",
     "expo": "~51.0.4",
     "expo-application": "~5.9.1",
     "expo-auth-session": "~5.5.2",
@@ -18,13 +20,14 @@
     "expo-web-browser": "~13.0.3",
     "react": "18.2.0",
     "react-dom": "^18.2.0",
-    "react-native": "0.74.1",
-    "react-native-wormhole": "^0.2.0",
-    "@locless/react-native": "*"
+    "react-native": "0.74.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.24.1",
-    "@babel/core": "^7.24.4"
+    "@babel/core": "^7.24.4",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "rollup": "^4.18.0"
   },
   "private": true
 }

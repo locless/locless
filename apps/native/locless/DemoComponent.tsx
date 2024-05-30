@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Animated, Alert, StyleSheet } from 'react-native';
-import CustomButton from './CustomButton';
+import CustomButton from '../src/components/CustomButton';
 
 interface ILocProps {
   name?: string;

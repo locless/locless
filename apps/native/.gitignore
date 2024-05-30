@@ -36,3 +36,4 @@ yarn-error.*
 
 locless/generated
 locless/build
+locless/tmp
