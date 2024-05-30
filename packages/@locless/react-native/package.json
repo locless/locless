@@ -63,9 +63,10 @@
     "@types/react": "^18.2.44"
   },
   "peerDependencies": {
+    "axios": "*",
     "react": "*",
     "react-native": "*",
-    "axios": "*"
+    "react-error-boundary": "*"
   },
   "commitlint": {
     "extends": [
@@ -111,6 +112,7 @@
     ]
   },
   "dependencies": {
-    "axios": "^1.7.2"
+    "axios": "^1.7.2",
+    "react-error-boundary": "^4.0.13"
   }
 }
