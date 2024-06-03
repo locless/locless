@@ -8,18 +8,16 @@ export const projects = mysqlTable(
   {
     id: varchar('id', { length: 256 }).primaryKey(),
     name: varchar('name', { length: 256 }).notNull(),
-    workspaceId: varchar('workspace_id', { length: 256 })
-      .notNull()
-      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    workspaceId: varchar('workspace_id', { length: 256 }).notNull(),
     createdAt: datetime('created_at', { mode: 'date', fsp: 3 }),
     deletedAt: datetime('deleted_at', { mode: 'date', fsp: 3 }),
     enabled: boolean('enabled').notNull().default(true),
     canReverseDeletion: boolean('canReverseDeletion').notNull().default(true),
-    keyAuth: varchar('key_auth', { length: 256 }).unique(),
-    keyPublic: varchar('key_public', { length: 256 }).unique(),
+    keyAuth: varchar('key_auth', { length: 256 }).notNull().unique(),
+    keyPublic: varchar('key_public', { length: 256 }).notNull().unique(),
   },
-  projects => ({
-    workspaceIdx: index('workspaceIdx').on(projects.workspaceId),
+  table => ({
+    workspaceIdx: index('workspaceIdx').on(table.workspaceId),
   })
 );
 

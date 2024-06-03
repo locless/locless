@@ -6,7 +6,7 @@
   "types": "./src/index.ts",
   "scripts": {
     "push": "dotenv -e .env drizzle-kit push",
-    "studio": "dotenv -e .env drizzle-kit studio "
+    "studio": "dotenv -e .env drizzle-kit studio"
   },
   "devDependencies": {
     "@repo/typescript-config": "*",

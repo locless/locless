@@ -12,7 +12,7 @@ import { writeFile } from '../utils';
 const DEV_WEBSITE_URL = 'http://127.0.0.1:8787';
 const PROD_WEBSITE_URL = 'https://api.xan50rus.workers.dev';
 
-const SERVER_URL = PROD_WEBSITE_URL;
+const SERVER_URL = DEV_WEBSITE_URL;
 
 const spinner = ora({
   text: 'Loading...',
@@ -154,15 +154,9 @@ export const runDeploy = async () => {
                             throw new Error('Failed to save file');
                         }*/
 
-          const componentId = projectObject[fileNameWithoutExt];
-
           const form = new FormData();
           const blob = new Blob([content]);
           form.set('name', fileNameWithoutExt);
-
-          if (componentId) {
-            form.set('componentId', componentId);
-          }
 
           form.set('file', blob, fileName);
 
@@ -180,7 +174,8 @@ export const runDeploy = async () => {
           }
 
           const uploadRes = await res.json();
-          const component = uploadRes[0];
+          console.log(uploadRes);
+          const component = uploadRes;
 
           if (!component) {
             spinner.fail(`Failed to get a component from the cloud!`);

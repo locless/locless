@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, boolean, index, datetime, int, json } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, boolean, index, datetime, int, json, text } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 import { projects } from './projects';
 import { workspaces } from './workspaces';
@@ -8,13 +8,10 @@ export const components = mysqlTable(
   {
     id: varchar('id', { length: 256 }).primaryKey(),
     name: varchar('name', { length: 256 }).notNull(),
-    projectId: varchar('workspace_id', { length: 256 })
-      .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
-    workspaceId: varchar('workspace_id', { length: 256 })
-      .notNull()
-      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    projectId: varchar('project_id', { length: 256 }).notNull(),
+    workspaceId: varchar('workspace_id', { length: 256 }).notNull(),
     fileId: varchar('file_id', { length: 256 }).notNull(),
+    fileUrl: text('file_url').notNull(),
     size: int('size').notNull(),
     stats: json('stats').notNull(),
     createdAt: datetime('created_at', { mode: 'date', fsp: 3 }),
@@ -22,13 +19,15 @@ export const components = mysqlTable(
     enabled: boolean('enabled').notNull().default(true),
     canReverseDeletion: boolean('canReverseDeletion').notNull().default(true),
   },
-  components => ({
-    projectIdx: index('projectIdx').on(components.projectId),
-    workspaceIdx: index('workspaceIdx').on(components.workspaceId),
+  table => ({
+    projectIdx: index('projectIdx').on(table.projectId),
+    workspaceIdx: index('workspaceIdx').on(table.workspaceId),
+    fileIdx: index('fileIdx').on(table.fileId),
+    projectIdAndName: index('projectIdAndName').on(table.projectId, table.name),
   })
 );
 
-export const componentsRelations = relations(components, ({ one, many }) => ({
+export const componentsRelations = relations(components, ({ one }) => ({
   workspace: one(workspaces, {
     relationName: 'workspace_component_relation',
     fields: [components.workspaceId],

@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
-import { eq } from 'drizzle-orm';
 import { createConnection, schema } from './db';
+import { UTApi } from 'uploadthing/server';
+import { newId } from '@repo/id';
+import { eq } from 'drizzle-orm';
 
 export type Env = {
   MY_BUCKET: R2Bucket;
@@ -8,146 +10,133 @@ export type Env = {
   DATABASE_HOST: string;
   DATABASE_USERNAME: string;
   DATABASE_PASSWORD: string;
+  UPLOADTHING_SECRET: string;
 };
-
-const KEY_MIN_SIZE = 10;
-const KEY_MAX_SIZE = 500;
-const KEY_REGEX = /^[a-zA-Z0-9\-\_]+$/;
-
-const isAlphaNumeric = (x: string): boolean => KEY_REGEX.test(x);
-export const isValidKey = (x: string): boolean =>
-  x.length >= KEY_MIN_SIZE && x.length <= KEY_MAX_SIZE && isAlphaNumeric(x);
 
 const app = new Hono<{ Bindings: Env }>();
 
-const verifyKey = async (env: Env, key?: string): Promise<Record<string, string> | null> => {
-  if (!key) {
-    return null;
-  }
-
-  // Limit the size of the key and reject non-alphanumeric characters.
-  if (!isValidKey(key) || !key.startsWith('loc_pub_')) {
-    return null;
-  }
-
-  const value: Record<string, string> | null = await env.API_KEYS.get(key, { type: 'json' });
-
-  if (!value) {
-    return null;
-  }
-  // response.cf.cacheEverything = true;
-  return value;
-};
-
-const verifyAuthKey = async (env: Env, key?: string): Promise<Record<string, string> | null> => {
-  if (!key) {
-    return null;
-  }
-
-  // Limit the size of the key and reject non-alphanumeric characters.
-  if (!isValidKey(key) || !key.startsWith('loc_auth_')) {
-    return null;
-  }
-
-  const value: Record<string, string> | null = await env.API_KEYS_PRIVATE.get(key, { type: 'json' });
-
-  if (!value) {
-    return null;
-  }
-  // response.cf.cacheEverything = true;
-  return value;
-};
-
-app.get('/file/:componentId', async c => {
+app.get('/file/:name', async c => {
   const apiKeyPublic = c.req.header('x-api-key');
-  const metaDataKey = await verifyKey(c.env, apiKeyPublic);
 
-  if (!metaDataKey) {
+  if (!apiKeyPublic) {
     return c.text('Invalid Api Key', 400);
   }
 
-  const { componentId } = await c.req.param();
   const db = createConnection(c.env);
 
-  const result = await db.query.components.findFirst({
-    where: (components, { eq }) => eq(components.id, componentId),
+  const project = await db.query.projects.findFirst({
+    where: (projects, { eq }) => eq(projects.keyPublic, apiKeyPublic),
   });
 
-  if (!result) {
+  if (!project) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  const { name } = await c.req.param();
+
+  const component = await db.query.components.findFirst({
+    where: (components, { eq, and }) => and(eq(components.projectId, project.id), eq(components.name, name)),
+  });
+
+  if (!component) {
     return c.text('Component not found', 404);
   }
 
-  const object = await c.env.MY_BUCKET.get(componentId);
+  const resp = await fetch(component.fileUrl, {
+    credentials: 'include',
+  });
 
-  if (!object) {
+  const blobVal = await resp.text();
+
+  if (!blobVal) {
     return c.text("File doesn't exists", 404);
   }
 
-  object.writeHttpMetadata(c.res.headers);
-  c.res.headers.set('etag', object.httpEtag);
-
-  return c.body(object.body, 201);
+  return c.body(blobVal, 201);
 });
 
 app.post('/generate', async c => {
   const apiKeyPrivate = c.req.header('x-api-key');
-  const metaDataKey = await verifyAuthKey(c.env, apiKeyPrivate);
 
-  if (!metaDataKey) {
+  if (!apiKeyPrivate) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  const db = createConnection(c.env);
+
+  const project = await db.query.projects.findFirst({
+    where: (projects, { eq }) => eq(projects.keyAuth, apiKeyPrivate),
+    with: {
+      workspace: true,
+    },
+  });
+
+  if (!project) {
     return c.text('Invalid Api Key', 400);
   }
 
   const formData = await c.req.formData();
   const file: any = formData.get('file');
   const name = formData.get('name');
-  const componentId = formData.get('componentId');
-  const projectId = metaDataKey['projectId'];
+  const stats = formData.get('stats');
 
-  if (file && file instanceof File && name && projectId) {
-    const db = createConnection(c.env);
-
-    const ext = file.name.split('.').pop();
-
-    const path = `${projectId}/${name}.${ext}`;
+  if (file && file instanceof File && name && project) {
+    const utapi = new UTApi({
+      apiKey: c.env.UPLOADTHING_SECRET,
+    });
 
     let result;
 
-    if (componentId) {
-      result = await db
-        .update(schema.components)
-        .set({
-          name,
-          size: file.size,
-          fileUrl: path,
-        })
-        .where(eq(schema.components.id, componentId))
-        .returning();
-    } else {
-      result = await db
-        .insert(schema.components)
-        .values({
-          name,
-          projectId,
-          size: file.size,
-          fileUrl: path,
-        })
-        .returning();
-    }
+    const response = await utapi.uploadFiles(file);
 
-    if (result[0]) {
-      if (componentId) {
-        await c.env.MY_BUCKET.delete(componentId);
+    const component = await db.query.components.findFirst({
+      where: (components, { eq, and }) => and(eq(components.projectId, project.id), eq(components.name, name)),
+    });
+
+    if (response.data) {
+      const { name, size, key, url } = response.data;
+
+      if (component) {
+        await utapi.deleteFiles([component.fileId]);
+
+        await db
+          .update(schema.components)
+          .set({
+            size: size,
+            fileUrl: url,
+            fileId: key,
+          })
+          .where(eq(schema.components.id, component.id));
+
+        result = component.id;
+      } else {
+        const newComponentId = newId('component');
+
+        await db.insert(schema.components).values({
+          id: newComponentId,
+          name,
+          projectId: project.id,
+          workspaceId: project.workspace.id,
+          size: size,
+          fileUrl: url,
+          fileId: key,
+          createdAt: new Date(),
+          deletedAt: null,
+          enabled: true,
+          canReverseDeletion: true,
+          stats,
+        });
+
+        result = newComponentId;
       }
 
-      await c.env.MY_BUCKET.put(result[0].id, file);
-    } else {
-      return c.text("Couldn't create a component", 500);
+      if (result) {
+        return c.json(result);
+      }
     }
-
-    return c.json(result);
-  } else {
-    return c.text('Invalid file', 400);
   }
+
+  return c.text('Invalid file', 400);
 });
 
 export default app;
