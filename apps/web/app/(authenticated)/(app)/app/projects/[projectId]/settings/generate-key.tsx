@@ -1,6 +1,5 @@
 'use client';
-
-import { refreshKey } from '@/lib/api';
+import { trpc } from '@/lib/trpc/client';
 import { useAuth } from '@clerk/nextjs';
 import { useToast } from '@repo/ui/components/ui/use-toast';
 import { cn } from '@repo/ui/lib/utils';
@@ -8,68 +7,58 @@ import { RefreshCw, Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface GenerateKeyButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
-    value: string;
-    projectId: string;
-    callback?: (value: string) => void;
+  projectId: string;
+  // eslint-disable-next-line no-unused-vars
+  callback?: (value: string) => void;
+  keyType: 'public' | 'private';
 }
 
-export function GenerateKeyButton({ value, projectId, callback, className, ...props }: GenerateKeyButtonProps) {
-    const [hasRefreshed, setHasRefreshed] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+export function GenerateKeyButton({ projectId, callback, keyType, className, ...props }: GenerateKeyButtonProps) {
+  const [hasRefreshed, setHasRefreshed] = useState(false);
 
-    const { userId, isLoaded } = useAuth();
-    const { toast } = useToast();
+  const { isLoaded } = useAuth();
+  const { toast } = useToast();
 
-    const onPress = async () => {
-        if (!isLoaded) {
-            return;
-        }
+  const updateKey = trpc.project.updateKey.useMutation({
+    onSuccess(res) {
+      setHasRefreshed(true);
+      toast({
+        description: 'Key has been refreshed!',
+      });
+      callback?.(res.key);
+    },
+    onError(err) {
+      console.error(err);
+      toast({
+        variant: 'destructive',
+        description: err.message,
+      });
+    },
+  });
 
-        setIsLoading(true);
-        try {
-            const newKey = await refreshKey({
-                projectId,
-                prevKey: value,
-                headers: {
-                    authorization: `${userId}`,
-                },
-            });
+  const onPress = async () => {
+    if (!isLoaded) {
+      return;
+    }
 
-            setHasRefreshed(true);
+    updateKey.mutate({ projectId, keyType });
+  };
 
-            if (newKey) {
-                toast({
-                    description: 'Your key has been refreshed!',
-                });
+  useEffect(() => {
+    setTimeout(() => {
+      setHasRefreshed(false);
+    }, 2000);
+  }, [hasRefreshed]);
 
-                callback?.(newKey);
-            }
-        } catch (err: any) {
-            console.error(err);
-            toast({
-                variant: 'destructive',
-                description: err.message,
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        setTimeout(() => {
-            setHasRefreshed(false);
-        }, 2000);
-    }, [hasRefreshed]);
-
-    return (
-        <button
-            type='button'
-            className={cn('relative p-1 focus:outline-none h-6 w-6 ', className)}
-            onClick={() => onPress()}
-            disabled={isLoading || hasRefreshed}
-            {...props}>
-            <span className='sr-only'>Refresh</span>
-            {hasRefreshed ? <Check className='w-full h-full' /> : <RefreshCw className='w-full h-full' />}
-        </button>
-    );
+  return (
+    <button
+      type='button'
+      className={cn('relative p-1 focus:outline-none h-6 w-6 ', className)}
+      onClick={() => onPress()}
+      disabled={updateKey.isPending || hasRefreshed}
+      {...props}>
+      <span className='sr-only'>Refresh</span>
+      {hasRefreshed ? <Check className='w-full h-full' /> : <RefreshCw className='w-full h-full' />}
+    </button>
+  );
 }

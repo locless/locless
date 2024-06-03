@@ -1,8 +1,7 @@
-import { mysqlTable, varchar, boolean, index, datetime } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, boolean, index, datetime, int, json } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 import { projects } from './projects';
 import { workspaces } from './workspaces';
-import { branches } from './branches';
 
 export const components = mysqlTable(
   'components',
@@ -15,6 +14,9 @@ export const components = mysqlTable(
     workspaceId: varchar('workspace_id', { length: 256 })
       .notNull()
       .references(() => workspaces.id, { onDelete: 'cascade' }),
+    fileId: varchar('file_id', { length: 256 }).notNull(),
+    size: int('size').notNull(),
+    stats: json('stats').notNull(),
     createdAt: datetime('created_at', { mode: 'date', fsp: 3 }),
     deletedAt: datetime('deleted_at', { mode: 'date', fsp: 3 }),
     enabled: boolean('enabled').notNull().default(true),
@@ -36,8 +38,5 @@ export const componentsRelations = relations(components, ({ one, many }) => ({
     relationName: 'project_component_relation',
     fields: [components.projectId],
     references: [projects.id],
-  }),
-  branches: many(branches, {
-    relationName: 'component_branch_relation',
   }),
 }));

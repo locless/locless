@@ -3,14 +3,14 @@ import { z } from 'zod';
 
 import { db, eq, schema } from '@/lib/db';
 import { auth, t } from '../../trpc';
+import { newId } from '@repo/id';
 
-export const updateProjectName = t.procedure
+export const updateProjectKey = t.procedure
   .use(auth)
   .input(
     z.object({
-      name: z.string().min(3, 'project names must contain at least 3 characters'),
       projectId: z.string(),
-      workspaceId: z.string(),
+      keyType: z.enum(['public', 'private']),
     })
   )
   .mutation(async ({ ctx, input }) => {
@@ -25,10 +25,24 @@ export const updateProjectName = t.procedure
       throw new TRPCError({ code: 'NOT_FOUND', message: 'project not found' });
     }
 
-    await db
-      .update(schema.projects)
-      .set({
-        name: input.name,
-      })
-      .where(eq(schema.projects.id, input.projectId));
+    let values = {};
+    let key = '';
+
+    if (input.keyType === 'public') {
+      key = newId('keyPublic');
+      values = {
+        keyPublic: key,
+      };
+    } else {
+      key = newId('keyAuth');
+      values = {
+        keyAuth: key,
+      };
+    }
+
+    await db.update(schema.projects).set(values).where(eq(schema.projects.id, input.projectId));
+
+    return {
+      key,
+    };
   });
