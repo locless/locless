@@ -1,24 +1,21 @@
 {
-    "name": "api",
-    "version": "0.0.3",
-    "private": true,
-    "scripts": {
-        "dev": "wrangler dev src/index.ts",
-        "deploy": "wrangler deploy --minify src/index.ts",
-        "db:generate": "drizzle-kit generate:sqlite",
-        "db:up": "drizzle-kit up:sqlite"
-    },
-    "dependencies": {
-        "@clerk/backend": "^1.1.1",
-        "@hono/zod-validator": "^0.2.1",
-        "@libsql/client": "^0.6.0",
-        "drizzle-orm": "^0.30.10",
-        "hono": "^4.2.9",
-        "zod": "^3.23.6"
-    },
-    "devDependencies": {
-        "@cloudflare/workers-types": "^4.20240403.0",
-        "drizzle-kit": "^0.20.17",
-        "wrangler": "^3.47.0"
-    }
+  "name": "api",
+  "version": "0.0.3",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev src/index.ts",
+    "deploy": "wrangler deploy --minify src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@planetscale/database": "^1.18.0",
+    "@repo/db": "*",
+    "@repo/id": "*",
+    "drizzle-orm": "^0.30.10",
+    "hono": "^4.2.9"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240403.0",
+    "wrangler": "^3.47.0"
+  }
 }
