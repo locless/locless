@@ -13,12 +13,17 @@ const defaultGlobalImports = {
   'react/jsx-runtime': require('react/jsx-runtime'),
 };
 
-interface Props extends PropsWithChildren {
+type LoclessConfig = {
   preloadArray?: string[];
   customImports?: Record<string, string>;
+  apiKey: string;
+};
+
+interface Props extends PropsWithChildren {
+  config: LoclessConfig;
 }
 
-const LoclessProvider = ({ children, preloadArray, customImports }: Props) => {
+const LoclessProvider = ({ children, config: { preloadArray, customImports, apiKey } }: Props) => {
   const [__, setCacheData] = useState<Record<string, React.Component>>({});
   const [_, setTasks] = useState<Record<string, PromiseCallback<React.Component>[]>>({});
 
@@ -117,6 +122,7 @@ const LoclessProvider = ({ children, preloadArray, customImports }: Props) => {
         onCacheUpdate,
         shouldCreateComponent,
         shouldComplete: completionHandler,
+        apiKey,
       });
 
       const shouldOpenUri = openUri(shouldRequestOpenUri);

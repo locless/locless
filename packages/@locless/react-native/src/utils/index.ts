@@ -24,18 +24,20 @@ export const requestOpenUri = ({
   onCacheUpdate,
   shouldCreateComponent,
   shouldComplete,
+  apiKey,
 }: {
   onCacheUpdate: (key: string, component: React.Component | null) => void;
   shouldCreateComponent: (src: string) => Promise<React.Component>;
   shouldComplete: (componentId: string, error?: Error) => void;
+  apiKey: string;
 }) => {
   return async (componentId: string) => {
     try {
       const result = await axios({
-        url: `${process.env.EXPO_PUBLIC_DEV_WEBSITE}/file/${componentId}`,
+        url: `https://api.xan50rus.workers.dev/file/${componentId}`,
         method: 'get',
         headers: {
-          'x-api-key': process.env.EXPO_PUBLIC_LOCLESS_PUBLIC_KEY,
+          'x-api-key': apiKey,
         },
       });
       const { data } = result;

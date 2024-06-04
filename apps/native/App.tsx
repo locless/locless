@@ -7,7 +7,7 @@ import LocDemoComponent from 'locless/generated/LocDemoComponent';
 
 export default function App() {
   return (
-    <LoclessProvider>
+    <LoclessProvider config={{ apiKey: process.env.EXPO_PUBLIC_LOCLESS_PUBLIC_KEY }}>
       <LocDemoComponent />
     </LoclessProvider>
   );
