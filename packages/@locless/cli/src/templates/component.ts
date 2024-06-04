@@ -8,7 +8,7 @@ interface ComponentCodegenProps {
 
 export function componentCodegen({ fileName, userProps, componentName }: ComponentCodegenProps): string {
   const code = `${header('Generated `component` utility.')}
-  import { Tunnel } from "@locless/react-native";
+  import { Tunnel } from "../lib";
 
   export const ${fileName}Id = '${componentName}';
 
