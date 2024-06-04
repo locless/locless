@@ -17,6 +17,21 @@ const spinner = ora({
   color: 'yellow',
 });
 
+const parseRequires = (content: string, object: Record<string, string>): any => {
+  let contentSplit = content.split(`require(`);
+  let stringRequire;
+
+  for (let i = 1; i < contentSplit.length; i++) {
+    stringRequire = contentSplit[i]?.split(`)`)[0];
+
+    if (stringRequire) {
+      object[stringRequire] = `require(${stringRequire})`;
+    }
+  }
+
+  return object;
+};
+
 export const deploy = new Command()
   .name('deploy')
   .description('Transform and deploy TS file to Locless cloud.')
@@ -111,14 +126,40 @@ export const runDeploy = async (envFileName: string) => {
         const tmpPath = path.join(__dirname, 'locless', 'tmp', `${fileNameWithoutExt}.js`);
 
         try {
-          child_process.execSync(`npx rollup -c --bundleConfigAsCjs -i ${filePath} -o ${tmpPath} --compact`).toString();
-          child_process.execSync(`npx babel ${tmpPath} -o ${buildPath}`).toString();
+          child_process
+            .execSync(`npx rollup -c --bundleConfigAsCjs -i ${filePath} -o ${buildPath} --compact --format cjs`)
+            .toString();
 
-          fs.unlinkSync(tmpPath);
+          // fs.unlinkSync(tmpPath);
 
           console.log(chalk.green(`Compiled ${fileName} to ${fileNameWithoutExt}.js`));
 
           const content = await fs.readFileSync(buildPath);
+
+          const requireObject: Record<string, string> = {};
+
+          const result = parseRequires(content.toString(), requireObject);
+
+          if (result) {
+            const constantFolderPath = path.join(__dirname, 'locless', 'constants');
+            const dest = path.join(constantFolderPath, `index.ts`);
+
+            if (!fs.existsSync(constantFolderPath)) {
+              fs.mkdirSync(constantFolderPath);
+            }
+
+            fs.writeFileSync(
+              dest,
+              `
+                export const locRequires = {
+                  ${Object.keys(result)
+                    .map(key => `${key}: ${result[key]}`)
+                    .join(',\n')}
+                }
+              `,
+              'utf-8'
+            );
+          }
 
           console.log(chalk.green(`Got file content for upload!`));
 
