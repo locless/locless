@@ -42,9 +42,7 @@ app.get('/file/:name', async c => {
     return c.text('Component not found', 404);
   }
 
-  const resp = await fetch(component.fileUrl, {
-    credentials: 'include',
-  });
+  const resp = await fetch(component.fileUrl);
 
   const blobVal = await resp.text();
 
@@ -78,23 +76,31 @@ app.post('/generate', async c => {
   const formData = await c.req.formData();
   const file: any = formData.get('file');
   const name = formData.get('name');
-  const stats = formData.get('stats');
+  let stats = formData.get('stats');
+
+  if (stats) {
+    stats = JSON.parse(stats);
+  }
 
   if (file && file instanceof File && name && project) {
     const utapi = new UTApi({
       apiKey: c.env.UPLOADTHING_SECRET,
+      fetch: (url, init): any => {
+        if (init && 'cache' in init) delete init.cache;
+        return fetch(url, init);
+      },
     });
 
     let result;
 
     const response = await utapi.uploadFiles(file);
 
-    const component = await db.query.components.findFirst({
-      where: (components, { eq, and }) => and(eq(components.projectId, project.id), eq(components.name, name)),
-    });
-
     if (response.data) {
       const { name, size, key, url } = response.data;
+
+      const component = await db.query.components.findFirst({
+        where: (components, { eq, and }) => and(eq(components.projectId, project.id), eq(components.name, name)),
+      });
 
       if (component) {
         await utapi.deleteFiles([component.fileId]);

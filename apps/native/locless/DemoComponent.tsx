@@ -7,7 +7,7 @@ interface ILocProps {
 }
 
 export default function ServerComponent({ name = 'world' }: ILocProps) {
-  const message = useMemo(() => `Hello, ${name}!`, [name]);
+  const message = useMemo(() => `Hi, ${name}!`, [name]);
 
   const [state, setState] = useState<string | null>(null);
   const [count, setCount] = useState(0);

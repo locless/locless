@@ -21,7 +21,7 @@ export function componentCodegen({ fileName, userProps, componentName }: Compone
   }
 
   const ${fileName} = (props: IProps) => {
-    return <Tunnel ${componentName} {...props} />
+    return <Tunnel componentName='${componentName}' {...props} />
   }
 
   export default ${fileName};

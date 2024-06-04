@@ -10,7 +10,7 @@ import { writeFile } from '../utils';
 const DEV_WEBSITE_URL = 'http://127.0.0.1:8787';
 const PROD_WEBSITE_URL = 'https://api.xan50rus.workers.dev';
 
-const SERVER_URL = DEV_WEBSITE_URL;
+const SERVER_URL = PROD_WEBSITE_URL;
 
 const spinner = ora({
   text: 'Loading...',
@@ -39,11 +39,7 @@ export const runDeploy = async (envFileName: string) => {
 
   const envFile = fs.readFileSync(envFilePath, 'utf-8');
 
-  console.log(envFile);
-
   const envVars = envFile.match(/^[A-Z0-9_]+=.*$/gm);
-
-  console.log(envVars);
 
   if (!envVars) {
     spinner.fail(`Couldn't find any env vars in ${envFilePath}`);
@@ -105,14 +101,11 @@ export const runDeploy = async (envFileName: string) => {
       const { name: fileName, path: originalPath } = file;
       const fileExt = fileName.split('.').pop();
       if (file.isFile() && (fileExt === 'tsx' || fileExt === 'jsx')) {
-        console.log(chalk.gray(`Found ${fileName}...`));
+        console.log(`\n ${chalk.gray(`Found ${fileName}...`)}`);
 
-        const fileNameWithoutExt = fileName.replaceAll(`.${fileExt}`, '');
+        const fileNameWithoutExt = path.parse(fileName).name;
 
-        const filePath = path.join(file.path, fileName);
-
-        console.log(originalPath);
-        console.log(filePath);
+        const filePath = path.join(originalPath, fileName);
 
         const buildPath = path.join(__dirname, 'locless', 'build', `${fileNameWithoutExt}.js`);
         const tmpPath = path.join(__dirname, 'locless', 'tmp', `${fileNameWithoutExt}.js`);
@@ -129,11 +122,22 @@ export const runDeploy = async (envFileName: string) => {
 
           console.log(chalk.green(`Got file content for upload!`));
 
+          const packageJson = await fs.readFileSync(path.join(__dirname, 'package.json'), 'utf-8');
+          const packageJsonObj = JSON.parse(packageJson);
+          const { dependencies } = packageJsonObj;
+
           const form = new FormData();
           const blob = new Blob([content]);
           form.set('name', fileNameWithoutExt);
-
-          form.set('file', blob, fileName);
+          form.set(
+            'stats',
+            JSON.stringify({
+              expo: dependencies['expo'] ?? '0.0.0',
+              react: dependencies['react'],
+              'react-native': dependencies['react-native'],
+            })
+          );
+          form.set('file', blob, fileNameWithoutExt);
 
           const res = await fetch(`${SERVER_URL}/generate`, {
             method: 'POST',

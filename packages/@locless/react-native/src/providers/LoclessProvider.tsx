@@ -11,7 +11,6 @@ const defaultGlobalImports = {
   react: require('react'),
   'react-native': require('react-native'),
   'react/jsx-runtime': require('react/jsx-runtime'),
-  '@locless/react-native': require('@locless/react-native'),
 };
 
 interface Props extends PropsWithChildren {

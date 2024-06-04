@@ -8,9 +8,9 @@ compatibility_date = "2023-12-01"
 # binding = "API_KEYS"
 # id = "cf329e2e9fad406e9fd2c40f1a7bc29f"
 
-[[r2_buckets]]
-binding = "MY_BUCKET"
-bucket_name = "locless-bucket-r2"
+# [[r2_buckets]]
+# binding = "MY_BUCKET"
+# bucket_name = "locless-bucket-r2"
 
 # [[d1_databases]]
 # binding = "DB" # i.e. available in your Worker on env.DB
