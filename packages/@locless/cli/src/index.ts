@@ -6,10 +6,6 @@ import inquirerSearchList from 'inquirer-search-list';
 
 import { version } from '../package.json';
 import { deploy } from './commands/deploy';
-import { setKey } from './commands/setKey';
-import { removeKey } from './commands/removeKey';
-import { reset } from './commands/reset';
-import { showProjects } from './commands/showProjects';
 import { generate } from './commands/generate';
 
 const MINIMUM_MAJOR_VERSION = 18;
@@ -51,10 +47,6 @@ async function main() {
     .usage('<command> [options]')
     .description('Start developing with Locless by running `npx locless dev`.')
     .addCommand(deploy)
-    .addCommand(setKey)
-    .addCommand(removeKey)
-    .addCommand(reset)
-    .addCommand(showProjects)
     .addCommand(generate)
     .helpCommand('help <command>', 'Show help for given <command>')
     .version(version || '0.0.0')

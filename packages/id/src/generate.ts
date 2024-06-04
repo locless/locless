@@ -7,8 +7,8 @@ const prefixes = {
   project: 'pr',
   component: 'cm',
   branch: 'br',
-  keyAuth: 'ks_auth',
-  keyPublic: 'ks_pub',
+  keyAuth: 'loc_auth',
+  keyPublic: 'loc_pub',
 } as const;
 
 export function newId<TPrefix extends keyof typeof prefixes>(prefix: TPrefix) {

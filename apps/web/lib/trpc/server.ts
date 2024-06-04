@@ -1,4 +1,4 @@
-import { createTRPCProxyClient, httpLink } from '@trpc/client';
+import { createTRPCClient, httpLink } from '@trpc/client';
 import superjson from 'superjson';
 
 import type { Router } from './routers';
@@ -18,11 +18,11 @@ function getBaseUrl() {
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
 
-export const trpc = createTRPCProxyClient<Router>({
-  transformer: superjson,
+export const trpc = createTRPCClient<Router>({
   links: [
     httpLink({
       url: `${getBaseUrl()}/api/trpc`,
+      transformer: superjson,
     }),
   ],
 });

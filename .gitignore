@@ -11,6 +11,8 @@ node_modules
 .env.development.local
 .env.test.local
 .env.production.local
+.env.dev
+.env.prod
 
 # Testing
 coverage
@@ -26,7 +28,6 @@ coverage
 out/
 build
 dist
-
 
 # Debug
 npm-debug.log*

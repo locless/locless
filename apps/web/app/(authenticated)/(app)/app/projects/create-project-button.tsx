@@ -31,7 +31,7 @@ export const CreateProjectButton = ({ ...rest }: React.ButtonHTMLAttributes<HTML
         description: 'Your project has been created!',
       });
       router.refresh();
-      router.push(`/projects/${res.id}`);
+      router.push(`/app/projects/${res.id}`);
     },
     onError(err) {
       console.error(err);
@@ -43,6 +43,7 @@ export const CreateProjectButton = ({ ...rest }: React.ButtonHTMLAttributes<HTML
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log(values);
     create.mutate(values);
   };
 

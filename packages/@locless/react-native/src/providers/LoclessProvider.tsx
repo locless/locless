@@ -156,6 +156,7 @@ const LoclessProvider = ({ children, preloadArray, customImports }: Props) => {
         }
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preloadArray]);
 
   return <LoclessContext.Provider value={contextValue}>{children}</LoclessContext.Provider>;

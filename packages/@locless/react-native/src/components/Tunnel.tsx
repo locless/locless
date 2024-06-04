@@ -5,7 +5,7 @@ import { useForceUpdate } from '../hooks';
 import LoclessContext from '../providers/LoclessContext';
 
 export type TunnelProps = {
-  readonly componentId: string;
+  readonly componentName: string;
   readonly renderLoading?: () => JSX.Element;
   readonly renderError?: (props: { readonly error: Error }) => JSX.Element;
   readonly dangerouslySetInnerJSX?: boolean;
@@ -13,7 +13,7 @@ export type TunnelProps = {
 };
 
 const Tunnel = ({
-  componentId,
+  componentName,
   renderLoading = () => <></>,
   renderError = () => <></>,
   dangerouslySetInnerJSX = false,
@@ -30,7 +30,7 @@ const Tunnel = ({
   useEffect(() => {
     (async () => {
       try {
-        const Component = await preloadCache(componentId, dangerouslySetInnerJSX);
+        const Component = await preloadCache(componentName, dangerouslySetInnerJSX);
         return setComponent(() => Component);
       } catch (e: any) {
         setComponent(() => undefined);
@@ -39,7 +39,7 @@ const Tunnel = ({
         return forceUpdate();
       }
     })();
-  }, [componentId, dangerouslySetInnerJSX, onError]);
+  }, [componentName, dangerouslySetInnerJSX, onError]);
 
   const FallbackComponent = useCallback((): JSX.Element => {
     return renderError({ error: new Error('[Wormhole]: Failed to render.') });

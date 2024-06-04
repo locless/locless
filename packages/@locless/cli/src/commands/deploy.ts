@@ -4,8 +4,6 @@ import path from 'path';
 import * as fs from 'fs';
 import child_process from 'child_process';
 import chalk from 'chalk';
-import Conf from 'conf';
-import inquirer from 'inquirer';
 import { componentCodegen } from '../templates/component';
 import { writeFile } from '../utils';
 
@@ -22,39 +20,56 @@ const spinner = ora({
 export const deploy = new Command()
   .name('deploy')
   .description('Transform and deploy TS file to Locless cloud.')
-  .action(async () => {
-    await runDeploy();
+  .option('-e, --env <name>', 'env file name', '.env')
+  .action(async (_, options) => {
+    await runDeploy(options.env ?? '.env');
   });
 
-export const runDeploy = async () => {
-  const config: Conf<Record<string, Record<string, string | undefined> | undefined>> = new Conf({
-    projectName: 'loclessCLI',
-  });
-  const authKeys = config.get('auth-key') ?? {};
+export const runDeploy = async (envFileName: string) => {
+  spinner.start('Validating Auth Key...');
 
-  if (!Object.keys(authKeys).length) {
-    console.log(chalk.red("Couldn't find Auth Key! Try to run `npx locless set-key <authKey>` before deploy"));
+  const __dirname = path.resolve();
+
+  const envFilePath = path.join(__dirname, envFileName);
+
+  if (!fs.existsSync(envFilePath)) {
+    spinner.fail(`Couldn't locate env file in ${envFilePath}`);
     return;
   }
 
-  const projectInputAnswer = await inquirer.prompt([
-    {
-      type: 'search-list',
-      message: 'Select project name:',
-      name: 'projectName',
-      choices: Object.keys(authKeys),
-      validate: function () {
-        return true;
-      },
+  const envFile = fs.readFileSync(envFilePath, 'utf-8');
+
+  console.log(envFile);
+
+  const envVars = envFile.match(/^[A-Z0-9_]+=.*$/gm);
+
+  console.log(envVars);
+
+  if (!envVars) {
+    spinner.fail(`Couldn't find any env vars in ${envFilePath}`);
+    return;
+  }
+
+  const envVarsMap = envVars.reduce(
+    (acc, curr) => {
+      const [key, value] = curr.split('=');
+
+      if (key && value) {
+        return {
+          ...acc,
+          [key]: value,
+        };
+      }
+
+      return acc;
     },
-  ]);
+    {} as Record<string, string>
+  );
 
-  spinner.start('Validating Auth Key...');
+  const authKey = envVarsMap.LOCLESS_AUTH_KEY;
 
-  const authKey = authKeys[projectInputAnswer.projectName];
-
-  if (!authKey?.startsWith('loc_auth_')) {
-    spinner.fail('Invalid Auth Key! Try to run `npx locless set-key <authKey>` before deploy');
+  if (!authKey || !authKey?.startsWith('loc_auth_')) {
+    spinner.fail(`LOCLESS_AUTH_KEY env var is not set`);
     return;
   }
 
@@ -63,8 +78,6 @@ export const runDeploy = async () => {
   spinner.start('Searching for locless folder...');
 
   try {
-    const __dirname = path.resolve();
-
     const loclessFolderPath = path.join(__dirname, 'locless');
 
     if (!fs.existsSync(loclessFolderPath)) {
@@ -80,14 +93,6 @@ export const runDeploy = async () => {
 
     spinner.succeed(`Scan result: ${fileList.length} files`);
 
-    const loclessConfigPath = path.join(__dirname, 'locless', 'locless.json');
-
-    let fileComponentsObject = fs.existsSync(loclessConfigPath)
-      ? JSON.parse(fs.readFileSync(loclessConfigPath, 'utf8'))
-      : {};
-
-    const projectObject = { ...(fileComponentsObject[projectInputAnswer.projectName] ?? {}) };
-
     const generatedFolderPath = path.join(__dirname, 'locless', 'generated');
 
     if (!fs.existsSync(generatedFolderPath)) {
@@ -95,18 +100,21 @@ export const runDeploy = async () => {
     }
 
     spinner.start('Compiling...');
+
     for (const file of fileList) {
-      const { name: fileName } = file;
+      const { name: fileName, path: originalPath } = file;
       const fileExt = fileName.split('.').pop();
       if (file.isFile() && (fileExt === 'tsx' || fileExt === 'jsx')) {
         console.log(chalk.gray(`Found ${fileName}...`));
 
-        const fileNameWithoutExt = fileName.slice(0, fileName.length - 4);
+        const fileNameWithoutExt = fileName.replaceAll(`.${fileExt}`, '');
 
         const filePath = path.join(file.path, fileName);
 
-        const buildPath = path.join(__dirname, 'locless', 'build', `${fileNameWithoutExt}.js`);
+        console.log(originalPath);
+        console.log(filePath);
 
+        const buildPath = path.join(__dirname, 'locless', 'build', `${fileNameWithoutExt}.js`);
         const tmpPath = path.join(__dirname, 'locless', 'tmp', `${fileNameWithoutExt}.js`);
 
         try {
@@ -120,39 +128,6 @@ export const runDeploy = async () => {
           const content = await fs.readFileSync(buildPath);
 
           console.log(chalk.green(`Got file content for upload!`));
-
-          /*const uploadUrl = await fetch(`${SERVER_URL}/createUrl`); // TODO: Fix fetch inside CLI
-
-                        const { url } = await uploadUrl.json();
-
-                        console.log(chalk.green(`Got upload link!`));
-
-                        const uploadFile = await fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'text/javascript',
-                            },
-                            body: content,
-                        });
-
-                        const { storageId } = await uploadFile.json();
-
-                        console.log(chalk.green(`File uploaded!`));
-
-                        const saveFile = await fetch(`${SERVER_URL}/saveFile`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                storageId,
-                                projectId: PROJECT_ID,
-                            }),
-                        });
-
-                        if (!saveFile.ok) {
-                            throw new Error('Failed to save file');
-                        }*/
 
           const form = new FormData();
           const blob = new Blob([content]);
@@ -182,10 +157,7 @@ export const runDeploy = async () => {
             return;
           }
 
-          console.log(chalk.green(`File saved to storageId...`));
-          projectObject[fileNameWithoutExt] = component.id;
-          fileComponentsObject[projectInputAnswer.projectName] = projectObject;
-
+          console.log(chalk.green(`File uploaded!`));
           const locComponentFileName = `Loc${fileNameWithoutExt}`;
 
           await writeFile({
@@ -193,7 +165,7 @@ export const runDeploy = async () => {
             filename: locComponentFileName,
             folderPath: generatedFolderPath,
             source: componentCodegen({
-              componentId: component.id,
+              componentName: fileNameWithoutExt,
               fileName: locComponentFileName,
               userProps: [],
             }),
@@ -205,10 +177,6 @@ export const runDeploy = async () => {
       }
     }
     spinner.succeed(`All files compiled! Happy coding!`);
-
-    spinner.start(`Changing locless.json...`);
-    fs.writeFileSync(loclessConfigPath, JSON.stringify(fileComponentsObject));
-    spinner.succeed(`Changed locless.json!`);
   } catch (e) {
     spinner.fail(`${e}`);
     return;

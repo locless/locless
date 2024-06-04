@@ -2,9 +2,6 @@ import { Command } from 'commander';
 import ora from 'ora';
 import path from 'path';
 import fs from 'fs';
-import chalk from 'chalk';
-import Conf from 'conf';
-import inquirer from 'inquirer';
 import { writeFile } from '../utils';
 import { componentCodegen } from '../templates/component';
 
@@ -21,31 +18,9 @@ export const generate = new Command()
   });
 
 export async function runGenerate() {
-  const config: Conf<Record<string, Record<string, string | undefined> | undefined>> = new Conf({
-    projectName: 'loclessCLI',
-  });
-  const authKeys = config.get('auth-key') ?? {};
-
-  if (!Object.keys(authKeys).length) {
-    console.log(chalk.red("Couldn't find Auth Key! Try to run `npx locless set-key <authKey>` before deploy"));
-    return;
-  }
-
-  const projectInputAnswer = await inquirer.prompt([
-    {
-      type: 'search-list',
-      message: 'Select project name:',
-      name: 'projectName',
-      choices: Object.keys(authKeys),
-      validate: function () {
-        return true;
-      },
-    },
-  ]);
+  const __dirname = path.resolve();
 
   spinner.start('Start generating...');
-
-  const __dirname = path.resolve();
 
   const loclessFolderPath = path.join(__dirname, 'locless');
 
@@ -54,13 +29,13 @@ export async function runGenerate() {
     return;
   }
 
-  const loclessConfigPath = path.join(__dirname, 'locless', 'locless.json');
+  spinner.succeed(`Found Locless folder: ${loclessFolderPath}`);
 
-  let fileComponentsObject = fs.existsSync(loclessConfigPath)
-    ? JSON.parse(fs.readFileSync(loclessConfigPath, 'utf8'))
-    : {};
+  spinner.start('Scanning Locless folder...');
 
-  const projectObject: Record<string, string> = { ...(fileComponentsObject[projectInputAnswer.projectName] ?? {}) };
+  const fileList = fs.readdirSync(loclessFolderPath, { withFileTypes: true });
+
+  spinner.succeed(`Scan result: ${fileList.length} files`);
 
   const generatedFolderPath = path.join(__dirname, 'locless', 'generated');
 
@@ -69,21 +44,25 @@ export async function runGenerate() {
   }
 
   try {
-    for (const component of Object.entries(projectObject)) {
-      const name = component[0];
-      const componentId = component[1];
-      const locComponentFileName = `Loc${name}`;
+    for (const file of fileList) {
+      const { name: fileName } = file;
+      const fileExt = fileName.split('.').pop();
 
-      await writeFile({
-        ctx: fs,
-        filename: locComponentFileName,
-        folderPath: generatedFolderPath,
-        source: componentCodegen({
-          componentId,
-          fileName: locComponentFileName,
-          userProps: [],
-        }),
-      });
+      if (file.isFile() && (fileExt === 'tsx' || fileExt === 'jsx')) {
+        const fileNameWithoutExt = fileName.replaceAll(`.${fileExt}`, '');
+        const locComponentFileName = `Loc${fileNameWithoutExt}`;
+
+        await writeFile({
+          ctx: fs,
+          filename: locComponentFileName,
+          folderPath: generatedFolderPath,
+          source: componentCodegen({
+            componentName: fileNameWithoutExt,
+            fileName: locComponentFileName,
+            userProps: [],
+          }),
+        });
+      }
     }
 
     spinner.succeed(`All files generated! Happy coding!`);

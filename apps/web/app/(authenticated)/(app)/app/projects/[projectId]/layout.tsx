@@ -24,6 +24,8 @@ export default async function ProjectPageLayout(props: Props) {
     },
   });
 
+  console.log(project);
+
   if (!project || project.workspace.tenantId !== tenantId) {
     return notFound();
   }

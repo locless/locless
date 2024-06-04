@@ -29,7 +29,7 @@ export default async function SettingsPage(props: Props) {
   });
 
   if (!workspace || workspace.tenantId !== tenantId) {
-    return redirect('/');
+    return notFound();
   }
 
   const project = workspace.projects.find(project => project.id === props.params.projectId);

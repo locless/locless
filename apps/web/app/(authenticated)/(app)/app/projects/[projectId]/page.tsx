@@ -5,7 +5,7 @@ import { BookOpen, Code } from 'lucide-react';
 import Link from 'next/link';
 import { getTenantId } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 interface Props {
   params: {
@@ -31,7 +31,7 @@ export default async function ProjectPage(props: Props) {
   });
 
   if (!project || project.workspace.tenantId !== tenantId) {
-    return redirect('/new');
+    return notFound();
   }
 
   return (
