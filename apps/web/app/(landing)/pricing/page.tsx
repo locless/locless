@@ -6,7 +6,7 @@ const tiers = {
     free: {
         name: 'Free Tier',
         id: 'free',
-        href: '/app',
+        href: '/',
         price: 0,
         description: 'Everything you need to start your journey with us!',
         buttonText: 'Start building',
@@ -16,7 +16,7 @@ const tiers = {
     pro: {
         name: 'Pro Tier',
         id: 'paid',
-        href: '/app',
+        href: '/',
         price: 25,
         description: 'For those with teams and more demanding needs',
         buttonText: 'Upgrade now',
@@ -76,20 +76,6 @@ export const metadata = {
         description: 'Pricing for Locless',
         url: 'https://locless.com/pricing',
         siteName: 'locless.com',
-        images: [
-            {
-                url: 'https://locless.com/images/landing/og.png',
-                width: 1200,
-                height: 675,
-            },
-        ],
-    },
-    twitter: {
-        title: 'Locless',
-        card: 'summary_large_image',
-    },
-    icons: {
-        shortcut: '/images/landing/locless.png',
     },
 };
 

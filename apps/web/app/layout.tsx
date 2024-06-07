@@ -77,12 +77,6 @@ export const metadata = {
         description: 'Accelerate your mobile development ',
         url: 'https://locless.com',
         siteName: 'locless.com',
-        images: ['https://locless.com/images/landing/og.png'],
-    },
-    twitter: {
-        title: 'Locless',
-        card: 'summary_large_image',
-        images: ['https://locless.com/images/landing/og.png'],
     },
     robots: {
         index: true,
