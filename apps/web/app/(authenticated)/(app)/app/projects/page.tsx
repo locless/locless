@@ -1,81 +1,74 @@
-'use client';
-
 import { PageHeader } from '@/components/dashboard/page-header';
 import { CreateProjectButton } from './create-project-button';
 
 import { Separator } from '@repo/ui/components/ui/separator';
-import { Search } from 'lucide-react';
 import Link from 'next/link';
 import { ProjectList } from './client';
-import { useConvexAuth, useMutation, useQuery } from 'convex/react';
-import { api } from '@repo/backend/convex/_generated/api';
-import { useEffect } from 'react';
-import { Loading } from '@/components/dashboard/loading';
+import { DesktopTopBar } from '../desktop-topbar';
+import { getTenantId } from '@/lib/auth';
+import { and, db, eq, isNull, schema, sql } from '@/lib/db';
+import { redirect } from 'next/navigation';
 
-export default function ApisOverviewPage() {
-    const workspace = useQuery(api.workspace.getWorkspace);
-    const createPersonal = useMutation(api.workspace.createPersonal);
-    const { isLoading } = useConvexAuth();
+export default async function ApisOverviewPage() {
+  const tenantId = getTenantId();
 
-    useEffect(() => {
-        const createSpace = async () => {
-            await createPersonal();
-        };
+  const workspace = await db.query.workspaces.findFirst({
+    where: (table, { and, eq, isNull }) => and(eq(table.tenantId, tenantId), isNull(table.deletedAt)),
+    with: {
+      projects: {
+        where: (table, { isNull }) => isNull(table.deletedAt),
+      },
+    },
+  });
 
-        if (!isLoading && workspace === null) {
-            createSpace();
-        }
-    }, [workspace, isLoading]);
+  if (!workspace) {
+    return redirect('/');
+  }
 
-    if (workspace === null) {
-        return null;
-    }
+  const projects = await Promise.all(
+    workspace.projects.map(async project => ({
+      id: project.id,
+      name: project.name,
+      components: await db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.components)
+        .where(and(eq(schema.components.projectId, project.id!), isNull(schema.components.deletedAt))),
+    }))
+  );
 
-    if (workspace === undefined) {
-        return (
-            <div className='flex h-screen items-center justify-center '>
-                <Loading />
+  const unpaid = workspace.tenantId.startsWith('org_') && workspace.plan === 'free';
+
+  return (
+    <>
+      <DesktopTopBar className='flex items-center' />
+      <div className='p-4 border-l bg-background border-border w-full flex-1 lg:p-8'>
+        <PageHeader
+          title='Dashboard'
+          description='Manage your projects'
+          actions={[<CreateProjectButton disabled={unpaid} />]}
+        />
+        <Separator className='my-6' />
+        {unpaid ? (
+          <div>
+            <div className='mt-10 flex min-h-[400px] flex-col items-center  justify-center space-y-6 rounded-lg border border-dashed px-4 md:mt-24'>
+              <h3 className='text-center text-xl font-semibold leading-none tracking-tight md:text-2xl'>
+                Please add billing to your account
+              </h3>
+              <p className='text-center text-sm text-gray-500 md:text-base'>
+                Team workspaces is a paid feature. Please add billing to your account to continue using it.
+              </p>
+              <Link
+                href='/app/settings/billing/stripe'
+                target='_blank'
+                className='mr-3 rounded-lg bg-gray-800 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-500 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 dark:focus:ring-gray-800'>
+                Add billing
+              </Link>
             </div>
-        );
-    }
-
-    const unpaid = workspace.tenantId.startsWith('org_') && workspace.plan === 'free';
-
-    return (
-        <div className=''>
-            {unpaid ? (
-                <div>
-                    <PageHeader title='Applications' description='Manage your projects' />
-                    <Separator className='my-6' />
-                    <section className='my-4 flex flex-col gap-4 md:flex-row md:items-center'>
-                        <div className='border-border focus-within:border-primary/40 flex h-8 flex-grow items-center gap-2 rounded-md border bg-transparent px-3 py-2 text-sm'>
-                            <Search className='h-4 w-4' />
-                            <input
-                                disabled
-                                className='placeholder:text-content-subtle flex-grow bg-transparent focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 '
-                                placeholder='Search..'
-                            />
-                        </div>
-                        <CreateProjectButton workspaceId={workspace?._id} disabled />
-                    </section>
-                    <div className='mt-10 flex min-h-[400px] flex-col items-center  justify-center space-y-6 rounded-lg border border-dashed px-4 md:mt-24'>
-                        <h3 className='text-center text-xl font-semibold leading-none tracking-tight md:text-2xl'>
-                            Please add billing to your account
-                        </h3>
-                        <p className='text-center text-sm text-gray-500 md:text-base'>
-                            Team workspaces is a paid feature. Please add billing to your account to continue using it.
-                        </p>
-                        <Link
-                            href='/app/settings/billing/stripe'
-                            target='_blank'
-                            className='mr-3 rounded-lg bg-gray-800 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-500 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 dark:focus:ring-gray-800'>
-                            Add billing
-                        </Link>
-                    </div>
-                </div>
-            ) : (
-                <ProjectList workspaceId={workspace?._id} />
-            )}
-        </div>
-    );
+          </div>
+        ) : (
+          <ProjectList projects={projects} />
+        )}
+      </div>
+    </>
+  );
 }

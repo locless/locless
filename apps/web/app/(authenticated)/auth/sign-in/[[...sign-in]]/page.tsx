@@ -8,7 +8,7 @@ import {
     AlertDialogContent,
     AlertDialogFooter,
 } from '@repo/ui/components/ui/alert-dialog';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/nextjs';
 import { SearchX } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';

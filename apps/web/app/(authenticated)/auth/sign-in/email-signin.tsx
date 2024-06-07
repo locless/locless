@@ -4,7 +4,7 @@ import { Loading } from '@/components/dashboard/loading';
 import { Button } from '@repo/ui/components/ui/button';
 import { Input } from '@repo/ui/components/ui/input';
 import { useToast } from '@repo/ui/components/ui/use-toast';
-import { useSignIn } from '@clerk/clerk-react';
+import { useSignIn } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 

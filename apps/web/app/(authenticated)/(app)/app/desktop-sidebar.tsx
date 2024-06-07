@@ -1,12 +1,12 @@
 'use client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@repo/ui/components/ui/tooltip';
 import { cn } from '@repo/ui/lib/utils';
-import { Activity, BookOpen, Code, Loader2, LucideIcon, Settings, ShieldHalf } from 'lucide-react';
+import { BookOpen, Code, Loader2, LucideIcon, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { useSelectedLayoutSegments } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import React, { useTransition } from 'react';
-import { OrganizationSwitcher, UserButton } from '@clerk/clerk-react';
+import { OrganizationSwitcher } from '@clerk/nextjs';
 
 type Props = {
     className?: string;
@@ -25,13 +25,7 @@ type NavItem = {
 
 export const DesktopSidebar: React.FC<Props> = ({ className }) => {
     const segments = useSelectedLayoutSegments();
-    const navigation: NavItem[] = [
-        {
-            icon: Code,
-            href: '/app/projects',
-            label: 'Projects',
-            active: segments.length === 1 && segments.at(0) === 'projects',
-        },
+    const generalNavigation: NavItem[] = [
         {
             icon: Settings,
             href: '/app/settings/general',
@@ -44,18 +38,14 @@ export const DesktopSidebar: React.FC<Props> = ({ className }) => {
             external: true,
             label: 'Docs',
         },
+    ];
 
+    const editorNavigation: NavItem[] = [
         {
-            icon: ShieldHalf,
-            label: 'Translations',
-            href: '/app/translations',
-            active: segments.at(0) === 'variables',
-        },
-        {
-            icon: Activity,
-            href: '/app/variables',
-            label: 'Variables',
-            active: segments.at(0) === 'variables',
+            icon: Code,
+            href: '/app/projects',
+            label: 'Projects',
+            active: segments.length === 1 && segments.at(0) === 'projects',
         },
     ];
 
@@ -65,7 +55,7 @@ export const DesktopSidebar: React.FC<Props> = ({ className }) => {
 
     return (
         <aside className={cn('w-64 px-6 z-10', className)}>
-            <div className='flex min-w-full mt-4'>
+            <div className='py-4'>
                 <OrganizationSwitcher />
             </div>
             <nav className='flex flex-col flex-1 flex-grow mt-4'>
@@ -73,7 +63,17 @@ export const DesktopSidebar: React.FC<Props> = ({ className }) => {
                     <li>
                         <h2 className='text-xs font-semibold leading-6 text-content'>General</h2>
                         <ul className='mt-2 -mx-2 space-y-1'>
-                            {navigation.map(item => (
+                            {generalNavigation.map(item => (
+                                <li key={item.label}>
+                                    <NavLink item={item} />
+                                </li>
+                            ))}
+                        </ul>
+                    </li>
+                    <li>
+                        <h2 className='text-xs font-semibold leading-6 text-content'>Editor</h2>
+                        <ul className='mt-2 -mx-2 space-y-1'>
+                            {editorNavigation.map(item => (
                                 <li key={item.label}>
                                     <NavLink item={item} />
                                 </li>
@@ -82,9 +82,6 @@ export const DesktopSidebar: React.FC<Props> = ({ className }) => {
                     </li>
                 </ul>
             </nav>
-            <div className='mt-auto my-4'>
-                <UserButton showName />
-            </div>
         </aside>
     );
 };

@@ -10,13 +10,7 @@ const tiers = {
         price: 0,
         description: 'Everything you need to start your journey with us!',
         buttonText: 'Start building',
-        features: [
-            '50 Active Components',
-            '50 Active Variables',
-            '50 Active Translations',
-            '2500 Requests per month',
-            'Discord Support',
-        ],
+        features: ['5 Active Components', '2500 Requests per month', '1000 File loads per month', 'Discord Support'],
         footnotes: [],
     },
     pro: {
@@ -28,15 +22,15 @@ const tiers = {
         buttonText: 'Upgrade now',
         features: [
             '100 Active Components *',
-            '100 Active Variables *',
-            '100 Active Translations *',
-            '100.000 Requests per month **',
+            '150.000 Requests per month **',
+            '100.000 File loads per month ***',
             'Workspaces with team members',
             'Priority Support',
         ],
         footnotes: [
             ' *  Additional elements are billed at $0.10',
-            ' ** Additional requests are billed at $25 per 100,000',
+            ' ** Additional requests are billed at $1 per 100,000',
+            ' *** Additional file loads are billed at $1 per 10,000',
         ],
     },
     custom: {
