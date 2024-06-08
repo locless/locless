@@ -1,7 +1,7 @@
 'use client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@repo/ui/components/ui/tooltip';
 import { cn } from '@repo/ui/lib/utils';
-import { BookOpen, Code, Loader2, LucideIcon, Settings } from 'lucide-react';
+import { BookOpen, Code, Loader2, LucideIcon, Settings, HandCoins } from 'lucide-react';
 import Link from 'next/link';
 import { useSelectedLayoutSegments } from 'next/navigation';
 import { useRouter } from 'next/navigation';
@@ -37,6 +37,12 @@ export const DesktopSidebar: React.FC<Props> = ({ className }) => {
             href: 'https://docs.locless.com/',
             external: true,
             label: 'Docs',
+        },
+        {
+            icon: HandCoins,
+            href: '/app/billing',
+            external: true,
+            label: 'Billing',
         },
     ];
 

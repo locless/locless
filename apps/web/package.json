@@ -31,6 +31,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.51.0",
     "react-intersection-observer": "^9.8.1",
+    "stripe": "^15.10.0",
     "superjson": "^2.2.1",
     "trpc-tools": "^0.12.0",
     "uuid": "^9.0.1",
