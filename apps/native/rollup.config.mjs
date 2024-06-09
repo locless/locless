@@ -6,6 +6,7 @@ export default {
   plugins: [
     typescript(),
     babel({
+      configFile: false,
       babelHelpers: 'runtime',
       presets: ['babel-preset-expo'],
       extensions: ['.js', '.jsx', '.tsx'],

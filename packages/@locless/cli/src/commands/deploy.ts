@@ -127,10 +127,11 @@ export const runDeploy = async (envFileName: string) => {
 
         try {
           child_process
-            .execSync(`npx rollup -c --bundleConfigAsCjs -i ${filePath} -o ${buildPath} --compact --format cjs`)
+            .execSync(`npx rollup -c --bundleConfigAsCjs -i ${filePath} -o ${tmpPath} --compact`)
             .toString();
+          child_process.execSync(`npx babel ${tmpPath} -o ${buildPath}`).toString();
 
-          // fs.unlinkSync(tmpPath);
+          fs.unlinkSync(tmpPath);
 
           console.log(chalk.green(`Compiled ${fileName} to ${fileNameWithoutExt}.js`));
 

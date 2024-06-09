@@ -65,8 +65,9 @@
   "peerDependencies": {
     "axios": "*",
     "react": "*",
+    "react-error-boundary": "*",
     "react-native": "*",
-    "react-error-boundary": "*"
+    "@tanstack/react-query": "*"
   },
   "commitlint": {
     "extends": [
@@ -92,7 +93,15 @@
     "extends": [
       "@react-native",
       "prettier"
-    ]
+    ],
+    "rules": {
+      "prettier/prettier": [
+        "error",
+        {
+          "endOfLine": "auto"
+        }
+      ]
+    }
   },
   "eslintIgnore": [
     "node_modules/",
@@ -112,6 +121,7 @@
     ]
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.40.1",
     "axios": "^1.7.2",
     "react-error-boundary": "^4.0.13"
   }
