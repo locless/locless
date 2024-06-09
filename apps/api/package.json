@@ -8,6 +8,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@openmeter/sdk": "^1.0.0-beta.83",
     "@planetscale/database": "^1.18.0",
     "@repo/db": "*",
     "@repo/id": "*",

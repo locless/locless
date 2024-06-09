@@ -4,6 +4,7 @@ export const env = () =>
   z
     .object({
       TINYBIRD_TOKEN: z.string().optional(),
+      OPEN_METER_TOKEN: z.string(),
     })
     .parse(process.env);
 
@@ -19,7 +20,19 @@ export const dbEnv = () =>
 const stripeSchema = z.object({
   STRIPE_SECRET_KEY: z.string(),
   STRIPE_WEBHOOK_SECRET: z.string(),
+  STRIPE_PRICE_REQUESTS_HOBBY: z.string(),
+  STRIPE_PRICE_REQUESTS_PRO: z.string(),
+  STRIPE_PRICE_COMPONENTS_HOBBY: z.string(),
+  STRIPE_PRICE_COMPONENTS_PRO: z.string(),
 });
 
 const stripeParsed = stripeSchema.safeParse(process.env);
 export const stripeEnv = () => (stripeParsed.success ? stripeParsed.data : null);
+
+export const webhookEnv = () =>
+  z
+    .object({
+      OPEN_METER_WEBHOOK_SECRET_API_REQUESTS_TOTAL: z.string(),
+      OPEN_METER_WEBHOOK_SECRET_ACTIVE_COMPONENTS_TOTAL: z.string(),
+    })
+    .parse(process.env);
