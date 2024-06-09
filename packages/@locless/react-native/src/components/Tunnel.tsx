@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { createComponent } from '../utils';
-import LoclessContext from '../providers/LoclessContext';
 
 export type TunnelProps = {
   readonly componentName: string;
+  readonly globalRequires: Record<string, NodeRequire>;
   readonly renderLoading?: () => JSX.Element;
   readonly renderError?: (props: { readonly error: Error }) => JSX.Element;
   readonly onError?: (error: Error) => void;
@@ -15,12 +15,12 @@ export type TunnelProps = {
 
 const Tunnel = ({
   componentName,
+  globalRequires,
   renderLoading = () => <></>,
   renderError = () => <></>,
   onError = console.error,
   ...extras
 }: TunnelProps): JSX.Element => {
-  const { defaultImportsConfig } = useContext(LoclessContext);
   const { data: fetchedData, error } = useQuery({
     queryKey: [`${componentName}`],
     queryFn: async ({ queryKey }) => {
@@ -32,6 +32,22 @@ const Tunnel = ({
       return data;
     },
   });
+
+  const defaultImportsConfig = useMemo(() => {
+    const mergedGlobal = { ...(globalRequires ?? {}) };
+
+    const defaultGlobal = Object.freeze({
+      require: (moduleId: string) => {
+        if (typeof mergedGlobal[moduleId] === 'undefined') {
+          throw new Error(`[Locless]: Please add require(${moduleId}) to global prop.`);
+        }
+
+        return mergedGlobal[moduleId] ?? null;
+      },
+    });
+
+    return defaultGlobal;
+  }, [globalRequires]);
 
   const [Component, setComponent] = useState<React.Component | undefined>(undefined);
 

@@ -1,21 +1,10 @@
 import type { PropsWithChildren } from 'react';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import axios from 'axios';
-import LoclessContext from './LoclessContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { LoclessContextState } from './types';
-
-const defaultGlobalImports = {
-  '@babel/runtime/helpers/interopRequireDefault': require('@babel/runtime/helpers/interopRequireDefault'),
-  '@babel/runtime/helpers/slicedToArray': require('@babel/runtime/helpers/slicedToArray'),
-  react: require('react'),
-  'react-native': require('react-native'),
-  'react/jsx-runtime': require('react/jsx-runtime'),
-};
 
 type LoclessConfig = {
   preloadArray?: string[];
-  customImports?: Record<string, NodeRequire>;
   apiKey: string;
 };
 
@@ -25,24 +14,8 @@ interface Props extends PropsWithChildren {
 
 const queryClient = new QueryClient();
 
-const LoclessProvider = ({ children, config: { preloadArray, customImports, apiKey } }: Props) => {
+const LoclessProvider = ({ children, config: { preloadArray, apiKey } }: Props) => {
   axios.defaults.headers['x-api-key'] = apiKey;
-
-  const defaultImportsConfig = useMemo(() => {
-    const mergedGlobal: Record<string, NodeRequire> = { ...defaultGlobalImports, ...(customImports ?? {}) };
-
-    const defaultGlobal = Object.freeze({
-      require: (moduleId: string) => {
-        if (typeof mergedGlobal[moduleId] === 'undefined') {
-          throw new Error(`[Locless]: Please add require(${moduleId}) to global prop.`);
-        }
-
-        return mergedGlobal[moduleId] ?? null;
-      },
-    });
-
-    return defaultGlobal;
-  }, [customImports]);
 
   useEffect(() => {
     (async () => {
@@ -64,18 +37,7 @@ const LoclessProvider = ({ children, config: { preloadArray, customImports, apiK
     })();
   }, [preloadArray]);
 
-  const contextValue = useMemo<LoclessContextState>(
-    () => ({
-      defaultImportsConfig,
-    }),
-    [defaultImportsConfig]
-  );
-
-  return (
-    <LoclessContext.Provider value={contextValue}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </LoclessContext.Provider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 };
 
 export default LoclessProvider;

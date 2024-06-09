@@ -5,12 +5,9 @@ import * as fs from 'fs';
 import child_process from 'child_process';
 import chalk from 'chalk';
 import { componentCodegen } from '../templates/component';
-import { writeFile } from '../utils';
+import { format, writeFile } from '../utils';
 
-const DEV_WEBSITE_URL = 'http://127.0.0.1:8787';
-const PROD_WEBSITE_URL = 'https://api.xan50rus.workers.dev';
-
-const SERVER_URL = PROD_WEBSITE_URL;
+const SERVER_URL = 'https://api.locless.com';
 
 const spinner = ora({
   text: 'Loading...',
@@ -126,9 +123,7 @@ export const runDeploy = async (envFileName: string) => {
         const tmpPath = path.join(__dirname, 'locless', 'tmp', `${fileNameWithoutExt}.js`);
 
         try {
-          child_process
-            .execSync(`npx rollup -c --bundleConfigAsCjs -i ${filePath} -o ${tmpPath} --compact`)
-            .toString();
+          child_process.execSync(`npx rollup -c --bundleConfigAsCjs -i ${filePath} -o ${tmpPath} --compact`).toString();
           child_process.execSync(`npx babel ${tmpPath} -o ${buildPath}`).toString();
 
           fs.unlinkSync(tmpPath);
@@ -137,29 +132,39 @@ export const runDeploy = async (envFileName: string) => {
 
           const content = await fs.readFileSync(buildPath);
 
-          const requireObject: Record<string, string> = {};
-
-          const result = parseRequires(content.toString(), requireObject);
+          const result = parseRequires(content.toString(), {});
 
           if (result) {
             const constantFolderPath = path.join(__dirname, 'locless', 'constants');
-            const dest = path.join(constantFolderPath, `index.ts`);
 
             if (!fs.existsSync(constantFolderPath)) {
               fs.mkdirSync(constantFolderPath);
             }
 
-            fs.writeFileSync(
-              dest,
-              `
-                export const locRequires = {
-                  ${Object.keys(result)
-                    .map(key => `${key}: ${result[key]}`)
+            const fileRequiresPath = path.join(constantFolderPath, 'locGlobalRequires.ts');
+
+            const fileRequiresObject = fs.existsSync(fileRequiresPath)
+              ? fs.readFileSync(fileRequiresPath, 'utf-8')
+              : null;
+
+            const oldObject = fileRequiresObject ? parseRequires(fileRequiresObject.toString(), {}) : {};
+
+            const endResult = {
+              ...oldObject,
+              ...result,
+            };
+
+            const requiresSource = `
+                export default {
+                  ${Object.keys(endResult)
+                    .map(key => `${key}: ${endResult[key]}`)
                     .join(',\n')}
                 }
-              `,
-              'utf-8'
-            );
+              `;
+
+            const formattedSource = await format(requiresSource, 'typescript');
+
+            fs.writeFileSync(fileRequiresPath, formattedSource, 'utf-8');
           }
 
           console.log(chalk.green(`Got file content for upload!`));

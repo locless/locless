@@ -3,7 +3,7 @@ import path from 'path';
 import prettier from 'prettier';
 import chalk from 'chalk';
 
-const format = (source: string, filetype: string): Promise<string> => {
+export const format = (source: string, filetype: string): Promise<string> => {
   return prettier.format(source, { parser: filetype, pluginSearchDirs: false });
 };
 

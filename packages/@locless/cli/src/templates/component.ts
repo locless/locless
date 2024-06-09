@@ -9,6 +9,7 @@ interface ComponentCodegenProps {
 export function componentCodegen({ fileName, userProps, componentName }: ComponentCodegenProps): string {
   const code = `${header('Generated `component` utility.')}
   import { Tunnel } from "@locless/react-native";
+  import locGlobalRequires from '../constants/locGlobalRequires';
 
   export const ${fileName}Id = '${componentName}';
 
@@ -20,7 +21,7 @@ export function componentCodegen({ fileName, userProps, componentName }: Compone
   }
 
   const ${fileName} = (props: IProps) => {
-    return <Tunnel componentName='${componentName}' {...props} />
+    return <Tunnel componentName='${componentName}' globalRequires={locGlobalRequires} {...props} />
   }
 
   export default ${fileName};
