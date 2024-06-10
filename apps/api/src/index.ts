@@ -90,7 +90,7 @@ app.get('/file/:name', async c => {
     return c.text("File doesn't exists", 404);
   }
 
-  if (project.workspace.plan !== 'free' && project.workspace.stripeSubscriptionId) {
+  if (project.workspace.plan !== 'free' && project.workspace.stripeCustomerId) {
     const openmeter = new OpenMeter({
       baseUrl: 'https://openmeter.cloud',
       token: c.env.OPEN_METER_TOKEN,
@@ -100,7 +100,7 @@ app.get('/file/:name', async c => {
       source: 'locless-api',
       type: 'request',
       time: new Date(),
-      subject: project.workspace.stripeSubscriptionId,
+      subject: project.workspace.stripeCustomerId,
       data: {
         value: '1',
       },
@@ -225,7 +225,7 @@ app.post('/generate', async c => {
         result = newComponentId;
       }
 
-      if (project.workspace.plan !== 'free' && project.workspace.stripeSubscriptionId) {
+      if (project.workspace.plan !== 'free' && project.workspace.stripeCustomerId) {
         const openmeter = new OpenMeter({
           baseUrl: 'https://openmeter.cloud',
           token: c.env.OPEN_METER_TOKEN,
@@ -235,7 +235,7 @@ app.post('/generate', async c => {
           source: 'locless-api',
           type: 'request',
           time: new Date(),
-          subject: project.workspace.stripeSubscriptionId,
+          subject: project.workspace.stripeCustomerId,
           data: {
             value: '1',
           },
@@ -246,7 +246,7 @@ app.post('/generate', async c => {
             source: 'locless-api',
             type: 'active_component',
             time: new Date(),
-            subject: project.workspace.stripeSubscriptionId,
+            subject: project.workspace.stripeCustomerId,
             data: {
               value: '1',
             },

@@ -51,18 +51,6 @@ export default async function webhookHandler(req: NextApiRequest, res: NextApiRe
   }
 }
 
-const getPriceIdForMeter = (meterSlug: string, tier: 'hobby' | 'pro' | 'free' | 'enterprise') => {
-  const { STRIPE_PRICE_REQUESTS_HOBBY, STRIPE_PRICE_REQUESTS_PRO } = stripeEnv()!;
-
-  if (tier === 'enterprise' || tier === 'free') {
-    return '';
-  }
-
-  if (meterSlug === 'api_requests_total_webhook') {
-    return `${tier === 'hobby' ? STRIPE_PRICE_REQUESTS_HOBBY : STRIPE_PRICE_REQUESTS_PRO}`;
-  }
-};
-
 async function reportUsageToStripe(idempotencyKey: string, msg: any) {
   const { usage, meter, query } = msg;
 
@@ -83,32 +71,18 @@ async function reportUsageToStripe(idempotencyKey: string, msg: any) {
     typescript: true,
   });
 
-  // Find stripe subscription item for meter
-  const subscriptionItems = await stripe.subscriptionItems.list({
-    subscription: ws.stripeSubscriptionId,
-  });
-
   for (const item in usage) {
     const { value, windowend } = item as any;
-    const subscriptionItem = subscriptionItems.data.find(
-      ({ price }) =>
-        // retreive stripe price id for meter (usually from config)
-        price.id === getPriceIdForMeter(meter.slug, ws.plan)
-    );
-
-    if (subscriptionItem) {
-      // Report usage to Stripe
-      await stripe.subscriptionItems.createUsageRecord(
-        subscriptionItem.id,
-        {
-          quantity: value,
-          timestamp: windowend,
-          action: 'set',
+    if (ws.stripeCustomerId && meter.slug === 'api_requests_total_webhook') {
+      await stripe.billing.meterEvents.create({
+        event_name: ws.plan === 'hobby' ? 'api_requests_hobby' : 'api_requests',
+        timestamp: windowend,
+        payload: {
+          value: value,
+          stripe_customer_id: ws.stripeCustomerId,
         },
-        {
-          idempotencyKey,
-        }
-      );
+        identifier: idempotencyKey,
+      });
     }
   }
 }

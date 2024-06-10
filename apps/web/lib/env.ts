@@ -20,10 +20,6 @@ export const dbEnv = () =>
 const stripeSchema = z.object({
   STRIPE_SECRET_KEY: z.string(),
   STRIPE_WEBHOOK_SECRET: z.string(),
-  STRIPE_PRICE_REQUESTS_HOBBY: z.string(),
-  STRIPE_PRICE_REQUESTS_PRO: z.string(),
-  STRIPE_PRICE_COMPONENTS_HOBBY: z.string(),
-  STRIPE_PRICE_COMPONENTS_PRO: z.string(),
 });
 
 const stripeParsed = stripeSchema.safeParse(process.env);
