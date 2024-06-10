@@ -3,7 +3,7 @@ import { createConnection, schema } from './db';
 import { UTApi } from 'uploadthing/server';
 import { newId } from '@repo/id';
 import { eq } from 'drizzle-orm';
-import { OpenMeter } from '@openmeter/sdk';
+import dayjs from 'dayjs';
 
 export type Env = {
   MY_BUCKET: R2Bucket;
@@ -20,10 +20,38 @@ const app = new Hono<{ Bindings: Env }>();
 type Subscription = {
   api_requests_total: number;
   active_components_total: number;
+  api_requests_monthly: number;
+  active_components_monthly: number;
 };
 
-const hasEnoughApiRequests = (api_requests_total = 0, plan: 'hobby' | 'pro' | 'free' | 'enterprise') => {
-  if (plan === 'free' && api_requests_total + 1 <= 1000) {
+const DEFAULT_SUBSCRIPTIONS: Subscription = {
+  api_requests_total: 0,
+  active_components_total: 0,
+  api_requests_monthly: 0,
+  active_components_monthly: 0,
+};
+
+const ingestOpenMeterEvent = async (stripeCustomerId: string, token: string, eventName: string, data: any) => {
+  await fetch('https://openmeter.cloud/api/v1/events', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/cloudevents+json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      id: crypto.randomUUID(),
+      source: 'locless-api',
+      type: eventName,
+      time: new Date(),
+      subject: stripeCustomerId,
+      data,
+      specversion: '1.0',
+    }),
+  });
+};
+
+const hasEnoughApiRequests = (api_requests_monthly = 0, plan: 'hobby' | 'pro' | 'free' | 'enterprise') => {
+  if (plan === 'free' && api_requests_monthly + 1 <= 1000) {
     return true;
   }
 
@@ -66,11 +94,33 @@ app.get('/file/:name', async c => {
     return c.text('Invalid Api Key', 400);
   }
 
+  const isMonthPassed = dayjs().isBefore(dayjs(project.workspace.refilledAt), 'month');
+
   if (
-    !hasEnoughApiRequests((project.workspace.subscriptions as Subscription)?.api_requests_total, project.workspace.plan)
+    !isMonthPassed &&
+    !hasEnoughApiRequests(
+      (project.workspace.subscriptions as Subscription)?.api_requests_monthly,
+      project.workspace.plan
+    )
   ) {
     return c.text('Too many requests', 429);
   }
+
+  const subscriptions = (project.workspace.subscriptions as Subscription) ?? DEFAULT_SUBSCRIPTIONS;
+
+  const { api_requests_total, api_requests_monthly } = subscriptions;
+
+  await db
+    .update(schema.workspaces)
+    .set({
+      refilledAt: isMonthPassed ? new Date() : project.workspace.refilledAt,
+      subscriptions: {
+        ...subscriptions,
+        api_requests_total: api_requests_total + 1,
+        api_requests_monthly: isMonthPassed ? 1 : api_requests_monthly + 1,
+      },
+    })
+    .where(eq(schema.workspaces.id, project.workspace.id));
 
   const { name } = await c.req.param();
 
@@ -91,38 +141,10 @@ app.get('/file/:name', async c => {
   }
 
   if (project.workspace.plan !== 'free' && project.workspace.stripeCustomerId) {
-    const openmeter = new OpenMeter({
-      baseUrl: 'https://openmeter.cloud',
-      token: c.env.OPEN_METER_TOKEN,
-    });
-
-    await openmeter.events.ingest({
-      source: 'locless-api',
-      type: 'request',
-      time: new Date(),
-      subject: project.workspace.stripeCustomerId,
-      data: {
-        value: '1',
-      },
+    await ingestOpenMeterEvent(project.workspace.stripeCustomerId, c.env.OPEN_METER_TOKEN, 'request', {
+      value: '1',
     });
   }
-
-  const subscriptions = (project.workspace.subscriptions as Subscription) ?? {
-    api_requests_total: 0,
-    active_components_total: 0,
-  };
-
-  const { api_requests_total } = subscriptions;
-
-  await db
-    .update(schema.workspaces)
-    .set({
-      subscriptions: {
-        ...subscriptions,
-        api_requests_total: api_requests_total + 1,
-      },
-    })
-    .where(eq(schema.workspaces.id, project.workspace.id));
 
   return c.body(blobVal, 201);
 });
@@ -147,11 +169,35 @@ app.post('/generate', async c => {
     return c.text('Invalid Api Key', 400);
   }
 
+  const isMonthPassed = dayjs().isBefore(dayjs(project.workspace.refilledAt), 'month');
+
   if (
-    !hasEnoughApiRequests((project.workspace.subscriptions as Subscription)?.api_requests_total, project.workspace.plan)
+    !isMonthPassed &&
+    !hasEnoughApiRequests(
+      (project.workspace.subscriptions as Subscription)?.api_requests_monthly,
+      project.workspace.plan
+    )
   ) {
     return c.text('Too many requests', 429);
   }
+
+  const subscriptions = (project.workspace.subscriptions as Subscription) ?? DEFAULT_SUBSCRIPTIONS;
+
+  const { api_requests_total, api_requests_monthly } = subscriptions;
+
+  const newSubscriptions = {
+    ...subscriptions,
+    api_requests_total: api_requests_total + 1,
+    api_requests_monthly: isMonthPassed ? 1 : api_requests_monthly + 1,
+  };
+
+  await db
+    .update(schema.workspaces)
+    .set({
+      refilledAt: isMonthPassed ? new Date() : project.workspace.refilledAt,
+      subscriptions: newSubscriptions,
+    })
+    .where(eq(schema.workspaces.id, project.workspace.id));
 
   const formData = await c.req.formData();
   const file: any = formData.get('file');
@@ -226,48 +272,26 @@ app.post('/generate', async c => {
       }
 
       if (project.workspace.plan !== 'free' && project.workspace.stripeCustomerId) {
-        const openmeter = new OpenMeter({
-          baseUrl: 'https://openmeter.cloud',
-          token: c.env.OPEN_METER_TOKEN,
-        });
-
-        await openmeter.events.ingest({
-          source: 'locless-api',
-          type: 'request',
-          time: new Date(),
-          subject: project.workspace.stripeCustomerId,
-          data: {
-            value: '1',
-          },
+        await ingestOpenMeterEvent(project.workspace.stripeCustomerId, c.env.OPEN_METER_TOKEN, 'request', {
+          value: '1',
         });
 
         if (!component) {
-          await openmeter.events.ingest({
-            source: 'locless-api',
-            type: 'active_component',
-            time: new Date(),
-            subject: project.workspace.stripeCustomerId,
-            data: {
-              value: '1',
-            },
+          await ingestOpenMeterEvent(project.workspace.stripeCustomerId, c.env.OPEN_METER_TOKEN, 'active_component', {
+            value: '1',
           });
         }
       }
 
-      const subscriptions = (project.workspace.subscriptions as Subscription) ?? {
-        api_requests_total: 0,
-        active_components_total: 0,
-      };
-
-      const { api_requests_total, active_components_total } = subscriptions;
+      const { active_components_total, active_components_monthly } = newSubscriptions;
 
       await db
         .update(schema.workspaces)
         .set({
           subscriptions: {
-            ...subscriptions,
-            api_requests_total: api_requests_total + 1,
-            active_components_total: component ? active_components_total : active_components_total + 1,
+            ...newSubscriptions,
+            active_components_monthly: (isMonthPassed ? 0 : active_components_monthly) + (component ? 0 : 1),
+            active_components_total: active_components_total + (component ? 0 : 1),
           },
         })
         .where(eq(schema.workspaces.id, project.workspace.id));

@@ -43,7 +43,6 @@ export const CreateProjectButton = ({ ...rest }: React.ButtonHTMLAttributes<HTML
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
     create.mutate(values);
   };
 

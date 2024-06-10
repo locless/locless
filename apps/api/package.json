@@ -8,10 +8,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@openmeter/sdk": "^1.0.0-beta.83",
     "@planetscale/database": "^1.18.0",
     "@repo/db": "*",
     "@repo/id": "*",
+    "dayjs": "^1.11.11",
     "drizzle-orm": "^0.31.0",
     "hono": "^4.2.9",
     "uploadthing": "^6.12.0"

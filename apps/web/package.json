@@ -23,6 +23,7 @@
     "@trpc/server": "^11.0.0-rc.390",
     "@types/uuid": "^9.0.8",
     "class-variance-authority": "^0.7.0",
+    "dayjs": "^1.11.11",
     "drizzle-orm": "^0.31.0",
     "framer-motion": "^11.0.12",
     "lucide-react": "^0.357.0",

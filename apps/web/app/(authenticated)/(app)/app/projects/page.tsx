@@ -8,8 +8,23 @@ import { DesktopTopBar } from '../desktop-topbar';
 import { getTenantId } from '@/lib/auth';
 import { and, db, eq, isNull, schema, sql } from '@/lib/db';
 import { redirect } from 'next/navigation';
+import dayjs from 'dayjs';
 
-export default async function ApisOverviewPage() {
+type Subscription = {
+  api_requests_total: number;
+  active_components_total: number;
+  api_requests_monthly: number;
+  active_components_monthly: number;
+};
+
+const DEFAULT_SUBSCRIPTIONS: Subscription = {
+  api_requests_total: 0,
+  active_components_total: 0,
+  api_requests_monthly: 0,
+  active_components_monthly: 0,
+};
+
+export default async function ProjectsOverviewPage() {
   const tenantId = getTenantId();
 
   const workspace = await db.query.workspaces.findFirst({
@@ -23,6 +38,24 @@ export default async function ApisOverviewPage() {
 
   if (!workspace) {
     return redirect('/');
+  }
+
+  const isMonthPassed = dayjs().isBefore(dayjs(workspace.refilledAt), 'month');
+
+  if (isMonthPassed) {
+    const subscriptions = (workspace.subscriptions as Subscription) ?? DEFAULT_SUBSCRIPTIONS;
+
+    await db
+      .update(schema.workspaces)
+      .set({
+        refilledAt: new Date(),
+        subscriptions: {
+          ...subscriptions,
+          api_requests_monthly: 0,
+          active_components_monthly: 0,
+        },
+      })
+      .where(eq(schema.workspaces.id, workspace.id));
   }
 
   const projects = await Promise.all(

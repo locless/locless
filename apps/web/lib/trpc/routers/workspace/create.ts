@@ -30,6 +30,7 @@ export const createWorkspace = t.procedure
       stripeSubscriptionId: null,
       subscriptions: {}, // TODO: add subscriptions,
       createdAt: new Date(),
+      refilledAt: new Date(),
       deletedAt: null,
       enabled: true,
       isPersonal: true,

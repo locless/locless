@@ -1,7 +1,7 @@
 import { CopyButton } from '@/components/dashboard/copy-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/components/ui/card';
 import { Code } from '@repo/ui/components/ui/code';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { DeleteProject } from './delete-project';
 import { UpdateProjectName } from './update-project-name';
 import { getTenantId } from '@/lib/auth';

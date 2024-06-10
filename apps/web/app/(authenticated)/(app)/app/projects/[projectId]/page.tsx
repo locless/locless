@@ -1,20 +1,18 @@
 import { EmptyPlaceholder } from '@/components/dashboard/empty-placeholder';
 import { Button } from '@repo/ui/components/ui/button';
-import { Card, CardHeader, CardTitle } from '@repo/ui/components/ui/card';
+import { Table, TableCell, TableBody, TableHeader, TableHead, TableRow } from '@repo/ui/components/ui/table';
 import { BookOpen, Code } from 'lucide-react';
 import Link from 'next/link';
 import { getTenantId } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { notFound } from 'next/navigation';
+import { ToggleComponentStatusButton } from './toggle-component-status-button';
 
 interface Props {
   params: {
     projectId: string;
   };
 }
-
-export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 export default async function ProjectPage(props: Props) {
   const tenantId = getTenantId();
@@ -37,19 +35,32 @@ export default async function ProjectPage(props: Props) {
   return (
     <div>
       {project.components?.length ? (
-        <ul className='grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-2 xl:grid-cols-3'>
-          {project.components.map(component => (
-            <Link key={component.id} href={`/app/editor/${props.params.projectId}/${component.id}`}>
-              <Card className='hover:border-primary/50 group relative overflow-hidden duration-500 '>
-                <CardHeader>
-                  <div className='flex items-center justify-between'>
-                    <CardTitle className='truncate'>{component.name}</CardTitle>
-                  </div>
-                </CardHeader>
-              </Card>
-            </Link>
-          ))}
-        </ul>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className='w-[100px]'>Component</TableHead>
+              <TableHead>Size</TableHead>
+              <TableHead>IsEnabled</TableHead>
+              <TableHead className='text-right'>Stats</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {project.components.map(component => (
+              <TableRow key={component.id}>
+                <TableCell className='font-medium'>{component.name}</TableCell>
+                <TableCell>{component.size}</TableCell>
+                <TableCell>
+                  <ToggleComponentStatusButton
+                    componentId={component.id}
+                    enabled={component.enabled}
+                    name={component.name}
+                  />
+                </TableCell>
+                <TableCell className='text-right'>{JSON.stringify(component.stats ?? {})}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       ) : (
         <EmptyPlaceholder className='my-4 '>
           <EmptyPlaceholder.Icon>
