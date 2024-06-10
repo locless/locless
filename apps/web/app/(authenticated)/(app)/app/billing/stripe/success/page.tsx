@@ -62,11 +62,14 @@ export default async function StripeSuccess(props: Props) {
     );
   }
 
+  const plan = session.metadata?.tierId as 'hobby' | 'pro';
+
   await db
     .update(schema.workspaces)
     .set({
       stripeCustomerId: customer.id,
       stripeSubscriptionId: session.subscription as string,
+      plan: plan ?? ws.plan,
     })
     .where(eq(schema.workspaces.id, ws.id));
 

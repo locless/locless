@@ -76,6 +76,9 @@ export default async function StripeRedirect({ params: { tierId } }: Props) {
     cancel_url: cancelUrl,
     payment_method_types: ['card'],
     line_items: lineItems,
+    metadata: {
+      tierId,
+    },
   });
 
   if (!session.url) {
