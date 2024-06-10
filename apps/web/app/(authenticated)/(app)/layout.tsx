@@ -20,6 +20,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
       stripeSubscriptionId: null,
       subscriptions: {}, // TODO: add subscriptions,
       createdAt: new Date(),
+      refilledAt: new Date(),
       deletedAt: null,
       enabled: true,
       isPersonal: true,
