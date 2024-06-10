@@ -110,14 +110,14 @@ export const runDeploy = async (envFileName: string) => {
     spinner.start('Compiling...');
 
     for (const file of fileList) {
-      const { name: fileName, path: originalPath } = file;
+      const { name: fileName } = file;
       const fileExt = fileName.split('.').pop();
       if (file.isFile() && (fileExt === 'tsx' || fileExt === 'jsx')) {
         console.log(`\n ${chalk.gray(`Found ${fileName}...`)}`);
 
         const fileNameWithoutExt = path.parse(fileName).name;
 
-        const filePath = path.join(originalPath, fileName);
+        const filePath = path.join(__dirname, 'locless', fileName);
 
         const buildPath = path.join(__dirname, 'locless', 'build', `${fileNameWithoutExt}.js`);
         const tmpPath = path.join(__dirname, 'locless', 'tmp', `${fileNameWithoutExt}.js`);
@@ -200,7 +200,6 @@ export const runDeploy = async (envFileName: string) => {
           }
 
           const uploadRes = await res.json();
-          console.log(uploadRes);
           const component = uploadRes;
 
           if (!component) {
