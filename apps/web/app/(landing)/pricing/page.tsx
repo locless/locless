@@ -6,7 +6,7 @@ const tiers = {
   free: {
     name: 'Free Tier',
     id: 'free',
-    href: '/app',
+    href: '/',
     price: 0,
     description: 'Everything you need to start your journey with us!',
     buttonText: 'Start building',
@@ -16,7 +16,7 @@ const tiers = {
   pro: {
     name: 'Pro Tier',
     id: 'paid',
-    href: '/app',
+    href: '/',
     price: 25,
     description: 'For those with teams and more demanding needs',
     buttonText: 'Upgrade now',
