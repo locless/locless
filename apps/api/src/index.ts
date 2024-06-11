@@ -110,6 +110,12 @@ app.get('/file/:name', async c => {
 
   const { api_requests_total, api_requests_monthly } = subscriptions;
 
+  if (project.workspace.plan !== 'free' && project.workspace.stripeCustomerId) {
+    await ingestOpenMeterEvent(project.workspace.stripeCustomerId, c.env.OPEN_METER_TOKEN, 'request', {
+      value: '1',
+    });
+  }
+
   await db
     .update(schema.workspaces)
     .set({
@@ -138,12 +144,6 @@ app.get('/file/:name', async c => {
 
   if (!blobVal) {
     return c.text("File doesn't exists", 404);
-  }
-
-  if (project.workspace.plan !== 'free' && project.workspace.stripeCustomerId) {
-    await ingestOpenMeterEvent(project.workspace.stripeCustomerId, c.env.OPEN_METER_TOKEN, 'request', {
-      value: '1',
-    });
   }
 
   return c.body(blobVal, 201);
@@ -190,6 +190,12 @@ app.post('/generate', async c => {
     api_requests_total: api_requests_total + 1,
     api_requests_monthly: isMonthPassed ? 1 : api_requests_monthly + 1,
   };
+
+  if (project.workspace.plan !== 'free' && project.workspace.stripeCustomerId) {
+    await ingestOpenMeterEvent(project.workspace.stripeCustomerId, c.env.OPEN_METER_TOKEN, 'request', {
+      value: '1',
+    });
+  }
 
   await db
     .update(schema.workspaces)
@@ -271,16 +277,10 @@ app.post('/generate', async c => {
         result = newComponentId;
       }
 
-      if (project.workspace.plan !== 'free' && project.workspace.stripeCustomerId) {
-        await ingestOpenMeterEvent(project.workspace.stripeCustomerId, c.env.OPEN_METER_TOKEN, 'request', {
+      if (project.workspace.plan !== 'free' && project.workspace.stripeCustomerId && !component) {
+        await ingestOpenMeterEvent(project.workspace.stripeCustomerId, c.env.OPEN_METER_TOKEN, 'active_component', {
           value: '1',
         });
-
-        if (!component) {
-          await ingestOpenMeterEvent(project.workspace.stripeCustomerId, c.env.OPEN_METER_TOKEN, 'active_component', {
-            value: '1',
-          });
-        }
       }
 
       const { active_components_total, active_components_monthly } = newSubscriptions;
