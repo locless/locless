@@ -11,7 +11,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
     <>
       <ClerkProvider signInFallbackRedirectUrl='/app/projects' signUpFallbackRedirectUrl='/app/projects'>
         <ReactQueryProvider>
-          <ThemeProvider attribute='class'>
+          <ThemeProvider attribute='class' enableSystem={false}>
             <TooltipProvider>{children}</TooltipProvider>
           </ThemeProvider>
         </ReactQueryProvider>
