@@ -23,14 +23,14 @@ export default clerkMiddleware(async (auth, req) => {
         tenantId: orgId,
       });
 
-      if (!workspace && req.nextUrl.pathname !== '/app/new') {
+      if (!workspace && req.nextUrl.pathname !== '/new') {
         await clerkClient.organizations.deleteOrganization(orgId);
-        return NextResponse.redirect(new URL('/app/new', req.url));
+        return NextResponse.redirect(new URL('/new', req.url));
       }
 
-      if (workspace && !['/app/settings/billing/stripe', '/app/projects', '/'].includes(req.nextUrl.pathname)) {
+      if (workspace && !['/app/billing', '/app/projects', '/'].includes(req.nextUrl.pathname)) {
         if (workspace.plan === 'free') {
-          return NextResponse.redirect(new URL('/app/settings/billing/stripe', req.url));
+          return NextResponse.redirect(new URL('/app/billing', req.url));
         }
         return NextResponse.next();
       }
@@ -47,6 +47,7 @@ export const config = {
     '/success',
     '/success/(.*)',
     '/auth/(.*)',
+    '/new(.*)',
     '/(api|trpc)(.*)',
     '/((?!.+\\.[\\w]+$|_next).*)',
     '/((?!_next/static|_next/image|images|favicon.ico|$).*)',

@@ -3,6 +3,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { auth, t } from '../../trpc';
 import { newId } from '@repo/id';
+import { clerkClient } from '@clerk/nextjs/server';
 
 export const createWorkspace = t.procedure
   .use(auth)
@@ -17,13 +18,18 @@ export const createWorkspace = t.procedure
     if (!userId) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
-        message: 'unable to find userId',
+        message: 'User not found',
       });
     }
 
+    const org = await clerkClient.organizations.createOrganization({
+      name: input.name,
+      createdBy: userId,
+    });
+
     const workspace: Workspace = {
       id: newId('workspace'),
-      tenantId: userId,
+      tenantId: org.id,
       name: input.name,
       plan: 'free',
       stripeCustomerId: null,
@@ -33,7 +39,7 @@ export const createWorkspace = t.procedure
       refilledAt: new Date(),
       deletedAt: null,
       enabled: true,
-      isPersonal: true,
+      isPersonal: false,
       canReverseDeletion: true,
     };
 
@@ -41,5 +47,6 @@ export const createWorkspace = t.procedure
 
     return {
       workspace,
+      organizationId: org.id,
     };
   });

@@ -62,7 +62,7 @@ export const DesktopSidebar: React.FC<Props> = ({ className }) => {
   return (
     <aside className={cn('w-64 px-6 z-10', className)}>
       <div className='py-4'>
-        <OrganizationSwitcher />
+        <OrganizationSwitcher createOrganizationUrl='/new' />
       </div>
       <nav className='flex flex-col flex-1 flex-grow mt-4'>
         <ul className='flex flex-col flex-1 gap-y-7'>
