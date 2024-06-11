@@ -128,7 +128,7 @@ app.get('/file/:name', async c => {
     where: (components, { eq, and }) => and(eq(components.projectId, project.id), eq(components.name, name)),
   });
 
-  if (!component) {
+  if (!component || !component?.enabled) {
     return c.text('Component not found', 404);
   }
 
