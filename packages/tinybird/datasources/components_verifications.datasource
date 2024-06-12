@@ -1,0 +1,11 @@
+VERSION 1
+
+SCHEMA >
+    `projectId` String `json:$.projectId`,
+    `componentId` String `json:$.componentId`,
+    `time` Int64 `json:$.time`,
+    `workspaceId` String `json:$.workspaceId`,
+    `deniedReason` Nullable(String) `json:$.deniedReason`,
+    `ownerId` Nullable(String) `json:$.ownerId`
+ENGINE "MergeTree"
+ENGINE_SORTING_KEY "projectId, workspaceId"

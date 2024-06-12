@@ -1,0 +1,22 @@
+VERSION 1
+
+NODE aggregate
+SQL >
+
+    SELECT
+        workspaceId,
+        projectId,
+        componentId,
+        toStartOfMonth(fromUnixTimestamp64Milli(time)) AS time
+    FROM components_verifications
+    GROUP BY
+        workspaceId,
+        projectId,
+        componentId,
+        time
+
+TYPE materialized
+DATASOURCE mv__monthly_active_components
+ENGINE "AggregatingMergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(time)"
+ENGINE_SORTING_KEY "workspaceId, projectId, componentId, time"
