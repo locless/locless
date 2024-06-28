@@ -8,7 +8,7 @@ SQL >
         componentId,
         countIfState((deniedReason = '') OR (deniedReason IS NULL)) AS success,
         toStartOfMonth(fromUnixTimestamp64Milli(time)) AS time
-    FROM components_verifications
+    FROM api_requests
     GROUP BY
         workspaceId,
         projectId,
@@ -16,7 +16,7 @@ SQL >
         time
 
 TYPE materialized
-DATASOURCE mv__monthly_verifications
+DATASOURCE mv__monthly_api_requests
 ENGINE "AggregatingMergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(time)"
 ENGINE_SORTING_KEY "workspaceId, time, projectId, componentId"

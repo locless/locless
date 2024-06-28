@@ -23,8 +23,15 @@ export const deleteComponent = t.procedure
       throw new TRPCError({ code: 'NOT_FOUND', message: 'component not found' });
     }
 
-    await db
-      .update(schema.components)
-      .set({ deletedAt: new Date() })
-      .where(eq(schema.components.id, input.componentId));
+    await db.transaction(async tx => {
+      await tx
+        .update(schema.components)
+        .set({ deletedAt: new Date() })
+        .where(eq(schema.components.id, input.componentId));
+
+      await tx
+        .update(schema.workspaces)
+        .set({ size: component.workspace.size - component.size })
+        .where(eq(schema.workspaces.id, component.workspace.id));
+    });
   });

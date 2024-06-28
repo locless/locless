@@ -4,8 +4,9 @@ SCHEMA >
     `workspaceId` String,
     `projectId` String,
     `componentId` String,
-    `time` Date
+    `time` Date,
+    `bandwidth` UInt64
 
 ENGINE "AggregatingMergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(time)"
-ENGINE_SORTING_KEY "workspaceId, projectId, componentId, time"
+ENGINE_SORTING_KEY "workspaceId, time, projectId, componentId"

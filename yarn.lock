@@ -2022,6 +2022,13 @@
     "@babel/helper-validator-identifier" "^7.24.6"
     to-fast-properties "^2.0.0"
 
+"@chronark/zod-bird@^0.3.9":
+  version "0.3.9"
+  resolved "https://registry.yarnpkg.com/@chronark/zod-bird/-/zod-bird-0.3.9.tgz#ff4b89300aef43a0c37f1538fa9a6d8b2f39903f"
+  integrity sha512-5+W0KUBDZKWl86OFgKZJ9/pLRg1jbhAEPKDIKBJUEAAJblwRU3FBrnkcEAqW4/JfPBFiiEC5wxG16A8UzgphAQ==
+  dependencies:
+    zod "^3.22.4"
+
 "@clerk/backend@1.1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@clerk/backend/-/backend-1.1.1.tgz#816df16b9ac79806c762d380c981641a249832f2"
@@ -15587,3 +15594,8 @@ zod@^3.22.4:
   version "3.22.4"
   resolved "https://registry.npmjs.org/zod/-/zod-3.22.4.tgz"
   integrity sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==
+
+zod@^3.23.8:
+  version "3.23.8"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.23.8.tgz#e37b957b5d52079769fb8097099b592f0ef4067d"
+  integrity sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==

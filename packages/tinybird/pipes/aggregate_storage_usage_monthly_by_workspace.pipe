@@ -1,5 +1,4 @@
 VERSION 1
-
 NODE aggregate
 SQL >
 
@@ -7,8 +6,9 @@ SQL >
         workspaceId,
         projectId,
         componentId,
-        toStartOfMonth(fromUnixTimestamp64Milli(time)) AS time
-    FROM components_verifications
+        toStartOfMonth(fromUnixTimestamp64Milli(time)) AS time,
+        sum(ABS(size)) AS bandwidth
+    FROM storage_usage
     GROUP BY
         workspaceId,
         projectId,
@@ -16,7 +16,7 @@ SQL >
         time
 
 TYPE materialized
-DATASOURCE mv__monthly_active_components
+DATASOURCE mv__monthly_storage_usage
 ENGINE "AggregatingMergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(time)"
-ENGINE_SORTING_KEY "workspaceId, projectId, componentId, time"
+ENGINE_SORTING_KEY "workspaceId, time, projectId, componentId"

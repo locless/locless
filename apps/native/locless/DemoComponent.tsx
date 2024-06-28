@@ -13,8 +13,8 @@ export default function ServerComponent({ name = 'world' }: ILocProps) {
   const [count, setCount] = useState(0);
 
   const onPressCallback = () => {
-    Alert.alert('You clicked the button!');
-    setState(s => (s === 'green' ? 'red' : 'green'));
+    Alert.alert('You clicked the button! Congratulations!');
+    setState(s => (s === 'red' ? 'yellow' : 'red'));
     setCount(s => s + 1);
   };
 
@@ -23,7 +23,7 @@ export default function ServerComponent({ name = 'world' }: ILocProps) {
   }, []);
 
   return (
-    <Animated.View style={[styles.container, { backgroundColor: state ?? 'red' }]}>
+    <Animated.View style={[styles.container, { backgroundColor: state ?? 'yellow' }]}>
       <Animated.Text>{message}</Animated.Text>
       <CustomButton onPressCallback={onPressCallback} count={count} />
     </Animated.View>

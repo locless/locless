@@ -4,6 +4,8 @@ import { UTApi } from 'uploadthing/server';
 import { newId } from '@repo/id';
 import { eq } from 'drizzle-orm';
 import dayjs from 'dayjs';
+import { Tinybird } from '@chronark/zod-bird';
+import { z } from 'zod';
 
 export type Env = {
   MY_BUCKET: R2Bucket;
@@ -13,6 +15,7 @@ export type Env = {
   DATABASE_PASSWORD: string;
   UPLOADTHING_SECRET: string;
   OPEN_METER_TOKEN: string;
+  TINYBIRD_TOKEN: string;
 };
 
 const app = new Hono<{ Bindings: Env }>();
@@ -30,6 +33,30 @@ const DEFAULT_SUBSCRIPTIONS: Subscription = {
   api_requests_monthly: 0,
   active_components_monthly: 0,
 };
+
+const publishEventApiRequests = (tb: any) =>
+  tb.buildIngestEndpoint({
+    datasource: 'api_requests__v1',
+    event: z.object({
+      projectId: z.string(),
+      componentId: z.string(),
+      workspaceId: z.string(),
+      deniedReason: z.string().optional(),
+      time: z.number().int(),
+    }),
+  });
+
+const publishEventStorageUsage = (tb: any) =>
+  tb.buildIngestEndpoint({
+    datasource: 'storage_usage__v1',
+    event: z.object({
+      projectId: z.string(),
+      componentId: z.string(),
+      workspaceId: z.string(),
+      size: z.number().int(),
+      time: z.number().int(),
+    }),
+  });
 
 const ingestOpenMeterEvent = async (stripeCustomerId: string, token: string, eventName: string, data: any) => {
   await fetch('https://openmeter.cloud/api/v1/events', {
@@ -146,6 +173,24 @@ app.get('/file/:name', async c => {
     return c.text("File doesn't exists", 404);
   }
 
+  const tb = new Tinybird({ token: c.env.TINYBIRD_TOKEN });
+
+  await publishEventStorageUsage(tb)({
+    projectId: project.id,
+    componentId: component.id,
+    workspaceId: project.workspaceId,
+    size: component.size,
+    time: Date.now(),
+  });
+
+  await publishEventApiRequests(tb)({
+    projectId: project.id,
+    componentId: component.id,
+    workspaceId: project.workspaceId,
+    deniedReason: '',
+    time: Date.now(),
+  });
+
   return c.body(blobVal, 201);
 });
 
@@ -230,6 +275,7 @@ app.post('/generate', async c => {
     if (response.data) {
       const { name, size, key, url } = response.data;
 
+      // TODO: handle deleted components
       const component = await db.query.components.findFirst({
         where: (components, { eq, and }) => and(eq(components.projectId, project.id), eq(components.name, name)),
       });
@@ -237,14 +283,23 @@ app.post('/generate', async c => {
       if (component) {
         await utapi.deleteFiles([component.fileId]);
 
-        await db
-          .update(schema.components)
-          .set({
-            size: size,
-            fileUrl: url,
-            fileId: key,
-          })
-          .where(eq(schema.components.id, component.id));
+        await db.transaction(async tx => {
+          await tx
+            .update(schema.components)
+            .set({
+              size: size,
+              fileUrl: url,
+              fileId: key,
+            })
+            .where(eq(schema.components.id, component.id));
+
+          await tx
+            .update(schema.workspaces)
+            .set({
+              size: project.workspace.size - component.size + size,
+            })
+            .where(eq(schema.workspaces.id, project.workspaceId));
+        });
 
         result = component.id;
       } else {
@@ -259,19 +314,28 @@ app.post('/generate', async c => {
 
         const newComponentId = newId('component');
 
-        await db.insert(schema.components).values({
-          id: newComponentId,
-          name,
-          projectId: project.id,
-          workspaceId: project.workspace.id,
-          size: size,
-          fileUrl: url,
-          fileId: key,
-          createdAt: new Date(),
-          deletedAt: null,
-          enabled: true,
-          canReverseDeletion: true,
-          stats,
+        await db.transaction(async tx => {
+          await tx.insert(schema.components).values({
+            id: newComponentId,
+            name,
+            projectId: project.id,
+            workspaceId: project.workspace.id,
+            size: size,
+            fileUrl: url,
+            fileId: key,
+            createdAt: new Date(),
+            deletedAt: null,
+            enabled: true,
+            canReverseDeletion: true,
+            stats,
+          });
+
+          await tx
+            .update(schema.workspaces)
+            .set({
+              size: project.workspace.size + size,
+            })
+            .where(eq(schema.workspaces.id, project.workspaceId));
         });
 
         result = newComponentId;
@@ -297,6 +361,24 @@ app.post('/generate', async c => {
         .where(eq(schema.workspaces.id, project.workspace.id));
 
       if (result) {
+        const tb = new Tinybird({ token: c.env.TINYBIRD_TOKEN });
+
+        await publishEventStorageUsage(tb)({
+          projectId: project.id,
+          componentId: result,
+          workspaceId: project.workspaceId,
+          size: size,
+          time: Date.now(),
+        });
+
+        await publishEventApiRequests(tb)({
+          projectId: project.id,
+          componentId: result,
+          workspaceId: project.workspaceId,
+          deniedReason: '',
+          time: Date.now(),
+        });
+
         return c.json(result);
       }
     }

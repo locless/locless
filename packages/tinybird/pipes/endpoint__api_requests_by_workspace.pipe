@@ -1,5 +1,5 @@
 VERSION 1
-TOKEN "endpoint__verifications_by_workspace_endpoint_read_8165" READ
+TOKEN "endpoint__api_requests_by_workspace_endpoint_read_8165" READ
 
 NODE endpoint
 SQL >
@@ -8,7 +8,7 @@ SQL >
     SELECT
         countIfMerge(success) as success,
         time
-    FROM mv__monthly_verifications
+    FROM mv__monthly_api_requests
     where
         workspaceId = {{ String(workspaceId, required=True) }}
         and time = makeDate({{ Int64(year) }}, {{ Int64(month) }}, 1)

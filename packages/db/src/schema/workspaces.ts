@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, boolean, mysqlEnum, json, datetime, uniqueIndex } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, boolean, mysqlEnum, json, datetime, uniqueIndex, int } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 import { projects } from './projects';
 import { components } from './components';
@@ -19,6 +19,8 @@ export const workspaces = mysqlTable(
     refilledAt: datetime('refilled_at', { mode: 'date', fsp: 3 }),
     enabled: boolean('enabled').notNull().default(true),
     canReverseDeletion: boolean('canReverseDeletion').notNull().default(true), // We need to set this value in order to be able to delete workspaces after 30 days without user be able to reverse deletion
+    size: int('size').notNull().default(0),
+    isUsageExceeded: boolean('isUsageExceeded').notNull().default(false),
   },
   table => ({
     tenantIdIdx: uniqueIndex('tenant_id_idx').on(table.tenantId),
