@@ -76,7 +76,7 @@ async function reportUsageToStripe(idempotencyKey: string, msg: any) {
 
     if (ws.stripeCustomerId && meter.slug === 'active_components_total_webhook') {
       await stripe.billing.meterEvents.create({
-        event_name: ws.plan === 'hobby' ? 'active_components_hobby' : 'active_components',
+        event_name: 'active_components',
         timestamp: windowend,
         payload: {
           value: value,

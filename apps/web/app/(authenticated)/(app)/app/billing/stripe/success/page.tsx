@@ -62,7 +62,7 @@ export default async function StripeSuccess(props: Props) {
     );
   }
 
-  const plan = session.metadata?.tierId as 'hobby' | 'pro';
+  const plan = session.metadata?.tierId as 'pro';
 
   await db
     .update(schema.workspaces)

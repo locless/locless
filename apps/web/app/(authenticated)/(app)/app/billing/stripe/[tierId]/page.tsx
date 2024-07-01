@@ -53,18 +53,11 @@ export default async function StripeRedirect({ params: { tierId } }: Props) {
 
   const successUrl = `${baseUrl}/stripe/success?session_id={CHECKOUT_SESSION_ID}`;
 
-  const lineItems =
-    tierId === 'pro'
-      ? [
-          { price: 'price_1PP27UCjCewQ3uay9GHTevDi', quantity: 1 },
-          { price: 'price_1PP4ORCjCewQ3uayqXpJHxrj' },
-          { price: 'price_1PP25RCjCewQ3uayIXTuR2FO' },
-        ]
-      : [
-          { price: 'price_1PP27rCjCewQ3uay2IGVDcRk', quantity: 1 },
-          { price: 'price_1PP4ORCjCewQ3uayFdsoMd3u' },
-          { price: 'price_1PP29PCjCewQ3uaypEVZQt7F' },
-        ];
+  const lineItems = [
+    { price: 'price_1PP27UCjCewQ3uay9GHTevDi', quantity: 1 },
+    { price: 'price_1PP4ORCjCewQ3uayqXpJHxrj' },
+    { price: 'price_1PP25RCjCewQ3uayIXTuR2FO' },
+  ];
 
   const cancelUrl = headers().get('referer') ?? baseUrl;
 

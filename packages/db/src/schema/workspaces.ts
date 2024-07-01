@@ -9,7 +9,7 @@ export const workspaces = mysqlTable(
     id: varchar('id', { length: 256 }).primaryKey(),
     tenantId: varchar('tenantId', { length: 256 }).notNull(),
     name: varchar('name', { length: 256 }).notNull(),
-    plan: mysqlEnum('plan', ['free', 'hobby', 'pro', 'enterprise']).notNull(),
+    plan: mysqlEnum('plan', ['free', 'pro', 'enterprise']).notNull(),
     isPersonal: boolean('isPersonal').notNull(),
     stripeCustomerId: varchar('stripeCustomerId', { length: 256 }),
     stripeSubscriptionId: varchar('stripeSubscriptionId', { length: 256 }),

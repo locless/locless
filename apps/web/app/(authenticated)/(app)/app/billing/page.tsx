@@ -17,18 +17,8 @@ const tiers = {
     price: 0,
     description: 'Everything you need to start your journey with us!',
     buttonText: 'Revert to free',
-    features: ['5 Active Components', '1000 API Requests per month', 'Discord Support'],
+    features: ['1000 API Requests per month', '1GB of file storage', '1GB of file bandwidth', 'Discord Support'],
     footnotes: ['No credit card required'],
-  },
-  hobby: {
-    name: 'Hobby',
-    id: 'hobby',
-    href: '/app/billing/stripe/hobby',
-    price: 15,
-    description: 'For solo and small projects',
-    buttonText: 'Upgrade now',
-    features: ['20 Active Components *', '20.000 API Requests per month **', 'Priority Support'],
-    footnotes: [' *  Additional elements are billed at $0.10', ' ** Additional requests are billed at $1 per 10,000'],
   },
   pro: {
     name: 'Pro',
@@ -38,12 +28,17 @@ const tiers = {
     description: 'For those with teams and more demanding needs',
     buttonText: 'Upgrade now',
     features: [
-      '100 Active Components *',
-      '100.000 API Requests per month **',
+      '100.000 API Requests per month *',
+      '100GB of file storage **',
+      '50GB of file bandwidth ***',
       'Workspaces with team members',
       'Priority Support',
     ],
-    footnotes: [' *  Additional elements are billed at $0.10', ' ** Additional requests are billed at $1 per 10,000'],
+    footnotes: [
+      ' * Additional requests are billed at $1 per 10,000',
+      ' ** 0.03$/month per GB',
+      ' *** 0.3$/month per GB',
+    ],
   },
   custom: {
     name: 'Custom',
@@ -53,8 +48,9 @@ const tiers = {
     description: 'We offer custom pricing for those with volume needs',
     buttonText: 'Schedule a call',
     features: [
-      'Custom Active Components Limits',
       'Custom API Requests Limits',
+      'Custom File Storage Limits',
+      'Custom File Bandwidth Limits',
       'Pricing based on your needs',
       'Dedicated support',
       'Feature requests',
@@ -112,7 +108,7 @@ export default async function BillingPage() {
         <Separator className='my-6' />
         <div>
           <div className='flex flex-col mt-10 gap-y-6 sm:gap-x-6 lg:flex-row flex-wrap'>
-            {(['free', 'hobby', 'pro', 'custom'] as const).map(tier => (
+            {(['free', 'pro', 'custom'] as const).map(tier => (
               <div
                 key={tiers[tier].id}
                 className={
