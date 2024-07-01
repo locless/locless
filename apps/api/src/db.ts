@@ -1,10 +1,9 @@
-import { drizzle } from 'drizzle-orm/planetscale-serverless';
-
 import { Client } from '@planetscale/database';
-import { schema } from '@repo/db';
+import { type PlanetScaleDatabase, drizzle, schema } from '@repo/db';
 import { Env } from '.';
+export type Database = PlanetScaleDatabase<typeof schema>;
 
-export function createConnection(env: Env) {
+export function createConnection(env: Env): Database {
   return drizzle(
     new Client({
       host: env.DATABASE_HOST,

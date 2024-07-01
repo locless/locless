@@ -16,11 +16,12 @@ export const workspaces = mysqlTable(
     subscriptions: json('subscriptions'),
     createdAt: datetime('created_at', { mode: 'date', fsp: 3 }),
     deletedAt: datetime('deleted_at', { mode: 'date', fsp: 3 }),
-    refilledAt: datetime('refilled_at', { mode: 'date', fsp: 3 }),
     enabled: boolean('enabled').notNull().default(true),
     canReverseDeletion: boolean('canReverseDeletion').notNull().default(true), // We need to set this value in order to be able to delete workspaces after 30 days without user be able to reverse deletion
     size: int('size').notNull().default(0),
     isUsageExceeded: boolean('isUsageExceeded').notNull().default(false),
+    planDowngradeRequest: mysqlEnum('plan_downgrade_request', ['free']),
+    planChanged: datetime('plan_changed', { fsp: 3 }),
   },
   table => ({
     tenantIdIdx: uniqueIndex('tenant_id_idx').on(table.tenantId),

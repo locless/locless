@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
-import { createConnection, schema } from './db';
+import { createConnection, schema, eq } from './db';
 import { UTApi } from 'uploadthing/server';
 import { newId } from '@repo/id';
-import { eq } from 'drizzle-orm';
-import dayjs from 'dayjs';
 import { Tinybird } from '@chronark/zod-bird';
 import { z } from 'zod';
+
+const GIGABYTE = Math.pow(1024, 3);
+const MAX_FREE_SIZE = 1 * GIGABYTE;
 
 export type Env = {
   MY_BUCKET: R2Bucket;
@@ -19,20 +20,6 @@ export type Env = {
 };
 
 const app = new Hono<{ Bindings: Env }>();
-
-type Subscription = {
-  api_requests_total: number;
-  active_components_total: number;
-  api_requests_monthly: number;
-  active_components_monthly: number;
-};
-
-const DEFAULT_SUBSCRIPTIONS: Subscription = {
-  api_requests_total: 0,
-  active_components_total: 0,
-  api_requests_monthly: 0,
-  active_components_monthly: 0,
-};
 
 const publishEventApiRequests = (tb: any) =>
   tb.buildIngestEndpoint({
@@ -58,49 +45,6 @@ const publishEventStorageUsage = (tb: any) =>
     }),
   });
 
-const ingestOpenMeterEvent = async (stripeCustomerId: string, token: string, eventName: string, data: any) => {
-  await fetch('https://openmeter.cloud/api/v1/events', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/cloudevents+json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      id: crypto.randomUUID(),
-      source: 'locless-api',
-      type: eventName,
-      time: new Date(),
-      subject: stripeCustomerId,
-      data,
-      specversion: '1.0',
-    }),
-  });
-};
-
-const hasEnoughApiRequests = (api_requests_monthly = 0, plan: 'hobby' | 'pro' | 'free' | 'enterprise') => {
-  if (plan === 'free' && api_requests_monthly + 1 <= 1000) {
-    return true;
-  }
-
-  if (plan === 'hobby' || plan === 'pro' || plan === 'enterprise') {
-    return true;
-  }
-
-  return false;
-};
-
-const hasEnoughActiveComponents = (active_components_total = 0, plan: 'hobby' | 'pro' | 'free' | 'enterprise') => {
-  if (plan === 'free' && active_components_total + 1 <= 5) {
-    return true;
-  }
-
-  if (plan === 'hobby' || plan === 'pro' || plan === 'enterprise') {
-    return true;
-  }
-
-  return false;
-};
-
 app.get('/file/:name', async c => {
   const apiKeyPublic = c.req.header('x-api-key');
 
@@ -121,39 +65,9 @@ app.get('/file/:name', async c => {
     return c.text('Invalid Api Key', 400);
   }
 
-  const isMonthPassed = dayjs().isBefore(dayjs(project.workspace.refilledAt), 'month');
-
-  if (
-    !isMonthPassed &&
-    !hasEnoughApiRequests(
-      (project.workspace.subscriptions as Subscription)?.api_requests_monthly,
-      project.workspace.plan
-    )
-  ) {
+  if (project.workspace.isUsageExceeded) {
     return c.text('Too many requests', 429);
   }
-
-  const subscriptions = (project.workspace.subscriptions as Subscription) ?? DEFAULT_SUBSCRIPTIONS;
-
-  const { api_requests_total, api_requests_monthly } = subscriptions;
-
-  if (project.workspace.plan !== 'free' && project.workspace.stripeCustomerId) {
-    await ingestOpenMeterEvent(project.workspace.stripeCustomerId, c.env.OPEN_METER_TOKEN, 'request', {
-      value: '1',
-    });
-  }
-
-  await db
-    .update(schema.workspaces)
-    .set({
-      refilledAt: isMonthPassed ? new Date() : project.workspace.refilledAt,
-      subscriptions: {
-        ...subscriptions,
-        api_requests_total: api_requests_total + 1,
-        api_requests_monthly: isMonthPassed ? 1 : api_requests_monthly + 1,
-      },
-    })
-    .where(eq(schema.workspaces.id, project.workspace.id));
 
   const { name } = await c.req.param();
 
@@ -214,52 +128,45 @@ app.post('/generate', async c => {
     return c.text('Invalid Api Key', 400);
   }
 
-  const isMonthPassed = dayjs().isBefore(dayjs(project.workspace.refilledAt), 'month');
-
-  if (
-    !isMonthPassed &&
-    !hasEnoughApiRequests(
-      (project.workspace.subscriptions as Subscription)?.api_requests_monthly,
-      project.workspace.plan
-    )
-  ) {
+  if (project.workspace.isUsageExceeded) {
     return c.text('Too many requests', 429);
   }
-
-  const subscriptions = (project.workspace.subscriptions as Subscription) ?? DEFAULT_SUBSCRIPTIONS;
-
-  const { api_requests_total, api_requests_monthly } = subscriptions;
-
-  const newSubscriptions = {
-    ...subscriptions,
-    api_requests_total: api_requests_total + 1,
-    api_requests_monthly: isMonthPassed ? 1 : api_requests_monthly + 1,
-  };
-
-  if (project.workspace.plan !== 'free' && project.workspace.stripeCustomerId) {
-    await ingestOpenMeterEvent(project.workspace.stripeCustomerId, c.env.OPEN_METER_TOKEN, 'request', {
-      value: '1',
-    });
-  }
-
-  await db
-    .update(schema.workspaces)
-    .set({
-      refilledAt: isMonthPassed ? new Date() : project.workspace.refilledAt,
-      subscriptions: newSubscriptions,
-    })
-    .where(eq(schema.workspaces.id, project.workspace.id));
 
   const formData = await c.req.formData();
   const file: any = formData.get('file');
   const name = formData.get('name');
   let stats = formData.get('stats');
+  const isRecoverComponent = formData.get('recover');
 
   if (stats) {
     stats = JSON.parse(stats);
   }
 
   if (file && file instanceof File && name && project) {
+    const component = await db.query.components.findFirst({
+      where: (components, { eq, and }) => and(eq(components.projectId, project.id), eq(components.name, name)),
+    });
+
+    if (component?.deletedAt && !isRecoverComponent) {
+      return c.json('COMPONENT_DELETED');
+    }
+
+    if (project.workspace.plan === 'free') {
+      let size = project.workspace.size;
+
+      if (component) {
+        size = size - component.size + file.size;
+      } else {
+        size = size + file.size;
+      }
+
+      if (size > MAX_FREE_SIZE) {
+        return c.text('Size limit exceeded', 429);
+      }
+    }
+
+    let result;
+
     const utapi = new UTApi({
       apiKey: c.env.UPLOADTHING_SECRET,
       fetch: (url, init): any => {
@@ -268,17 +175,10 @@ app.post('/generate', async c => {
       },
     });
 
-    let result;
-
     const response = await utapi.uploadFiles(file);
 
     if (response.data) {
       const { name, size, key, url } = response.data;
-
-      // TODO: handle deleted components
-      const component = await db.query.components.findFirst({
-        where: (components, { eq, and }) => and(eq(components.projectId, project.id), eq(components.name, name)),
-      });
 
       if (component) {
         await utapi.deleteFiles([component.fileId]);
@@ -290,6 +190,7 @@ app.post('/generate', async c => {
               size: size,
               fileUrl: url,
               fileId: key,
+              deletedAt: null,
             })
             .where(eq(schema.components.id, component.id));
 
@@ -303,15 +204,6 @@ app.post('/generate', async c => {
 
         result = component.id;
       } else {
-        if (
-          !hasEnoughActiveComponents(
-            (project.workspace.subscriptions as Subscription)?.active_components_total,
-            project.workspace.plan
-          )
-        ) {
-          return c.text('Too many components', 429);
-        }
-
         const newComponentId = newId('component');
 
         await db.transaction(async tx => {
@@ -340,25 +232,6 @@ app.post('/generate', async c => {
 
         result = newComponentId;
       }
-
-      if (project.workspace.plan !== 'free' && project.workspace.stripeCustomerId && !component) {
-        await ingestOpenMeterEvent(project.workspace.stripeCustomerId, c.env.OPEN_METER_TOKEN, 'active_component', {
-          value: '1',
-        });
-      }
-
-      const { active_components_total, active_components_monthly } = newSubscriptions;
-
-      await db
-        .update(schema.workspaces)
-        .set({
-          subscriptions: {
-            ...newSubscriptions,
-            active_components_monthly: (isMonthPassed ? 0 : active_components_monthly) + (component ? 0 : 1),
-            active_components_total: active_components_total + (component ? 0 : 1),
-          },
-        })
-        .where(eq(schema.workspaces.id, project.workspace.id));
 
       if (result) {
         const tb = new Tinybird({ token: c.env.TINYBIRD_TOKEN });

@@ -17,6 +17,6 @@
   },
   "dependencies": {
     "@planetscale/database": "^1.18.0",
-    "drizzle-orm": "^0.31.0"
+    "drizzle-orm": "^0.31.2"
   }
 }

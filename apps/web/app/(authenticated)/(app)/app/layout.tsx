@@ -22,11 +22,14 @@ export default async function Layout({ children }: PropsWithChildren) {
       stripeSubscriptionId: null,
       subscriptions: {}, // TODO: add subscriptions,
       createdAt: new Date(),
-      refilledAt: new Date(),
       deletedAt: null,
       enabled: true,
       isPersonal: !tenantId.includes('org'),
       canReverseDeletion: true,
+      isUsageExceeded: false,
+      planChanged: null,
+      planDowngradeRequest: null,
+      size: 0,
     };
 
     try {
