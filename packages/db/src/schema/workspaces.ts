@@ -2,6 +2,7 @@ import { mysqlTable, varchar, boolean, mysqlEnum, json, datetime, uniqueIndex, i
 import { relations } from 'drizzle-orm';
 import { projects } from './projects';
 import { components } from './components';
+import { Subscriptions } from '@repo/billing';
 
 export const workspaces = mysqlTable(
   'workspaces',
@@ -13,7 +14,7 @@ export const workspaces = mysqlTable(
     isPersonal: boolean('isPersonal').notNull(),
     stripeCustomerId: varchar('stripeCustomerId', { length: 256 }),
     stripeSubscriptionId: varchar('stripeSubscriptionId', { length: 256 }),
-    subscriptions: json('subscriptions'),
+    subscriptions: json('subscriptions').$type<Subscriptions>(),
     createdAt: datetime('created_at', { mode: 'date', fsp: 3 }),
     deletedAt: datetime('deleted_at', { mode: 'date', fsp: 3 }),
     enabled: boolean('enabled').notNull().default(true),

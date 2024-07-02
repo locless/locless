@@ -1,14 +1,16 @@
 import { Tinybird } from '../lib/tinybird';
 import { env } from '../lib/env';
-import { task } from '@trigger.dev/sdk/v3';
+import { schedules, logger } from '@trigger.dev/sdk/v3';
 import { createConnection, eq, schema } from '../lib/db';
 
 const GIGABYTE = Math.pow(1024, 3);
 const MAX_FREE_USAGE = 1 * GIGABYTE;
 
-export const createInvoiceTask = task({
+export const createInvoiceTask = schedules.task({
   id: 'check_free_usage',
   run: async () => {
+    logger.info('task starting..');
+
     const db = createConnection();
     const tinybird = new Tinybird(env().TINYBIRD_TOKEN);
 
@@ -22,6 +24,8 @@ export const createInvoiceTask = task({
           isNull(table.deletedAt)
         ),
     });
+
+    logger.info(`found ${workspaces.length} workspaces`);
 
     const date = new Date();
 

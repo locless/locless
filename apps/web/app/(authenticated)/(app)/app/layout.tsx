@@ -4,6 +4,7 @@ import { getTenantId } from '@/lib/auth';
 import { Workspace, db, schema } from '@/lib/db';
 import { newId } from '@repo/id';
 import { redirect } from 'next/navigation';
+import { defaultProSubscriptions } from '@repo/billing';
 
 export default async function Layout({ children }: PropsWithChildren) {
   const tenantId = getTenantId();
@@ -11,6 +12,8 @@ export default async function Layout({ children }: PropsWithChildren) {
   const workspace = await db.query.workspaces.findFirst({
     where: (table, { and, eq, isNull }) => and(eq(table.tenantId, tenantId), isNull(table.deletedAt)),
   });
+
+  const subscriptions = defaultProSubscriptions();
 
   if (!workspace) {
     const workspace: Workspace = {
@@ -20,7 +23,7 @@ export default async function Layout({ children }: PropsWithChildren) {
       plan: 'free',
       stripeCustomerId: null,
       stripeSubscriptionId: null,
-      subscriptions: {}, // TODO: add subscriptions,
+      subscriptions,
       createdAt: new Date(),
       deletedAt: null,
       enabled: true,

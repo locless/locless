@@ -1,11 +1,12 @@
-import { task } from '@trigger.dev/sdk/v3';
-
+import { schedules, logger } from '@trigger.dev/sdk/v3';
 import { and, createConnection, eq, isNull, schema } from '../lib/db';
 
-export const createInvoiceTask = task({
+export const createInvoiceTask = schedules.task({
   id: 'refill_free_usage',
   run: async () => {
     const db = createConnection();
+
+    logger.info('task starting..');
 
     await db
       .update(schema.workspaces)
