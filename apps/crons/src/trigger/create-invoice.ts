@@ -142,7 +142,7 @@ export const createInvoiceTask = task({
           year,
           month,
         })
-        .then((res: any) => res.data.at(0)?.success ?? 0);
+        .then((res: any) => res.data.at(0)?.bandwidth ?? 0);
 
       await createTieredInvoiceItem({
         stripe,

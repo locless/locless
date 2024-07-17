@@ -29,7 +29,7 @@ export default async function StripeSuccess(props: Props) {
 
   const e = stripeEnv();
   if (!e) {
-    return redirect('/app/billing');
+    return redirect('/app');
   }
 
   const stripe = new Stripe(e.STRIPE_SECRET_KEY, {
@@ -38,6 +38,7 @@ export default async function StripeSuccess(props: Props) {
   });
 
   const session = await stripe.checkout.sessions.retrieve(props.searchParams.session_id);
+
   if (!session) {
     return (
       <EmptyPlaceholder>
@@ -49,7 +50,9 @@ export default async function StripeSuccess(props: Props) {
       </EmptyPlaceholder>
     );
   }
+
   const customer = await stripe.customers.retrieve(session.customer as string);
+
   if (!customer) {
     return (
       <EmptyPlaceholder>
@@ -62,14 +65,11 @@ export default async function StripeSuccess(props: Props) {
     );
   }
 
-  const plan = session.metadata?.tierId as 'pro';
-
   await db
     .update(schema.workspaces)
     .set({
       stripeCustomerId: customer.id,
       stripeSubscriptionId: session.subscription as string,
-      plan: plan ?? ws.plan,
     })
     .where(eq(schema.workspaces.id, ws.id));
 

@@ -5,6 +5,7 @@ import { Workspace, db, schema } from '@/lib/db';
 import { newId } from '@repo/id';
 import { redirect } from 'next/navigation';
 import { defaultProSubscriptions } from '@repo/billing';
+import { DesktopTopBar } from './desktop-topbar';
 
 export default async function Layout({ children }: PropsWithChildren) {
   const tenantId = getTenantId();
@@ -48,7 +49,10 @@ export default async function Layout({ children }: PropsWithChildren) {
     <div className='relative flex flex-col min-h-screen bg-gray-100 dark:bg-gray-950'>
       <div className='relative flex flex-1 bg-gray-100 lg:flex-row dark:bg-gray-950'>
         <DesktopSidebar className='hidden lg:flex flex-col' />
-        <div className='w-full flex flex-col'>{children}</div>
+        <div className='w-full flex flex-col'>
+          <DesktopTopBar className='flex items-center' />
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, boolean, index, datetime, int, json, text } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, boolean, index, datetime, int, json, text, mysqlEnum } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 import { projects } from './projects';
 import { workspaces } from './workspaces';
@@ -18,12 +18,14 @@ export const components = mysqlTable(
     deletedAt: datetime('deleted_at', { mode: 'date', fsp: 3 }),
     enabled: boolean('enabled').notNull().default(true),
     canReverseDeletion: boolean('canReverseDeletion').notNull().default(true),
+    fileType: mysqlEnum('fileType', ['component', 'translation']).default('component').notNull(),
   },
   table => ({
     projectIdx: index('projectIdx').on(table.projectId),
     workspaceIdx: index('workspaceIdx').on(table.workspaceId),
     fileIdx: index('fileIdx').on(table.fileId),
     projectIdAndName: index('projectIdAndName').on(table.projectId, table.name),
+    projectIdAndFileType: index('projectIdAndFileType').on(table.projectId, table.fileType),
   })
 );
 

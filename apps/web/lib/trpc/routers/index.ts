@@ -7,6 +7,7 @@ import { createWorkspace } from './workspace/create';
 import { deleteComponent } from './component/delete';
 import { updateProjectKey } from './project/updateKey';
 import { toggleStatusComponent } from './component/toggleStatus';
+import { changeWorkspacePlan } from './workspace/changePlan';
 
 export const router = t.router({
   project: t.router({
@@ -18,6 +19,7 @@ export const router = t.router({
   workspace: t.router({
     create: createWorkspace,
     updateName: changeWorkspaceName,
+    updatePlan: changeWorkspacePlan,
   }),
   component: t.router({
     delete: deleteComponent,

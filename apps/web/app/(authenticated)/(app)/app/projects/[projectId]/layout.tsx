@@ -42,25 +42,22 @@ export default async function ProjectPageLayout(props: Props) {
   ];
 
   return (
-    <>
-      <DesktopTopBar className='flex items-center' />
-      <div className='border-l bg-background border-border flex-1 p-8'>
-        <PageHeader
-          title={project.name}
-          description='Manage your project'
-          actions={[
-            <Badge
-              key='projectId'
-              variant='secondary'
-              className='flex justify-between w-full gap-2 font-mono font-medium ph-no-capture'>
-              {project.id}
-              <CopyButton value={project.id} />
-            </Badge>,
-          ]}
-        />
-        <Navbar navigation={navigation} className='z-20' />
-        <main className='relative mt-8 mb-20 '>{props.children}</main>
-      </div>
-    </>
+    <div className='border-l bg-background border-border flex-1 p-8'>
+      <PageHeader
+        title={project.name}
+        description='Manage your project'
+        actions={[
+          <Badge
+            key='projectId'
+            variant='secondary'
+            className='flex justify-between w-full gap-2 font-mono font-medium ph-no-capture'>
+            {project.id}
+            <CopyButton value={project.id} />
+          </Badge>,
+        ]}
+      />
+      <Navbar navigation={navigation} className='z-20' />
+      <main className='relative mt-8 mb-20 '>{props.children}</main>
+    </div>
   );
 }
