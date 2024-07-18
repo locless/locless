@@ -1,0 +1,78 @@
+---
+title: Install
+description: Locless setup guide
+mode: 'wide'
+---
+
+## Prerequisites
+
+- Created your [Locless account](https://locless.com/auth/sign-up)
+- Created a project in the [Locless dashboard](https://locless.com/app)
+
+<Steps titleSize="h3">
+
+<Step title="Install Locless CLI">
+Install Locless CLI
+
+<Tabs>
+  <Tab title="npm">
+  ```bash
+  npm install -g @locless/cli
+  ```
+  </Tab>
+  <Tab title="pnpm">
+  ```bash
+  pnpm install -g @locless/cli
+  ```
+  </Tab>
+  <Tab title="yarn">
+  ```bash
+  yarn global add @locless/cli
+  ```
+  </Tab>
+  <Tab title="bun">
+  ```bash
+  bun install -g @locless/cli
+  ```
+  </Tab>
+</Tabs>
+</Step>
+
+<Step title="Create Locless folder">
+Create `locless` folder in your project root
+
+```bash
+mkdir locless
+```
+
+</Step>
+
+<Step title="Add API keys">
+Go to [Locless dashboard](https://locless.com/app) and copy your API keys inside Project settings.
+Then add them to `.env` file.
+
+Private key should be always `LOCLESS_AUTH_KEY` but you can use any name for public key.
+
+```bash /.env
+EXPO_PUBLIC_LOCLESS_PUBLIC_KEY=<PUBLIC_KEY>
+LOCLESS_AUTH_KEY=<AUTH_KEY>
+```
+</Step>
+
+</Steps>
+
+## What is next?
+
+Now that you've setup Locless inside your project, check out some resources below to continue your journey.
+
+<CardGroup cols={3}>
+  <Card title='Discord' icon='discord' href='https://locless.com/discord'>
+    Join our Discord to chat with us and the community
+  </Card>
+  <Card title='Components' icon='code' href='/setup/components/introduction'>
+    Learn how to add and use components with Locless.
+  </Card>
+  <Card title='Translations' icon='globe' href='/setup/translations/introduction'>
+    Add remote translations to your app with Locless.
+  </Card>
+</CardGroup>

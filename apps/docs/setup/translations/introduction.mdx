@@ -1,0 +1,52 @@
+---
+title: Translations
+description: Add remote translations to your app with Locless
+mode: 'wide'
+---
+
+## Prerequisites
+
+Currently this feature was created mostly for i18next library. But technically it's just a json files with translations. So feel free to explore! (Don't forget to share your projects with us in [Discord](https://locless.com/discord))
+
+<Steps titleSize="h3">
+
+<Step title="Create translations folder">
+Create `translations` folder inside `locless` folder.
+
+```bash
+mkdir locless/translations
+```
+</Step>
+
+<Step  title="Create a first translation">
+Now we need to create a first translation file. Create a new file inside `locless/translations` folder.
+
+You need to use a language code as a file name. For example `en-US.json` for english.
+</Step>
+
+<Step  title="Sync translations">
+In order to sync translation files you can use `locless translations --pull` command. Or `locless translations --push` to push translations to the cloud.
+
+Keep in mind that your teammates might edit files through a website, so don't forget to `pull` translations before you start working on your app. For safety Locless will reject any changes if you try to push translations with an old file version.
+</Step>
+
+<Step title="Use translations in your app">
+Congratulations! You have translations in the cloud. Now you can use them everywhere by calling this url `https://api.locless.com/translations/<language_code>`.
+
+If you are using i18next library, you can use something like [i18next-http-backend](https://github.com/i18next/i18next-http-backend)
+</Step>
+
+</Steps>
+
+## What is next?
+
+Now that you've seen Locless remote translations, check out some resources below to continue your journey.
+
+<CardGroup cols={2}>
+  <Card title='Discord' icon='discord' href='https://locless.com/discord'>
+    Join our Discord to chat with us and the community
+  </Card>
+  <Card title='Components' icon='code' href='/setup/components/introduction'>
+    Did you already try Locless Components? Learn how to use them.
+  </Card>
+</CardGroup>

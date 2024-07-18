@@ -1,0 +1,264 @@
+---
+title: Components
+description: Add components to your app with Locless
+mode: 'wide'
+---
+
+<Steps titleSize="h3">
+
+<Step title="Setup dependencies">
+Currently we are using `rollup` in order to bundle your code and `babel` for transpiling.<br />Run the following command to install the dependencies:
+
+<Tabs>
+  <Tab title='npm'>
+    ```bash 
+    npm i rollup @rollup/plugin-babel @rollup/plugin-typescript @babel/cli babel-preset-expo --save-dev 
+    ```
+  </Tab>
+  <Tab title='pnpm'>
+    ```bash 
+    pnpm i rollup @rollup/plugin-babel @rollup/plugin-typescript @babel/cli babel-preset-expo --save-dev 
+    ```
+  </Tab>
+  <Tab title='yarn'>
+    ```bash 
+    yarn add rollup @rollup/plugin-babel @rollup/plugin-typescript @babel/cli babel-preset-expo -D 
+    ```
+  </Tab>
+  <Tab title='bun'>
+    ```bash 
+    bun i rollup @rollup/plugin-babel @rollup/plugin-typescript @babel/cli babel-preset-expo --save-dev 
+    ```
+  </Tab>
+</Tabs>
+</Step>
+
+<Step title="Install @locless/react-native">
+Run the following command to install react-native package:
+
+<Tabs>
+  <Tab title="npm">
+  ```bash
+  npm i @locless/react-native
+  ```
+  </Tab>
+  <Tab title="pnpm">
+  ```bash
+  pnpm i @locless/react-native
+  ```
+  </Tab>
+  <Tab title="yarn">
+  ```bash
+  yarn add @locless/react-native
+  ```
+  </Tab>
+  <Tab title="bun">
+  ```bash
+  bun i @locless/react-native
+  ```
+  </Tab>
+</Tabs>
+</Step>
+
+<Step  title="Create rollup config">
+
+Now we need to create a generic rollup config for our project. Create a new file `rollup.config.js` and add the following code:
+
+```js /rollup.config.js
+// rollup.config.js
+import typescript from '@rollup/plugin-typescript';
+import { babel } from '@rollup/plugin-babel';
+
+export default {
+  plugins: [
+    typescript(),
+    babel({
+      configFile: false,
+      babelHelpers: 'runtime',
+      presets: ['babel-preset-expo'],
+      extensions: ['.js', '.jsx', '.tsx'],
+    }),
+  ],
+};
+```
+
+</Step>
+
+<Step  title="Create a first component">
+
+Create a new tsx file inside `locless` folder.
+
+> You should export component by default. With generic config Locless won't bundle imports into 1 file but it will create a `ts` file with general object of imports which can be imported later in your code. That way remote code can use local components/assets inside the app.
+
+For simplicity we will create a second component in the same file.
+
+```tsx /locless/DemoComponent.tsx
+import { useMemo, useState, useEffect } from 'react';
+import { Animated, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+
+interface ILocProps {
+  name?: string;
+}
+
+interface ButtonProps {
+  count: number;
+  onPressCallback: () => void;
+}
+
+function CustomButton({ count, onPressCallback }: ButtonProps) {
+  return (
+    <TouchableOpacity onPress={() => onPressCallback()}>
+      <Animated.Text children={`Click here! Clicks: ${count}`} />
+    </TouchableOpacity>
+  );
+}
+
+export default function DemoComponent({ name = 'world' }: ILocProps) {
+  const message = useMemo(() => `Hi, ${name}!`, [name]);
+
+  const [state, setState] = useState<string | null>(null);
+  const [count, setCount] = useState(0);
+
+  const onPressCallback = () => {
+    Alert.alert('You clicked the button! Congratulations!');
+    setState(s => (s === 'red' ? 'yellow' : 'red'));
+    setCount(s => s + 1);
+  };
+
+  useEffect(() => {
+    Alert.alert('Component mounted!');
+  }, []);
+
+  return (
+    <Animated.View style={[styles.container, { backgroundColor: state ?? 'yellow' }]}>
+      <Animated.Text>{message}</Animated.Text>
+      <CustomButton onPressCallback={onPressCallback} count={count} />
+    </Animated.View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+```
+
+</Step>
+
+<Step title="Publish your components">
+Run the following command to deploy your components:
+
+```bash
+locless deploy
+```
+
+> By default Locless will go through `locless` folder and bundle all components into `locless/build` folder. After that components will be uploaded to the cloud automatically.
+</Step>
+
+<Step  title="Add Locless Provider">
+
+Wrap your app with LoclessProvider and pass your public key:
+
+```tsx /app.tsx
+import * as React from 'react';
+import { LoclessProvider } from '@locless/react-native';
+
+export default function App() {
+  return (
+    <LoclessProvider config={{ apiKey: process.env.EXPO_PUBLIC_LOCLESS_PUBLIC_KEY }}>
+      ...
+    </LoclessProvider>
+  );
+}
+````
+
+</Step>
+
+<Step  title="Add component inside app">
+
+You might notice that CLI created files inside `/locless/generated`.
+
+Those components are a special `Tunnels` which Locless uses to communicate with the cloud.<br />
+You can re-generate them with `locless generate` command.<br />
+If you followed the steps above, you should see something like this:
+
+```tsx /locless/generated/LocDemoComponent.tsx
+/* eslint-disable */
+/**
+ * Generated `component` utility.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * Generated by @locless/cli (0.0.1).
+ * To regenerate, run `npx locless deploy`.
+ */
+
+import { Tunnel } from '@locless/react-native';
+import locGlobalRequires from '../constants/locGlobalRequires';
+
+export const LocDemoComponentId = 'DemoComponent';
+
+interface IProps {
+  readonly renderLocLoading?: () => JSX.Element;
+  readonly renderLocError?: (props: { readonly error: Error }) => JSX.Element;
+  readonly onLocError?: (error: Error) => void;
+}
+
+const LocDemoComponent = (props: IProps) => {
+  return <Tunnel componentName='DemoComponent' globalRequires={locGlobalRequires} {...props} />;
+};
+
+export default LocDemoComponent;
+```
+
+You can notice that CLI adds `Loc` prefix to the component name. That way you can easily use it in your code.
+
+It also imports `locGlobalRequires` which is a special object with all the imports that Locless will bundle into 1 file. That object is generated depending on all your cloud components imports.
+
+We also have `Id` at the top which you can use in order to pre-fetch the components.
+
+Let's add this component inside your app:
+
+```tsx /app.tsx
+import * as React from 'react';
+import { LoclessProvider } from '@locless/react-native';
+
+export default function App() {
+  return (
+    <LoclessProvider config={{ apiKey: process.env.EXPO_PUBLIC_LOCLESS_PUBLIC_KEY }}>
+      <LocDemoComponent />
+    </LoclessProvider>
+  );
+}
+```
+
+That's it! Now your app should be able to render your component from the cloud.
+
+</Step>
+
+<Step  title="Update cloud component">
+
+In order to update your component - you can simple update the code inside `locless/DemoComponent.tsx` and run `locless deploy` again.
+
+Keep in mind that Locless syncs files by names, so if you rename your component - it would create a new one in the cloud. And you will need to update entire app.<br />
+Also whenever `locless/constants/locGlobalRequires.ts` is updated - you need to update entire app as well.
+
+</Step>
+
+</Steps>
+
+## What is next?
+
+Now that you've seen the power of Locless components, check out some resources below to continue your journey.
+
+<CardGroup cols={2}>
+  <Card title='Discord' icon='discord' href='https://locless.com/discord'>
+    Join our Discord to chat with us and the community
+  </Card>
+  <Card title='Translations' icon='globe' href='/setup/translations/introduction'>
+    Add remote translations to your app with Locless.
+  </Card>
+</CardGroup>

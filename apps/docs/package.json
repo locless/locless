@@ -1,0 +1,16 @@
+{
+  "name": "@repo/docs",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "mintlify dev"
+  },
+  "keywords": [],
+  "author": "Igor Kirnosov",
+  "devDependencies": {
+    "mintlify": "^4.0.185"
+  },
+  "dependencies": {
+    "sharp": "^0.33.4"
+  }
+}
