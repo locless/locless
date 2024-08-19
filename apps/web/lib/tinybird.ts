@@ -34,3 +34,27 @@ export const storageUsage = tb.buildPipe({
     cache: 'no-store',
   },
 });
+
+export const publishEventApiRequests = tb.buildIngestEndpoint({
+  datasource: 'api_requests__v1',
+  event: z.object({
+    projectId: z.string(),
+    elementId: z.string(),
+    type: z.string(),
+    workspaceId: z.string(),
+    deniedReason: z.string().optional(),
+    time: z.number().int(),
+  }),
+});
+
+export const publishEventStorageUsage = tb.buildIngestEndpoint({
+  datasource: 'storage_usage__v1',
+  event: z.object({
+    projectId: z.string(),
+    elementId: z.string(),
+    type: z.string(),
+    workspaceId: z.string(),
+    size: z.number().int(),
+    time: z.number().int(),
+  }),
+});

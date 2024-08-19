@@ -13,10 +13,10 @@
     "@hookform/resolvers": "^3.4.2",
     "@openmeter/sdk": "^1.0.0-beta.83",
     "@planetscale/database": "^1.18.0",
+    "@repo/billing": "*",
     "@repo/db": "*",
     "@repo/id": "*",
     "@repo/ui": "*",
-    "@repo/billing": "*",
     "@tanstack/react-query": "^5.40.0",
     "@tanstack/react-table": "^8.17.3",
     "@trpc/client": "^11.0.0-rc.390",
@@ -37,7 +37,9 @@
     "superjson": "^2.2.1",
     "svix": "^1.24.0",
     "trpc-tools": "^0.12.0",
+    "uploadthing": "^6.13.2",
     "uuid": "^9.0.1",
+    "vanilla-jsoneditor": "^0.23.8",
     "zod": "^3.22.4"
   },
   "devDependencies": {

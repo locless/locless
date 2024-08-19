@@ -5,18 +5,20 @@ SQL >
     SELECT
         workspaceId,
         projectId,
-        componentId,
+        elementId,
+        type,
         toStartOfMonth(fromUnixTimestamp64Milli(time)) AS time,
         sum(ABS(size)) AS bandwidth
     FROM storage_usage
     GROUP BY
         workspaceId,
         projectId,
-        componentId,
+        elementId,
+        type,
         time
 
 TYPE materialized
 DATASOURCE mv__monthly_storage_usage
 ENGINE "AggregatingMergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(time)"
-ENGINE_SORTING_KEY "workspaceId, time, projectId, componentId"
+ENGINE_SORTING_KEY "workspaceId, time, projectId, elementId, type"

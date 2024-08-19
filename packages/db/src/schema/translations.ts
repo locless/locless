@@ -1,10 +1,10 @@
-import { mysqlTable, varchar, boolean, index, datetime, int, json, text } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, boolean, index, datetime, int, json, text, mysqlEnum } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 import { projects } from './projects';
 import { workspaces } from './workspaces';
 
-export const components = mysqlTable(
-  'components',
+export const translations = mysqlTable(
+  'translations',
   {
     id: varchar('id', { length: 256 }).primaryKey(),
     name: varchar('name', { length: 256 }).notNull(),
@@ -28,15 +28,15 @@ export const components = mysqlTable(
   })
 );
 
-export const componentsRelations = relations(components, ({ one }) => ({
+export const translationsRelations = relations(translations, ({ one }) => ({
   workspace: one(workspaces, {
-    relationName: 'workspace_component_relation',
-    fields: [components.workspaceId],
+    relationName: 'workspace_translation_relation',
+    fields: [translations.workspaceId],
     references: [workspaces.id],
   }),
   project: one(projects, {
-    relationName: 'project_component_relation',
-    fields: [components.projectId],
+    relationName: 'project_translation_relation',
+    fields: [translations.projectId],
     references: [projects.id],
   }),
 }));

@@ -5,6 +5,7 @@ export const env = () =>
     .object({
       TINYBIRD_TOKEN: z.string().optional(),
       OPEN_METER_TOKEN: z.string(),
+      UPLOADTHING_SECRET: z.string(),
     })
     .parse(process.env);
 

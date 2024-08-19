@@ -3,6 +3,7 @@ import { relations } from 'drizzle-orm';
 import { projects } from './projects';
 import { components } from './components';
 import { Subscriptions } from '@repo/billing';
+import { translations } from './translations';
 
 export const workspaces = mysqlTable(
   'workspaces',
@@ -33,5 +34,8 @@ export const workspacesRelations = relations(workspaces, ({ many }) => ({
   projects: many(projects),
   components: many(components, {
     relationName: 'workspace_component_relation',
+  }),
+  translations: many(translations, {
+    relationName: 'workspace_translation_relation',
   }),
 }));

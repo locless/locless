@@ -4,7 +4,6 @@ import { PageHeader } from '@/components/dashboard/page-header';
 import { Badge } from '@repo/ui/components/ui/badge';
 import { notFound } from 'next/navigation';
 import { PropsWithChildren } from 'react';
-import { DesktopTopBar } from '../../desktop-topbar';
 import { getTenantId } from '@/lib/auth';
 import { db } from '@/lib/db';
 
@@ -38,6 +37,11 @@ export default async function ProjectPageLayout(props: Props) {
       label: 'Settings',
       href: `/app/projects/${project.id}/settings`,
       segment: 'settings',
+    },
+    {
+      label: 'Translations',
+      href: `/app/projects/${project.id}/translations`,
+      segment: 'translations',
     },
   ];
 
