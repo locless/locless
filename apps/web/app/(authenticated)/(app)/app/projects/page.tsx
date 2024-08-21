@@ -4,15 +4,16 @@ import { CreateProjectButton } from './create-project-button';
 import { Separator } from '@repo/ui/components/ui/separator';
 import Link from 'next/link';
 import { ProjectList } from './client';
-import { DesktopTopBar } from '../desktop-topbar';
 import { getTenantId } from '@/lib/auth';
-import { and, db, eq, isNull, schema, sql } from '@/lib/db';
+import { and, db, eq, isNull, schema, sql, Workspace } from '@/lib/db';
 import { redirect } from 'next/navigation';
+import { defaultProSubscriptions } from '@repo/billing';
+import { newId } from '@repo/id';
 
 export default async function ProjectsOverviewPage() {
   const tenantId = getTenantId();
 
-  const workspace = await db.query.workspaces.findFirst({
+  let workspace = await db.query.workspaces.findFirst({
     where: (table, { and, eq, isNull }) => and(eq(table.tenantId, tenantId), isNull(table.deletedAt)),
     with: {
       projects: {
@@ -22,7 +23,33 @@ export default async function ProjectsOverviewPage() {
   });
 
   if (!workspace) {
-    return redirect('/');
+    const subscriptions = defaultProSubscriptions();
+
+    const newWorkspace: Workspace = {
+      id: newId('workspace'),
+      tenantId,
+      name: tenantId.includes('org') ? 'Organization' : 'Personal',
+      plan: 'free',
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      subscriptions,
+      createdAt: new Date(),
+      deletedAt: null,
+      enabled: true,
+      isPersonal: !tenantId.includes('org'),
+      canReverseDeletion: true,
+      isUsageExceeded: false,
+      planChanged: null,
+      planDowngradeRequest: null,
+      size: 0,
+    };
+
+    try {
+      await db.insert(schema.workspaces).values(newWorkspace);
+      workspace = { ...newWorkspace, projects: [] };
+    } catch (e) {
+      return redirect('/');
+    }
   }
 
   const projects = await Promise.all(
