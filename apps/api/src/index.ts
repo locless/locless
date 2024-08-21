@@ -10,7 +10,6 @@ const GIGABYTE = Math.pow(1024, 3);
 const MAX_FREE_SIZE = 1 * GIGABYTE;
 
 export type Env = {
-  CLERK_API_KEY: string;
   DATABASE_HOST: string;
   DATABASE_USERNAME: string;
   DATABASE_PASSWORD: string;
