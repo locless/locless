@@ -10,13 +10,11 @@ const GIGABYTE = Math.pow(1024, 3);
 const MAX_FREE_SIZE = 1 * GIGABYTE;
 
 export type Env = {
-  MY_BUCKET: R2Bucket;
   CLERK_API_KEY: string;
   DATABASE_HOST: string;
   DATABASE_USERNAME: string;
   DATABASE_PASSWORD: string;
   UPLOADTHING_SECRET: string;
-  OPEN_METER_TOKEN: string;
   TINYBIRD_TOKEN: string;
 };
 
