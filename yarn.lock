@@ -2510,11 +2510,6 @@
   dependencies:
     fast-check "^3.19.0"
 
-"@effect/schema@^0.66.12":
-  version "0.66.16"
-  resolved "https://registry.yarnpkg.com/@effect/schema/-/schema-0.66.16.tgz#97fe63049601dbb4d3e411ab0aca61804c1cf72d"
-  integrity sha512-sT/k5NOgKslGPzs3DUaCFuM6g2JQoIIT8jpwEorAZooplPIMK2xIspr7ECz6pp6Dc7Wz/ppXGk7HVyGZQsIYEQ==
-
 "@emnapi/runtime@^1.1.1":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@emnapi/runtime/-/runtime-1.2.0.tgz#71d018546c3a91f3b51106530edbc056b9f2f2e3"
@@ -6525,15 +6520,6 @@
   resolved "https://registry.yarnpkg.com/@uploadthing/mime-types/-/mime-types-0.2.10.tgz#169edb30f1aa52f828e37acfe5121432493efe01"
   integrity sha512-kz3F0oEgAyts25NAGXlUBCWh3mXonbSOQJFGFMawHuIgbUbnzXbe4w5WI+0XdneCbjNmikfWrdWrs8m/7HATfQ==
 
-"@uploadthing/shared@6.7.5":
-  version "6.7.5"
-  resolved "https://registry.yarnpkg.com/@uploadthing/shared/-/shared-6.7.5.tgz#9d18959dccd9e9cd8f064be0e0a20fadaadc8942"
-  integrity sha512-BZXzvh6zGEt4ip//mxfXdRTNWYw9XJ6tommL6A1TEo2l8jvdNbUpPUwXnMVWBMwio2b48BO7D9V3siYIKMD4pg==
-  dependencies:
-    "@uploadthing/mime-types" "0.2.10"
-    effect "^3.1.0"
-    std-env "^3.7.0"
-
 "@uploadthing/shared@6.7.8":
   version "6.7.8"
   resolved "https://registry.yarnpkg.com/@uploadthing/shared/-/shared-6.7.8.tgz#67bcb5d708b65c2aeba5d384532f27596bb8c52b"
@@ -9247,11 +9233,6 @@ effect@3.4.5:
   resolved "https://registry.yarnpkg.com/effect/-/effect-3.4.5.tgz#f1e2624271a082a7c99d42414c542af5879f011f"
   integrity sha512-aTonOH68tUttSdYwMkiuky3hjgn3pu7yInNaE8rU2EDKQ8zr9Me78WcvWBQKe4u1gvbBH77y9dAKqn98lNIfNQ==
 
-effect@^3.1.0:
-  version "3.2.8"
-  resolved "https://registry.yarnpkg.com/effect/-/effect-3.2.8.tgz#2517f72cf7041605243f3a1ec65859b3b6b39cd5"
-  integrity sha512-W9xHCXg+CKwvNb+/vEsfiBxSqyOEAyjo7mz1M7Kq5ZtxBUyefOsQxc3oGME7bTcxD4OozWcR27Sk4iYxHERoZg==
-
 electron-to-chromium@^1.4.668:
   version "1.4.708"
   resolved "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.4.708.tgz"
@@ -10610,13 +10591,6 @@ extract-zip@2.0.1:
     yauzl "^2.10.0"
   optionalDependencies:
     "@types/yauzl" "^2.9.1"
-
-fast-check@^3.18.0:
-  version "3.19.0"
-  resolved "https://registry.yarnpkg.com/fast-check/-/fast-check-3.19.0.tgz#6a0b7cabc3aa82bc00967332de216c5452ff7ea5"
-  integrity sha512-CO2JX/8/PT9bDGO1iXa5h5ey1skaKI1dvecERyhH4pp3PGjwd3KIjMAXEg79Ps9nclsdt4oPbfqiAnLU0EwrAQ==
-  dependencies:
-    pure-rand "^6.1.0"
 
 fast-check@^3.19.0:
   version "3.20.0"
@@ -19519,19 +19493,6 @@ update-notifier@6.0.2:
     semver "^7.3.7"
     semver-diff "^4.0.0"
     xdg-basedir "^5.1.0"
-
-uploadthing@^6.12.0:
-  version "6.12.0"
-  resolved "https://registry.yarnpkg.com/uploadthing/-/uploadthing-6.12.0.tgz#643d744696d40a80c0a4bad8b0fdcd17bf01b79e"
-  integrity sha512-uoWG1riH6z2IHCcbMo3xnGe6p/+sx2PPOOLOsk5DeqGv5HtlY7ISauFFRXW8H+jdhevZm1n/j4Je/Z+bbIziSg==
-  dependencies:
-    "@effect/schema" "^0.66.12"
-    "@uploadthing/mime-types" "0.2.10"
-    "@uploadthing/shared" "6.7.5"
-    consola "^3.2.3"
-    effect "^3.1.0"
-    fast-check "^3.18.0"
-    std-env "^3.7.0"
 
 uploadthing@^6.13.2:
   version "6.13.2"
