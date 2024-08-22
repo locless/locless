@@ -29,19 +29,19 @@ export default async function ProjectPageLayout(props: Props) {
 
   const navigation = [
     {
-      label: 'Overview',
+      label: 'Components',
       href: `/app/projects/${project.id}`,
       segment: null,
-    },
-    {
-      label: 'Settings',
-      href: `/app/projects/${project.id}/settings`,
-      segment: 'settings',
     },
     {
       label: 'Translations',
       href: `/app/projects/${project.id}/translations`,
       segment: 'translations',
+    },
+    {
+      label: 'Settings',
+      href: `/app/projects/${project.id}/settings`,
+      segment: 'settings',
     },
   ];
 
