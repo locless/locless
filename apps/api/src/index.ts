@@ -427,9 +427,9 @@ app.post('/generate', async c => {
 
       if (result) {
         await utapi.renameFiles({
-          key,
+          fileKey: key,
           newName: `${name}_${result}.js`,
-        });
+        } as any);
 
         const tb = new Tinybird({ token: c.env.TINYBIRD_TOKEN });
 
@@ -607,9 +607,9 @@ app.post('/generate-translation', async c => {
 
       if (result) {
         await utapi.renameFiles({
-          key,
+          fileKey: key,
           newName: `${name}_${result.id}.json`,
-        });
+        } as any);
 
         const tb = new Tinybird({ token: c.env.TINYBIRD_TOKEN });
 
