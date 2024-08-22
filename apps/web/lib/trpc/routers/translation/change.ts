@@ -16,7 +16,7 @@ export const changeTranslation = t.procedure
     z.object({
       translationId: z.string(),
       content: z.string(),
-      updatedAt: z.date(),
+      updatedAt: z.string(),
     })
   )
   .mutation(async ({ ctx, input }) => {
@@ -35,7 +35,7 @@ export const changeTranslation = t.procedure
       throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'translation does not have an updatedAt date' });
     }
 
-    if (new Date(input.updatedAt).getTime() !== translation.updatedAt.getTime()) {
+    if (new Date(input.updatedAt).getTime() !== new Date(translation.updatedAt).getTime()) {
       throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'translation is outdated' });
     }
 
@@ -44,7 +44,7 @@ export const changeTranslation = t.procedure
     const blob = new Blob([input.content], { type: 'application/json' });
 
     const fd = new FormData();
-    fd.append('file', blob, `${translation.name}.json`);
+    fd.append('file', blob, `${translation.name}_${translation.id}.json`);
 
     const file: any = fd.get('file');
 

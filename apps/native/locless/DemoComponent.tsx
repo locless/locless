@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { Animated, Alert, StyleSheet } from 'react-native';
 import CustomButton from '../src/components/CustomButton';
 
@@ -7,7 +7,7 @@ interface ILocProps {
 }
 
 export default function ServerComponent({ name = 'world' }: ILocProps) {
-  const message = useMemo(() => `Hi, ${name}!`, [name]);
+  const message = useMemo(() => `Hey, ${name}!`, [name]);
 
   const [state, setState] = useState<string | null>(null);
   const [count, setCount] = useState(0);
@@ -17,10 +17,6 @@ export default function ServerComponent({ name = 'world' }: ILocProps) {
     setState(s => (s === 'red' ? 'yellow' : 'red'));
     setCount(s => s + 1);
   };
-
-  useEffect(() => {
-    Alert.alert('Component mounted!');
-  }, []);
 
   return (
     <Animated.View style={[styles.container, { backgroundColor: state ?? 'yellow' }]}>

@@ -1974,6 +1974,13 @@
   dependencies:
     regenerator-runtime "^0.14.0"
 
+"@babel/runtime@^7.24.8":
+  version "7.25.4"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.25.4.tgz#6ef37d678428306e7d75f054d5b1bdb8cf8aa8ee"
+  integrity sha512-DSgLeL/FNcpXuzav5wfYvHCGvynXkJbn3Zvc3823AEe9nPwW9IK4UoCSS5yGymmQzN0pCPvivtgS6/8U2kkm1w==
+  dependencies:
+    regenerator-runtime "^0.14.0"
+
 "@babel/template@^7.0.0", "@babel/template@^7.22.15", "@babel/template@^7.24.0":
   version "7.24.0"
   resolved "https://registry.npmjs.org/@babel/template/-/template-7.24.0.tgz"
@@ -5165,6 +5172,13 @@
   integrity sha512-fyrgCaedtvMg9NK3en0pnOYJdtfwxUcNolezkNPUsoX57X8oQk+NkqcvzHXD2uKNij6GXmWU9NDru2IWjrO4BQ==
   dependencies:
     "@babel/runtime" "^7.13.10"
+
+"@react-native-async-storage/async-storage@1.23.1":
+  version "1.23.1"
+  resolved "https://registry.yarnpkg.com/@react-native-async-storage/async-storage/-/async-storage-1.23.1.tgz#cad3cd4fab7dacfe9838dce6ecb352f79150c883"
+  integrity sha512-Qd2kQ3yi6Y3+AcUlrHxSLlnBvpdCEMVGFlVBneVOjaFaPU61g1huc38g339ysXspwY1QZA2aNhrk/KlHGO+ewA==
+  dependencies:
+    merge-options "^3.0.4"
 
 "@react-native-community/cli-clean@13.6.6":
   version "13.6.6"
@@ -8517,6 +8531,13 @@ cross-fetch@3.1.5:
   dependencies:
     node-fetch "2.6.7"
 
+cross-fetch@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-4.0.0.tgz#f037aef1580bb3a1a35164ea2a848ba81b445983"
+  integrity sha512-e4a5N8lVvuLgAWgnCrLr2PP0YyDOTHa9H/Rj54dirp61qXnNq46m82bRhNqIA5VccJtWBvPTFRV3TtvHUKPB1g==
+  dependencies:
+    node-fetch "^2.6.12"
+
 cross-fetch@^3.1.5:
   version "3.1.8"
   resolved "https://registry.npmjs.org/cross-fetch/-/cross-fetch-3.1.8.tgz"
@@ -10465,6 +10486,13 @@ expo-linking@~6.3.0:
     expo-constants "~16.0.0"
     invariant "^2.2.4"
 
+expo-localization@~15.0.3:
+  version "15.0.3"
+  resolved "https://registry.yarnpkg.com/expo-localization/-/expo-localization-15.0.3.tgz#772c89b3ab9c925b7eca6911a11ca33980c2b674"
+  integrity sha512-IfcmlKuKRlowR9qIzL0e+nGHBeNoF7l2GQaOJstc7HZiPjNJ4J1R4D53ZNf483dt7JSkTRJBihdTadOtOEjRdg==
+  dependencies:
+    rtl-detect "^1.0.2"
+
 expo-modules-autolinking@1.11.1:
   version "1.11.1"
   resolved "https://registry.yarnpkg.com/expo-modules-autolinking/-/expo-modules-autolinking-1.11.1.tgz#4a867f727d9dfde07de8dde14b333a3cbf82ce3c"
@@ -11860,6 +11888,13 @@ hosted-git-info@^4.0.0, hosted-git-info@^4.0.1:
   dependencies:
     lru-cache "^6.0.0"
 
+html-parse-stringify@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/html-parse-stringify/-/html-parse-stringify-3.0.1.tgz#dfc1017347ce9f77c8141a507f233040c59c55d2"
+  integrity sha512-KknJ50kTInJ7qIScF3jeaFRpMpE8/lfiTdzf/twXyPBLAGrLRTmkz3AdTnKeh40X8k9L2fdYwEp/42WGXIRGcg==
+  dependencies:
+    void-elements "3.1.0"
+
 html-void-elements@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/html-void-elements/-/html-void-elements-2.0.1.tgz#29459b8b05c200b6c5ee98743c41b979d577549f"
@@ -11949,6 +11984,20 @@ humanize-duration@^3.27.3:
   version "3.32.1"
   resolved "https://registry.yarnpkg.com/humanize-duration/-/humanize-duration-3.32.1.tgz#922beff5da36fb1cee3de26ada24c592b0fe519b"
   integrity sha512-inh5wue5XdfObhu/IGEMiA1nUXigSGcaKNemcbLRKa7jXYGDZXr3LoT9pTIzq2hPEbld7w/qv9h+ikWGz8fL1g==
+
+i18next-http-backend@^2.6.1:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/i18next-http-backend/-/i18next-http-backend-2.6.1.tgz#186c3a1359e10245c9119a13129f9b5bf328c9a7"
+  integrity sha512-rCilMAnlEQNeKOZY1+x8wLM5IpYOj10guGvEpeC59tNjj6MMreLIjIW8D1RclhD3ifLwn6d/Y9HEM1RUE6DSog==
+  dependencies:
+    cross-fetch "4.0.0"
+
+i18next@^23.14.0:
+  version "23.14.0"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.14.0.tgz#d415a858390cc849f3db0df539cb2bbfe24a3cdb"
+  integrity sha512-Y5GL4OdA8IU2geRrt2+Uc1iIhsjICdHZzT9tNwQ3TVqdNzgxHToGCKf/TPRP80vTCAP6svg2WbbJL+Gx5MFQVA==
+  dependencies:
+    "@babel/runtime" "^7.23.2"
 
 iconv-lite@0.4.24, iconv-lite@^0.4.24:
   version "0.4.24"
@@ -12578,6 +12627,11 @@ is-plain-obj@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/is-plain-obj/-/is-plain-obj-1.1.0.tgz#71a50c8429dfca773c92a390a4a03b39fcd51d3e"
   integrity sha512-yvkRyxmFKEOQ4pNXCmJG5AEQNlXJS5LaONXo5/cLdTZdWvsZ1ioJEonLGAosKlMWE8lwUy/bJzMjcw8az73+Fg==
+
+is-plain-obj@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/is-plain-obj/-/is-plain-obj-2.1.0.tgz#45e42e37fccf1f40da8e5f76ee21515840c09287"
+  integrity sha512-YWnfyRwxL/+SsrWYfOpUtz5b3YD+nyfkHvjbcanzk8zgyO4ASD67uVMRt8k5bM4lLMDnXfriRhOpemw+NfT1eA==
 
 is-plain-obj@^4.0.0, is-plain-obj@^4.1.0:
   version "4.1.0"
@@ -14020,6 +14074,13 @@ merge-descriptors@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/merge-descriptors/-/merge-descriptors-1.0.1.tgz#b00aaa556dd8b44568150ec9d1b953f3f90cbb61"
   integrity sha512-cCi6g3/Zr1iqQi6ySbseM1Xvooa98N0w31jzUYrXPX2xqObmFGHJ0tQ5u74H3mVh7wLouTseZyYIq39g8cNp1w==
+
+merge-options@^3.0.4:
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/merge-options/-/merge-options-3.0.4.tgz#84709c2aa2a4b24c1981f66c179fe5565cc6dbb7"
+  integrity sha512-2Sug1+knBjkaMsMgf1ctR1Ujx+Ayku4EdJN4Z+C2+JzoeF7A3OZ9KM2GY0CpQS51NR61LTurMJrRKPhSs3ZRTQ==
+  dependencies:
+    is-plain-obj "^2.1.0"
 
 merge-stream@^2.0.0:
   version "2.0.0"
@@ -16457,6 +16518,14 @@ react-hook-form@^7.51.0:
   resolved "https://registry.npmjs.org/react-hook-form/-/react-hook-form-7.51.1.tgz"
   integrity sha512-ifnBjl+kW0ksINHd+8C/Gp6a4eZOdWyvRv0UBaByShwU8JbVx5hTcTWEcd5VdybvmPTATkVVXk9npXArHmo56w==
 
+react-i18next@^15.0.1:
+  version "15.0.1"
+  resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-15.0.1.tgz#fc662d93829ecb39683fe2757a47ebfbc5c912a0"
+  integrity sha512-NwxLqNM6CLbeGA9xPsjits0EnXdKgCRSS6cgkgOdNcPXqL+1fYNl8fBg1wmnnHvFy812Bt4IWTPE9zjoPmFj3w==
+  dependencies:
+    "@babel/runtime" "^7.24.8"
+    html-parse-stringify "^3.0.1"
+
 react-intersection-observer@^9.8.1:
   version "9.8.1"
   resolved "https://registry.npmjs.org/react-intersection-observer/-/react-intersection-observer-9.8.1.tgz"
@@ -17252,6 +17321,11 @@ rollup@^4.18.0:
     "@rollup/rollup-win32-ia32-msvc" "4.18.0"
     "@rollup/rollup-win32-x64-msvc" "4.18.0"
     fsevents "~2.3.2"
+
+rtl-detect@^1.0.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/rtl-detect/-/rtl-detect-1.1.2.tgz#ca7f0330af5c6bb626c15675c642ba85ad6273c6"
+  integrity sha512-PGMBq03+TTG/p/cRB7HCLKJ1MgDIi07+QU1faSjiYRfmY5UsAttV9Hs08jDAHVwcOwmVLcSJkpwyfXszVjWfIQ==
 
 run-applescript@^5.0.0:
   version "5.0.0"
@@ -19710,6 +19784,11 @@ vm2@^3.9.19:
   dependencies:
     acorn "^8.7.0"
     acorn-walk "^8.2.0"
+
+void-elements@3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/void-elements/-/void-elements-3.1.0.tgz#614f7fbf8d801f0bb5f0661f5b2f5785750e4f09"
+  integrity sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==
 
 vscode-oniguruma@^1.7.0:
   version "1.7.0"

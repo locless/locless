@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { createConnection, schema, eq } from './db';
+import { createConnection, schema, eq, isNull } from './db';
 import { UTApi } from 'uploadthing/server';
 import { newId } from '@repo/id';
 import { Tinybird } from '@chronark/zod-bird';
@@ -46,22 +46,22 @@ const publishEventStorageUsage = (tb: any) =>
   });
 
 app.get('/translations-pull', async c => {
-  const apiKeyPublic = c.req.header('x-api-key');
+  const apiKeyPrivate = c.req.header('x-api-key');
 
-  if (!apiKeyPublic) {
+  if (!apiKeyPrivate) {
     return c.text('Invalid Api Key', 400);
   }
 
   const db = createConnection(c.env);
 
   const project = await db.query.projects.findFirst({
-    where: (projects, { eq }) => eq(projects.keyPublic, apiKeyPublic),
+    where: (projects, { eq, and }) => and(eq(projects.keyAuth, apiKeyPrivate), isNull(projects.deletedAt)),
     with: {
       workspace: true,
     },
   });
 
-  if (!project || project.deletedAt === null || project.workspace.deletedAt === null) {
+  if (!project) {
     return c.text('Invalid Api Key', 400);
   }
 
@@ -72,6 +72,7 @@ app.get('/translations-pull', async c => {
   const translations = await db.query.translations.findMany({
     where: (translations, { eq }) => eq(translations.projectId, project.id),
     columns: {
+      id: true,
       name: true,
       updatedAt: true,
     },
@@ -91,6 +92,71 @@ app.get('/translations-pull', async c => {
   return c.json(translations);
 });
 
+app.get('/translations-id/:id', async c => {
+  const apiKeyPrivate = c.req.header('x-api-key');
+
+  if (!apiKeyPrivate) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  const { id } = await c.req.param();
+
+  const db = createConnection(c.env);
+
+  const project = await db.query.projects.findFirst({
+    where: (projects, { eq, and }) => and(eq(projects.keyAuth, apiKeyPrivate), isNull(projects.deletedAt)),
+    with: {
+      workspace: true,
+    },
+  });
+
+  if (!project) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (project.workspace.isUsageExceeded) {
+    return c.text('Too many requests', 429);
+  }
+
+  const translation = await db.query.translations.findFirst({
+    where: (translations, { eq, and }) => and(eq(translations.id, id), isNull(translations.deletedAt)),
+  });
+
+  if (!translation || !translation?.enabled) {
+    return c.text('Translation not found', 404);
+  }
+
+  const resp = await fetch(translation.fileUrl);
+
+  const blobVal = await resp.text();
+
+  if (!blobVal) {
+    return c.text("File doesn't exists", 404);
+  }
+
+  const tb = new Tinybird({ token: c.env.TINYBIRD_TOKEN });
+
+  await publishEventStorageUsage(tb)({
+    projectId: project.id,
+    elementId: translation.id,
+    type: 'translation',
+    workspaceId: project.workspaceId,
+    size: translation.size,
+    time: Date.now(),
+  });
+
+  await publishEventApiRequests(tb)({
+    projectId: project.id,
+    elementId: translation.id,
+    type: 'translation',
+    workspaceId: project.workspaceId,
+    deniedReason: '',
+    time: Date.now(),
+  });
+
+  return c.body(blobVal, 201);
+});
+
 app.get('/translations/:name', async c => {
   const apiKeyPublic = c.req.header('x-api-key');
 
@@ -107,13 +173,13 @@ app.get('/translations/:name', async c => {
   const db = createConnection(c.env);
 
   const project = await db.query.projects.findFirst({
-    where: (projects, { eq }) => eq(projects.keyPublic, apiKeyPublic),
+    where: (projects, { eq, and }) => and(eq(projects.keyPublic, apiKeyPublic), isNull(projects.deletedAt)),
     with: {
       workspace: true,
     },
   });
 
-  if (!project || project.deletedAt === null || project.workspace.deletedAt === null) {
+  if (!project) {
     return c.text('Invalid Api Key', 400);
   }
 
@@ -122,10 +188,11 @@ app.get('/translations/:name', async c => {
   }
 
   const translation = await db.query.translations.findFirst({
-    where: (translations, { eq, and }) => and(eq(translations.projectId, project.id), eq(translations.name, name)),
+    where: (translations, { eq, and }) =>
+      and(eq(translations.projectId, project.id), eq(translations.name, name), isNull(translations.deletedAt)),
   });
 
-  if (!translation || !translation?.enabled || translation.deletedAt === null) {
+  if (!translation || !translation?.enabled) {
     return c.text('Translation not found', 404);
   }
 
@@ -170,13 +237,13 @@ app.get('/file/:name', async c => {
   const db = createConnection(c.env);
 
   const project = await db.query.projects.findFirst({
-    where: (projects, { eq }) => eq(projects.keyPublic, apiKeyPublic),
+    where: (projects, { eq, and }) => and(eq(projects.keyPublic, apiKeyPublic), isNull(projects.deletedAt)),
     with: {
       workspace: true,
     },
   });
 
-  if (!project || project.deletedAt === null || project.workspace.deletedAt === null) {
+  if (!project) {
     return c.text('Invalid Api Key', 400);
   }
 
@@ -187,11 +254,16 @@ app.get('/file/:name', async c => {
   const { name } = await c.req.param();
 
   const component = await db.query.components.findFirst({
-    where: (components, { eq, and }) => and(eq(components.projectId, project.id), eq(components.name, name)),
+    where: (components, { eq, and }) =>
+      and(eq(components.projectId, project.id), eq(components.name, name), isNull(components.deletedAt)),
   });
 
-  if (!component || !component?.enabled || component.deletedAt === null) {
+  if (!component) {
     return c.text('Component not found', 404);
+  }
+
+  if (!component?.enabled) {
+    return c.body('null', 201);
   }
 
   const resp = await fetch(component.fileUrl);
@@ -242,13 +314,13 @@ app.post('/generate', async c => {
   const db = createConnection(c.env);
 
   const project = await db.query.projects.findFirst({
-    where: (projects, { eq }) => eq(projects.keyAuth, apiKeyPrivate),
+    where: (projects, { eq, and }) => and(eq(projects.keyAuth, apiKeyPrivate), isNull(projects.deletedAt)),
     with: {
       workspace: true,
     },
   });
 
-  if (!project || project.deletedAt === null || project.workspace.deletedAt === null) {
+  if (!project) {
     return c.text('Invalid Api Key', 400);
   }
 
@@ -354,6 +426,11 @@ app.post('/generate', async c => {
       }
 
       if (result) {
+        await utapi.renameFiles({
+          key,
+          newName: `${name}_${result}.js`,
+        });
+
         const tb = new Tinybird({ token: c.env.TINYBIRD_TOKEN });
 
         await publishEventStorageUsage(tb)({
@@ -399,13 +476,13 @@ app.post('/generate-translation', async c => {
   const db = createConnection(c.env);
 
   const project = await db.query.projects.findFirst({
-    where: (projects, { eq }) => eq(projects.keyAuth, apiKeyPrivate),
+    where: (projects, { eq, and }) => and(eq(projects.keyAuth, apiKeyPrivate), isNull(projects.deletedAt)),
     with: {
       workspace: true,
     },
   });
 
-  if (!project || project.deletedAt === null || project.workspace.deletedAt === null) {
+  if (!project) {
     return c.text('Invalid Api Key', 400);
   }
 
@@ -529,6 +606,11 @@ app.post('/generate-translation', async c => {
       }
 
       if (result) {
+        await utapi.renameFiles({
+          key,
+          newName: `${name}_${result.id}.json`,
+        });
+
         const tb = new Tinybird({ token: c.env.TINYBIRD_TOKEN });
 
         await publishEventStorageUsage(tb)({

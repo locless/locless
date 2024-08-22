@@ -53,7 +53,7 @@ export const SaveTranslationButton = ({
       {...rest}
       onClick={() => {
         if (enabled) {
-          toggleStatus.mutate({ translationId, content, updatedAt });
+          toggleStatus.mutate({ translationId, content, updatedAt: updatedAt.toString() });
         }
       }}>
       {toggleStatus.isPending ? <Loading /> : <Save size={18} className='w-4 h-4' />}

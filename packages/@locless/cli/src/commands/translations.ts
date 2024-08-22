@@ -2,10 +2,7 @@ import { Command } from 'commander';
 import ora from 'ora';
 import path from 'path';
 import * as fs from 'fs';
-import child_process from 'child_process';
 import chalk from 'chalk';
-import { componentCodegen } from '../templates/component';
-import { format, writeFile } from '../utils';
 import isLocale from '../utils/isLocale';
 
 const SERVER_URL = 'https://api.locless.com';
@@ -15,28 +12,13 @@ const spinner = ora({
   color: 'yellow',
 });
 
-const parseRequires = (content: string, object: Record<string, string>): any => {
-  let contentSplit = content.split(`require(`);
-  let stringRequire;
-
-  for (let i = 1; i < contentSplit.length; i++) {
-    stringRequire = contentSplit[i]?.split(`)`)[0];
-
-    if (stringRequire) {
-      object[stringRequire] = `require(${stringRequire})`;
-    }
-  }
-
-  return object;
-};
-
 export const translations = new Command()
   .name('translations')
   .description('Transform and deploy TS file to Locless cloud.')
   .option('--push', 'push translations to the cloud')
   .option('--pull', 'pull translations from the cloud')
   .option('-e, --env <name>', 'env file name', '.env')
-  .action(async (_, options) => {
+  .action(async options => {
     await runDeploy(options);
   });
 
@@ -121,7 +103,7 @@ export const runDeploy = async (options: Record<string, any>) => {
       for (const item of translations) {
         const filePath = path.join(loclessTranslationsFolderPath, `${item.name}.json`);
 
-        const translation = await fetch(`${SERVER_URL}/translations/${item.name}`, {
+        const translation = await fetch(`${SERVER_URL}/translations-id/${item.id}`, {
           method: 'GET',
           headers: {
             'x-api-key': authKey,
@@ -244,7 +226,7 @@ export const runDeploy = async (options: Record<string, any>) => {
 
       spinner.start('Generating translations info...');
       fs.writeFileSync(loclessTranslationsGeneratedPath, JSON.stringify(generatedTranslationsData, null, 2), 'utf-8');
-      spinner.start('Successfully generated translations info!');
+      spinner.succeed('Successfully generated translations info!');
     }
   } catch (e) {
     spinner.fail(`${e}`);
