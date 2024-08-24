@@ -36,7 +36,6 @@ export const createWorkspace = t.procedure
       name: input.name,
       plan: 'free',
       stripeCustomerId: null,
-      stripeSubscriptionId: null,
       subscriptions,
       createdAt: new Date(),
       deletedAt: null,

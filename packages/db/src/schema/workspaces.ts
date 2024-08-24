@@ -14,7 +14,6 @@ export const workspaces = mysqlTable(
     plan: mysqlEnum('plan', ['free', 'pro', 'enterprise']).notNull(),
     isPersonal: boolean('isPersonal').notNull(),
     stripeCustomerId: varchar('stripeCustomerId', { length: 256 }),
-    stripeSubscriptionId: varchar('stripeSubscriptionId', { length: 256 }),
     subscriptions: json('subscriptions').$type<Subscriptions>(),
     createdAt: datetime('created_at', { mode: 'date', fsp: 3 }),
     deletedAt: datetime('deleted_at', { mode: 'date', fsp: 3 }),

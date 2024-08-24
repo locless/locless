@@ -3,16 +3,17 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev": "npx trigger.dev@3.0.0-beta.45 dev"
+    "dev": "npx trigger.dev@3.0.0-beta.55 dev",
+    "deploy": "npx trigger.dev@3.0.0-beta.55 deploy"
   },
   "dependencies": {
     "@chronark/zod-bird": "^0.3.9",
     "@planetscale/database": "^1.18.0",
     "@repo/billing": "*",
     "@repo/db": "*",
-    "@trigger.dev/sdk": "3.0.0-beta.45",
+    "@trigger.dev/sdk": "3.0.0-beta.55",
     "stripe": "^16.1.0",
-    "trigger.dev": "3.0.0-beta.45",
+    "trigger.dev": "^3.0.0-beta.55",
     "zod": "^3.23.8"
   },
   "devDependencies": {

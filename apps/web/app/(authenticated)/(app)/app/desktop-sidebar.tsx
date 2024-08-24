@@ -1,7 +1,7 @@
 'use client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@repo/ui/components/ui/tooltip';
 import { cn } from '@repo/ui/lib/utils';
-import { BookOpen, Code, Loader2, LucideIcon, Settings, HandCoins } from 'lucide-react';
+import { BookOpen, Code, Loader2, LucideIcon, HandCoins } from 'lucide-react';
 import Link from 'next/link';
 import { useSelectedLayoutSegments } from 'next/navigation';
 import { useRouter } from 'next/navigation';
@@ -26,12 +26,6 @@ type NavItem = {
 export const DesktopSidebar: React.FC<Props> = ({ className }) => {
   const segments = useSelectedLayoutSegments();
   const generalNavigation: NavItem[] = [
-    {
-      icon: Settings,
-      href: '/app/settings/general',
-      label: 'Settings',
-      active: segments.at(0) === 'settings',
-    },
     {
       icon: BookOpen,
       href: '/docs',

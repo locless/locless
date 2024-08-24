@@ -6,7 +6,7 @@ import { createConnection, eq, schema } from '../lib/db';
 const GIGABYTE = Math.pow(1024, 3);
 const MAX_FREE_USAGE = 1 * GIGABYTE;
 
-export const createInvoiceTask = schedules.task({
+export const checkFreeUsageTask = schedules.task({
   id: 'check_free_usage',
   run: async () => {
     logger.info('task starting..');
@@ -16,13 +16,7 @@ export const createInvoiceTask = schedules.task({
 
     const workspaces = await db.query.workspaces.findMany({
       where: (table, { isNull, eq, and }) =>
-        and(
-          isNull(table.stripeCustomerId),
-          isNull(table.subscriptions),
-          eq(table.plan, 'free'),
-          eq(table.isUsageExceeded, false),
-          isNull(table.deletedAt)
-        ),
+        and(eq(table.plan, 'free'), eq(table.isUsageExceeded, false), isNull(table.deletedAt)),
     });
 
     logger.info(`found ${workspaces.length} workspaces`);
@@ -56,7 +50,7 @@ export const createInvoiceTask = schedules.task({
         })
         .then((res: any) => res.data.at(0)?.success ?? 0);
 
-      if (apiRequests > 1000) {
+      if (apiRequests >= 1000) {
         await db
           .update(schema.workspaces)
           .set({

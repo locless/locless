@@ -28,7 +28,17 @@ export default clerkMiddleware(async (auth, req) => {
         return NextResponse.redirect(new URL('/new', req.url));
       }
 
-      if (workspace && !['/app/billing', '/app/projects', '/'].includes(req.nextUrl.pathname)) {
+      if (
+        workspace &&
+        ![
+          '/app/billing',
+          '/app/billing/stripe',
+          '/app/billing/stripe/success',
+          '/app/billing/plans',
+          '/app/projects',
+          '/',
+        ].includes(req.nextUrl.pathname)
+      ) {
         if (workspace.plan === 'free') {
           return NextResponse.redirect(new URL('/app/billing', req.url));
         }

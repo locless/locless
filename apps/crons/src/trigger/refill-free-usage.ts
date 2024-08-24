@@ -1,7 +1,7 @@
 import { schedules, logger } from '@trigger.dev/sdk/v3';
 import { and, createConnection, eq, isNull, schema } from '../lib/db';
 
-export const createInvoiceTask = schedules.task({
+export const refillFreeUsageTask = schedules.task({
   id: 'refill_free_usage',
   run: async () => {
     const db = createConnection();
@@ -13,13 +13,7 @@ export const createInvoiceTask = schedules.task({
       .set({
         isUsageExceeded: false,
       })
-      .where(
-        and(
-          eq(schema.workspaces.isUsageExceeded, true),
-          eq(schema.workspaces.plan, 'free'),
-          isNull(schema.workspaces.deletedAt)
-        )
-      );
+      .where(and(eq(schema.workspaces.isUsageExceeded, true), isNull(schema.workspaces.deletedAt)));
 
     return 'Done';
   },

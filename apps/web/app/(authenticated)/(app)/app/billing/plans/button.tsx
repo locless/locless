@@ -69,7 +69,7 @@ export const ChangePlanButton: React.FC<Props> = ({ workspace, newPlan, label })
               {newPlan === 'free'
                 ? 'Your workspace will downgraded at the end of the month, you have access to all features of your current plan until then'
                 : newPlan === 'pro'
-                  ? `You are about to switch to the ${newPlan} plan. Please note that you can not change your plan in the current cycle, contact support@unkey.dev if you need to.`
+                  ? `You are about to switch to the ${newPlan} plan. Please note that you can not change your plan in the current cycle, contact support@locless.com if you need to.`
                   : ''}
             </AlertDescription>
           </Alert>

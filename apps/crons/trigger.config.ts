@@ -13,5 +13,5 @@ export const config: TriggerConfig = {
       randomize: true,
     },
   },
-  dependenciesToBundle: [/^@repo\//],
+  dependenciesToBundle: [/.*/],
 };

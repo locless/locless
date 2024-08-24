@@ -31,7 +31,6 @@ export default async function ProjectsOverviewPage() {
       name: tenantId.includes('org') ? 'Organization' : 'Personal',
       plan: 'free',
       stripeCustomerId: null,
-      stripeSubscriptionId: null,
       subscriptions,
       createdAt: new Date(),
       deletedAt: null,

@@ -28,6 +28,7 @@ export default async function StripeSuccess(props: Props) {
   }
 
   const e = stripeEnv();
+
   if (!e) {
     return redirect('/app');
   }
@@ -69,7 +70,6 @@ export default async function StripeSuccess(props: Props) {
     .update(schema.workspaces)
     .set({
       stripeCustomerId: customer.id,
-      stripeSubscriptionId: session.subscription as string,
     })
     .where(eq(schema.workspaces.id, ws.id));
 
