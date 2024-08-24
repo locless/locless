@@ -7,6 +7,7 @@ import { getTenantId } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { notFound } from 'next/navigation';
 import { ToggleTranslationStatusButton } from './toggle-translation-status-button';
+import { DeleteTranslationButton } from './delete-translation-button';
 
 interface Props {
   params: {
@@ -42,7 +43,7 @@ export default async function ProjectTranslationsPage(props: Props) {
               <TableHead>Size</TableHead>
               <TableHead>IsEnabled</TableHead>
               <TableHead>Stats</TableHead>
-              <TableHead className='text-right'>Edit</TableHead>
+              <TableHead className='text-right'>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -58,12 +59,13 @@ export default async function ProjectTranslationsPage(props: Props) {
                   />
                 </TableCell>
                 <TableCell>{JSON.stringify(translation.stats ?? {})}</TableCell>
-                <TableCell className='text-right'>
+                <TableCell className='gap-2 flex items-center justify-end'>
                   <Link href={`/app/projects/${project.id}/translations/${translation.id}`}>
-                    <Button variant='secondary' className='w-full items-center gap-2 '>
+                    <Button className='w-full items-center gap-2 '>
                       <Pencil className='h-4 w-4 md:h-5 md:w-5' />
                     </Button>
                   </Link>
+                  <DeleteTranslationButton id={translation.id} name={translation.name} />
                 </TableCell>
               </TableRow>
             ))}

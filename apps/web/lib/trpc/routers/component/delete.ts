@@ -3,6 +3,8 @@ import { z } from 'zod';
 
 import { db, eq, schema } from '@/lib/db';
 import { auth, t } from '../../trpc';
+import { env } from '@/lib/env';
+import { UTApi } from 'uploadthing/server';
 
 export const deleteComponent = t.procedure
   .use(auth)
@@ -23,15 +25,22 @@ export const deleteComponent = t.procedure
       throw new TRPCError({ code: 'NOT_FOUND', message: 'component not found' });
     }
 
+    const secrets = env();
+
+    const utapi = new UTApi({
+      apiKey: secrets.UPLOADTHING_SECRET,
+    });
+
+    await utapi.deleteFiles([component.fileId]);
+
     await db.transaction(async tx => {
-      await tx
-        .update(schema.components)
-        .set({ deletedAt: new Date() })
-        .where(eq(schema.components.id, input.componentId));
+      await tx.delete(schema.components).where(eq(schema.components.id, component.id));
 
       await tx
         .update(schema.workspaces)
-        .set({ size: component.workspace.size - component.size })
-        .where(eq(schema.workspaces.id, component.workspace.id));
+        .set({
+          size: component.workspace.size - component.size,
+        })
+        .where(eq(schema.workspaces.id, component.workspaceId));
     });
   });

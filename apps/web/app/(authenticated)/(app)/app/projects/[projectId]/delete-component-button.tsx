@@ -1,8 +1,7 @@
 'use client';
 import { Button } from '@repo/ui/components/ui/button';
 import React, { useState } from 'react';
-
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@repo/ui/components/ui/card';
+import { Trash } from 'lucide-react';
 import { Input } from '@repo/ui/components/ui/input';
 
 import { Loading } from '@/components/dashboard/loading';
@@ -19,7 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 
-import { revalidate } from './actions';
+import { revalidate } from '../actions';
 import { useToast } from '@repo/ui/components/ui/use-toast';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,14 +29,14 @@ type Props = {
   name: string;
 };
 
-const intent = 'delete my project';
+const intent = 'delete my component';
 
-export const DeleteProject: React.FC<Props> = ({ id, name }) => {
+export const DeleteComponentButton: React.FC<Props> = ({ id, name }) => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
   const formSchema = z.object({
-    name: z.string().refine(v => v === name, 'Please confirm the project name'),
+    name: z.string().refine(v => v === name, 'Please confirm the component name'),
     intent: z.string().refine(v => v === intent, 'Please confirm your intent'),
   });
 
@@ -47,16 +46,16 @@ export const DeleteProject: React.FC<Props> = ({ id, name }) => {
 
   const router = useRouter();
 
-  const deleteProject = trpc.project.delete.useMutation({
+  const deleteComponent = trpc.component.delete.useMutation({
     async onSuccess() {
       toast({
-        title: 'Project Deleted',
-        description: 'Your project and all its components has been deleted.',
+        title: 'Component Deleted',
+        description: 'Your component and all its data has been deleted.',
       });
 
       await revalidate();
 
-      router.push('/app/projects');
+      router.refresh();
     },
     onError(err) {
       console.error(err);
@@ -70,36 +69,26 @@ export const DeleteProject: React.FC<Props> = ({ id, name }) => {
   const isValid = form.watch('intent') === intent && form.watch('name') === name;
 
   async function onSubmit() {
-    deleteProject.mutate({ projectId: id });
+    deleteComponent.mutate({ componentId: id });
   }
 
   return (
     <>
-      <Card className='relative border-2 border-[#b80f07]'>
-        <CardHeader>
-          <CardTitle>Delete</CardTitle>
-          <CardDescription>
-            This project will be deleted, along with all of its components and data. This action cannot be undone.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter className='z-10 justify-end'>
-          <Button
-            type='button'
-            onClick={() => {
-              setOpen(!open);
-              form.reset();
-            }}
-            variant='destructive'>
-            Delete Project
-          </Button>
-        </CardFooter>
-      </Card>
+      <Button
+        type='button'
+        variant='destructive'
+        onClick={() => {
+          setOpen(!open);
+          form.reset();
+        }}>
+        <Trash size={18} className='w-4 h-4' />
+      </Button>
       <Dialog open={open} onOpenChange={o => setOpen(o)}>
         <DialogContent className='border-[#b80f07]'>
           <DialogHeader>
-            <DialogTitle>Delete Project</DialogTitle>
+            <DialogTitle>Delete Component</DialogTitle>
             <DialogDescription>
-              This project will be deleted, along with all of its components. This action cannot be undone.
+              This component will be deleted, along with all of its data. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -115,7 +104,7 @@ export const DeleteProject: React.FC<Props> = ({ id, name }) => {
                   <FormItem>
                     <FormLabel className='font-normal text-content-subtle'>
                       {' '}
-                      Enter the Project name <span className='font-medium text-content'>{name}</span> to continue:
+                      Enter the Component name <span className='font-medium text-content'>{name}</span> to continue:
                     </FormLabel>
                     <FormControl>
                       <Input {...field} autoComplete='off' />
@@ -130,7 +119,7 @@ export const DeleteProject: React.FC<Props> = ({ id, name }) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className='font-normal text-content-subtle'>
-                      To verify, type <span className='font-medium text-content'>delete my project</span> below:
+                      To verify, type <span className='font-medium text-content'>delete my component</span> below:
                     </FormLabel>
                     <FormControl>
                       <Input {...field} autoComplete='off' />
@@ -142,13 +131,13 @@ export const DeleteProject: React.FC<Props> = ({ id, name }) => {
               <DialogFooter className='justify-end gap-4'>
                 <Button
                   type='button'
-                  disabled={deleteProject.isPending}
+                  disabled={deleteComponent.isPending}
                   onClick={() => setOpen(!open)}
                   variant='secondary'>
                   Cancel
                 </Button>
-                <Button type='submit' disabled={!isValid || deleteProject.isPending} variant='destructive'>
-                  {deleteProject.isPending ? <Loading /> : 'Delete Project'}
+                <Button type='submit' disabled={!isValid || deleteComponent.isPending} variant='destructive'>
+                  {deleteComponent.isPending ? <Loading /> : 'Delete Project'}
                 </Button>
               </DialogFooter>
             </form>
