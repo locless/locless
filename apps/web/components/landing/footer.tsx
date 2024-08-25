@@ -9,9 +9,7 @@ export function Footer() {
       <div className='mx-auto max-w-7xl px-6 pb-8 lg:px-8'>
         <div className='border-white/10 pt-8 md:flex md:items-center md:justify-between'>
           <div className='flex space-x-6 md:order-2'>
-            <Link
-              href='https://docs.locless.com'
-              className='flex flex-row items-center gap-2 text-gray-500 hover:text-gray-400'>
+            <Link href='/docs' className='flex flex-row items-center gap-2 text-gray-500 hover:text-gray-400'>
               <span>Docs</span>
               <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512' className='h-6 w-6'>
                 <path
