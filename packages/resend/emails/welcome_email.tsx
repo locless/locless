@@ -32,43 +32,33 @@ export function WelcomeEmail() {
               to life with speed and precision.
             </Text>
             <Section>
-              <Text className='font-semibold'>Here’s what you can expect: </Text>
+              <Heading className='font-sans text-lg text-semibold'>Here’s what you can expect:</Heading>
               <Text>
-                <li>
-                  <Text>
-                    Streamlined Development: Simplified workflows to get your app from concept to launch in record time.
-                  </Text>
-                </li>
-                <li>
-                  {' '}
-                  <Text>Expert Support: Our team is here to assist you every step of the way.</Text>
-                </li>
-                <li>
-                  {' '}
-                  <Text>
-                    Continuous Updates: We’re always improving our platform based on your feedback to ensure you have
-                    the best experience possible.
-                  </Text>
-                </li>
+                <strong>Streamlined Development:</strong> Simplified workflows to get your app from concept to launch in
+                record time.
+                <br />
+                <strong>Expert Support:</strong> Our team is here to assist you every step of the way.
+                <br />
+                <strong>Continuous Updates:</strong> We’re always improving our platform based on your feedback to
+                ensure you have the best experience possible.
               </Text>
             </Section>
             <Section>
-              <Text className='font-semibold'>Here are some resources to get you started: </Text>
+              <Text className='font-bold'>Here are some resources to get you started: </Text>
               <Text>
                 <li>
-                  <Link href='https://locless.com/docs'> Locless Docs </Link>
+                  <Link href='https://locless.com/docs'>Docs</Link>
                 </li>
                 <li>
                   {' '}
-                  <Link href='https://locless.com/discord'>Locless Discord </Link>
+                  <Link href='https://locless.com/discord'>Discord</Link>
                 </li>
               </Text>
             </Section>
             <Hr />
             <Text>
-              Need help? Please reach out to <Link href='mailto:support@locless.com'>support@locless.com</Link> or just
-              reply to this email. Ready to get started? <Link href='https://locless.com/app/projects'>Log in</Link> to
-              your account and explore the possibilities. If you have any questions, feel free to{' '}
+              Ready to get started? <Link href='https://locless.com/app/projects'>Log in</Link> to your account and
+              explore the possibilities. If you have any questions, feel free to{' '}
               <Link href='mailto:support@locless.com'>reach out</Link> — we’re here to help.
             </Text>
             <Text>Welcome aboard! Let’s create something amazing together.</Text>
@@ -77,7 +67,7 @@ export function WelcomeEmail() {
               <br />
               Igor
               <br />
-              Founder & Creator of Locless
+              Creator of Locless
             </Text>
           </Container>
         </Section>
