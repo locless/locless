@@ -33,7 +33,7 @@ export default function KeyCard({ title, projectId, serverKey, keyType }: Props)
     <>
       <CardDescription className='mt-4 mb-2'>{title}</CardDescription>
       <Code className='flex items-center justify-between gap-4'>
-        <pre>{key}</pre>
+        <pre>{`loc_${key.split('loc_')[1].replace(/./g, '*')}`}</pre>
         <div className='flex items-start justify-between gap-4'>
           <CopyButton value={key} />
           <GenerateKeyButton projectId={projectId} callback={onGenerateKey} keyType={keyType} />
