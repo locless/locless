@@ -1,7 +1,7 @@
 import { mysqlTable, varchar, boolean, index, datetime } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 import { workspaces } from './workspaces';
-import { components } from '../schema';
+import { components, translations } from '../schema';
 
 export const projects = mysqlTable(
   'projects',
@@ -28,5 +28,8 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   }),
   components: many(components, {
     relationName: 'project_component_relation',
+  }),
+  translations: many(translations, {
+    relationName: 'project_translation_relation',
   }),
 }));

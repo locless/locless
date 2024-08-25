@@ -12,6 +12,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { trpc } from '@/lib/trpc/client';
+import { revalidate } from './actions';
 
 const formSchema = z.object({
   name: z.string().min(2).max(50),
@@ -26,11 +27,13 @@ export const CreateProjectButton = ({ ...rest }: React.ButtonHTMLAttributes<HTML
   const { toast } = useToast();
 
   const create = trpc.project.create.useMutation({
-    onSuccess(res) {
+    async onSuccess(res) {
       toast({
         description: 'Your project has been created!',
       });
-      router.refresh();
+
+      await revalidate();
+
       router.push(`/app/projects/${res.id}`);
     },
     onError(err) {

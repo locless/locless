@@ -1,0 +1,4 @@
+{
+  "greeting": "Hey, {{name}}!",
+  "greeting_with_count": "Hello, {{name}}! You have {{count}} messages."
+}

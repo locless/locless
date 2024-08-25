@@ -1,7 +1,7 @@
 'use client';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@repo/ui/components/ui/tooltip';
 import { cn } from '@repo/ui/lib/utils';
-import { BookOpen, Code, Loader2, LucideIcon, Settings, HandCoins } from 'lucide-react';
+import { BookOpen, Code, Loader2, LucideIcon, HandCoins } from 'lucide-react';
 import Link from 'next/link';
 import { useSelectedLayoutSegments } from 'next/navigation';
 import { useRouter } from 'next/navigation';
@@ -27,14 +27,8 @@ export const DesktopSidebar: React.FC<Props> = ({ className }) => {
   const segments = useSelectedLayoutSegments();
   const generalNavigation: NavItem[] = [
     {
-      icon: Settings,
-      href: '/app/settings/general',
-      label: 'Settings',
-      active: segments.at(0) === 'settings',
-    },
-    {
       icon: BookOpen,
-      href: 'https://docs.locless.com/',
+      href: '/docs',
       external: true,
       label: 'Docs',
     },
@@ -62,7 +56,7 @@ export const DesktopSidebar: React.FC<Props> = ({ className }) => {
   return (
     <aside className={cn('w-64 px-6 z-10', className)}>
       <div className='py-4'>
-        <OrganizationSwitcher />
+        <OrganizationSwitcher createOrganizationUrl='/new' />
       </div>
       <nav className='flex flex-col flex-1 flex-grow mt-4'>
         <ul className='flex flex-col flex-1 gap-y-7'>

@@ -9,10 +9,11 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
+    "@chronark/zod-bird": "^0.3.9",
     "@clerk/nextjs": "^5.0.6",
     "@hookform/resolvers": "^3.4.2",
-    "@openmeter/sdk": "^1.0.0-beta.83",
     "@planetscale/database": "^1.18.0",
+    "@repo/billing": "*",
     "@repo/db": "*",
     "@repo/id": "*",
     "@repo/ui": "*",
@@ -23,8 +24,7 @@
     "@trpc/server": "^11.0.0-rc.390",
     "@types/uuid": "^9.0.8",
     "class-variance-authority": "^0.7.0",
-    "dayjs": "^1.11.11",
-    "drizzle-orm": "^0.31.0",
+    "drizzle-orm": "generated",
     "framer-motion": "^11.0.12",
     "lucide-react": "^0.357.0",
     "next": "^14.1.1",
@@ -35,10 +35,11 @@
     "react-intersection-observer": "^9.8.1",
     "stripe": "^15.10.0",
     "superjson": "^2.2.1",
-    "svix": "^1.24.0",
     "trpc-tools": "^0.12.0",
+    "uploadthing": "^6.13.2",
     "uuid": "^9.0.1",
-    "zod": "^3.22.4"
+    "vanilla-jsoneditor": "^0.23.8",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^14.1.1",

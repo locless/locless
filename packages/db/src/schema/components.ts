@@ -16,6 +16,7 @@ export const components = mysqlTable(
     stats: json('stats').notNull(),
     createdAt: datetime('created_at', { mode: 'date', fsp: 3 }),
     deletedAt: datetime('deleted_at', { mode: 'date', fsp: 3 }),
+    updatedAt: datetime('updated_at', { mode: 'date', fsp: 3 }),
     enabled: boolean('enabled').notNull().default(true),
     canReverseDeletion: boolean('canReverseDeletion').notNull().default(true),
   },

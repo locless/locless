@@ -41,3 +41,4 @@ yarn-error.log*
 .expo
 .dev.vars
 .wrangler
+.tinyb

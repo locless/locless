@@ -6,6 +6,7 @@ const prefixes = {
   workspace: 'ws',
   project: 'pr',
   component: 'cm',
+  translation: 'tr',
   branch: 'br',
   keyAuth: 'loc_auth',
   keyPublic: 'loc_pub',

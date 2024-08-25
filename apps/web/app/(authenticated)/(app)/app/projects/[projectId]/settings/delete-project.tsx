@@ -83,7 +83,13 @@ export const DeleteProject: React.FC<Props> = ({ id, name }) => {
           </CardDescription>
         </CardHeader>
         <CardFooter className='z-10 justify-end'>
-          <Button type='button' onClick={() => setOpen(!open)}>
+          <Button
+            type='button'
+            onClick={() => {
+              setOpen(!open);
+              form.reset();
+            }}
+            variant='destructive'>
             Delete Project
           </Button>
         </CardFooter>
@@ -141,7 +147,7 @@ export const DeleteProject: React.FC<Props> = ({ id, name }) => {
                   variant='secondary'>
                   Cancel
                 </Button>
-                <Button type='submit' disabled={!isValid || deleteProject.isPending}>
+                <Button type='submit' disabled={!isValid || deleteProject.isPending} variant='destructive'>
                   {deleteProject.isPending ? <Loading /> : 'Delete Project'}
                 </Button>
               </DialogFooter>

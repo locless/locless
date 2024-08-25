@@ -1,13 +1,18 @@
 import * as React from 'react';
 import { LoclessProvider } from '@locless/react-native';
 import LocDemoComponent from 'locless/generated/LocDemoComponent';
-
-//9a896e45-6d24-4ecd-83f9-ef15cb937f64
-//{...({ name: '345' } as any)}
+// import i18n from 'src/i18n';
+// import LanguageSwitch from 'src/components/LanguageSwitch';
+// import { I18nextProvider } from 'react-i18next';
 
 export default function App() {
   return (
     <LoclessProvider config={{ apiKey: process.env.EXPO_PUBLIC_LOCLESS_PUBLIC_KEY }}>
+      {/*<I18nextProvider i18n={i18n}>
+        <LocDemoComponent />
+        <LanguageSwitch />
+      </I18nextProvider>*/}
+
       <LocDemoComponent />
     </LoclessProvider>
   );

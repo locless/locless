@@ -7,6 +7,7 @@ import inquirerSearchList from 'inquirer-search-list';
 import { version } from '../package.json';
 import { deploy } from './commands/deploy';
 import { generate } from './commands/generate';
+import { translations } from './commands/translations';
 
 const MINIMUM_MAJOR_VERSION = 18;
 const MINIMUM_MINOR_VERSION = 0;
@@ -48,6 +49,7 @@ async function main() {
     .description('Start developing with Locless by running `npx locless dev`.')
     .addCommand(deploy)
     .addCommand(generate)
+    .addCommand(translations)
     .helpCommand('help <command>', 'Show help for given <command>')
     .version(version || '0.0.0')
     // Hide version and help so they don't clutter

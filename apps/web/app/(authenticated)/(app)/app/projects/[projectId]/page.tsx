@@ -7,6 +7,7 @@ import { getTenantId } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { notFound } from 'next/navigation';
 import { ToggleComponentStatusButton } from './toggle-component-status-button';
+import { DeleteComponentButton } from './delete-component-button';
 
 interface Props {
   params: {
@@ -41,7 +42,8 @@ export default async function ProjectPage(props: Props) {
               <TableHead className='w-[100px]'>Component</TableHead>
               <TableHead>Size</TableHead>
               <TableHead>IsEnabled</TableHead>
-              <TableHead className='text-right'>Stats</TableHead>
+              <TableHead>Stats</TableHead>
+              <TableHead className='text-right'>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -56,7 +58,10 @@ export default async function ProjectPage(props: Props) {
                     name={component.name}
                   />
                 </TableCell>
-                <TableCell className='text-right'>{JSON.stringify(component.stats ?? {})}</TableCell>
+                <TableCell>{JSON.stringify(component.stats ?? {})}</TableCell>
+                <TableCell className='text-right'>
+                  <DeleteComponentButton id={component.id} name={component.name} />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

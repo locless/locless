@@ -19,7 +19,7 @@ function Header() {
         </div>
         <div className='hidden lg:flex lg:gap-x-12'>
           <Link
-            href='https://docs.locless.com'
+            href='/docs'
             target='_blank'
             className='text-sm font-semibold leading-6 text-gray-900 opacity-80 hover:opacity-100'
             rel='noreferrer'>
@@ -36,7 +36,7 @@ function Header() {
         <div className='hidden flex-1 items-center justify-end gap-x-6 md:flex'>
           <div className='flex items-center gap-4'>
             <Link
-              href='/'
+              href='/app/projects'
               className='h-10 px-4 py-2 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90'>
               Get Started
             </Link>

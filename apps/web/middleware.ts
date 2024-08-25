@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { clerkMiddleware, createRouteMatcher, clerkClient } from '@clerk/nextjs/server';
 import { db } from './lib/db';
 
 const findWorkspace = async ({ tenantId }: { tenantId: string }) => {
@@ -22,10 +22,25 @@ export default clerkMiddleware(async (auth, req) => {
       const workspace = await findWorkspace({
         tenantId: orgId,
       });
-      // this stops users if they haven't paid.
-      if (workspace && !['/settings/billing/stripe', '/app/projects', '/'].includes(req.nextUrl.pathname)) {
+
+      if (!workspace && req.nextUrl.pathname !== '/new') {
+        await clerkClient.organizations.deleteOrganization(orgId);
+        return NextResponse.redirect(new URL('/new', req.url));
+      }
+
+      if (
+        workspace &&
+        ![
+          '/app/billing',
+          '/app/billing/stripe',
+          '/app/billing/stripe/success',
+          '/app/billing/plans',
+          '/app/projects',
+          '/',
+        ].includes(req.nextUrl.pathname)
+      ) {
         if (workspace.plan === 'free') {
-          return NextResponse.redirect(new URL('/settings/billing/stripe', req.url));
+          return NextResponse.redirect(new URL('/app/billing', req.url));
         }
         return NextResponse.next();
       }
@@ -42,6 +57,7 @@ export const config = {
     '/success',
     '/success/(.*)',
     '/auth/(.*)',
+    '/new(.*)',
     '/(api|trpc)(.*)',
     '/((?!.+\\.[\\w]+$|_next).*)',
     '/((?!_next/static|_next/image|images|favicon.ico|$).*)',

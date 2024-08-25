@@ -4,30 +4,16 @@ import { CreateProjectButton } from './create-project-button';
 import { Separator } from '@repo/ui/components/ui/separator';
 import Link from 'next/link';
 import { ProjectList } from './client';
-import { DesktopTopBar } from '../desktop-topbar';
 import { getTenantId } from '@/lib/auth';
-import { and, db, eq, isNull, schema, sql } from '@/lib/db';
+import { and, db, eq, isNull, schema, sql, Workspace } from '@/lib/db';
 import { redirect } from 'next/navigation';
-import dayjs from 'dayjs';
-
-type Subscription = {
-  api_requests_total: number;
-  active_components_total: number;
-  api_requests_monthly: number;
-  active_components_monthly: number;
-};
-
-const DEFAULT_SUBSCRIPTIONS: Subscription = {
-  api_requests_total: 0,
-  active_components_total: 0,
-  api_requests_monthly: 0,
-  active_components_monthly: 0,
-};
+import { defaultProSubscriptions } from '@repo/billing';
+import { newId } from '@repo/id';
 
 export default async function ProjectsOverviewPage() {
   const tenantId = getTenantId();
 
-  const workspace = await db.query.workspaces.findFirst({
+  let workspace = await db.query.workspaces.findFirst({
     where: (table, { and, eq, isNull }) => and(eq(table.tenantId, tenantId), isNull(table.deletedAt)),
     with: {
       projects: {
@@ -37,25 +23,32 @@ export default async function ProjectsOverviewPage() {
   });
 
   if (!workspace) {
-    return redirect('/');
-  }
+    const subscriptions = defaultProSubscriptions();
 
-  const isMonthPassed = dayjs().isBefore(dayjs(workspace.refilledAt), 'month');
+    const newWorkspace: Workspace = {
+      id: newId('workspace'),
+      tenantId,
+      name: tenantId.includes('org') ? 'Organization' : 'Personal',
+      plan: 'free',
+      stripeCustomerId: null,
+      subscriptions,
+      createdAt: new Date(),
+      deletedAt: null,
+      enabled: true,
+      isPersonal: !tenantId.includes('org'),
+      canReverseDeletion: true,
+      isUsageExceeded: false,
+      planChanged: null,
+      planDowngradeRequest: null,
+      size: 0,
+    };
 
-  if (isMonthPassed) {
-    const subscriptions = (workspace.subscriptions as Subscription) ?? DEFAULT_SUBSCRIPTIONS;
-
-    await db
-      .update(schema.workspaces)
-      .set({
-        refilledAt: new Date(),
-        subscriptions: {
-          ...subscriptions,
-          api_requests_monthly: 0,
-          active_components_monthly: 0,
-        },
-      })
-      .where(eq(schema.workspaces.id, workspace.id));
+    try {
+      await db.insert(schema.workspaces).values(newWorkspace);
+      workspace = { ...newWorkspace, projects: [] };
+    } catch (e) {
+      return redirect('/');
+    }
   }
 
   const projects = await Promise.all(
@@ -72,36 +65,32 @@ export default async function ProjectsOverviewPage() {
   const unpaid = workspace.tenantId.startsWith('org_') && workspace.plan === 'free';
 
   return (
-    <>
-      <DesktopTopBar className='flex items-center' />
-      <div className='p-4 border-l bg-background border-border w-full flex-1 lg:p-8'>
-        <PageHeader
-          title='Dashboard'
-          description='Manage your projects'
-          actions={[<CreateProjectButton disabled={unpaid} />]}
-        />
-        <Separator className='my-6' />
-        {unpaid ? (
-          <div>
-            <div className='mt-10 flex min-h-[400px] flex-col items-center  justify-center space-y-6 rounded-lg border border-dashed px-4 md:mt-24'>
-              <h3 className='text-center text-xl font-semibold leading-none tracking-tight md:text-2xl'>
-                Please add billing to your account
-              </h3>
-              <p className='text-center text-sm text-gray-500 md:text-base'>
-                Team workspaces is a paid feature. Please add billing to your account to continue using it.
-              </p>
-              <Link
-                href='/app/settings/billing/stripe'
-                target='_blank'
-                className='mr-3 rounded-lg bg-gray-800 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-500 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 dark:focus:ring-gray-800'>
-                Add billing
-              </Link>
-            </div>
+    <div className='p-4 border-l bg-background border-border w-full flex-1 lg:p-8'>
+      <PageHeader
+        title='Dashboard'
+        description='Manage your projects'
+        actions={[<CreateProjectButton disabled={unpaid} />]}
+      />
+      <Separator className='my-6' />
+      {unpaid ? (
+        <div>
+          <div className='mt-10 flex min-h-[400px] flex-col items-center  justify-center space-y-6 rounded-lg border border-dashed px-4 md:mt-24'>
+            <h3 className='text-center text-xl font-semibold leading-none tracking-tight md:text-2xl'>
+              Please add billing to your account
+            </h3>
+            <p className='text-center text-sm text-gray-500 md:text-base'>
+              Team workspaces is a paid feature. Please add billing to your account to continue using it.
+            </p>
+            <Link
+              href='/app/billing'
+              className='mr-3 rounded-lg bg-gray-800 px-4 py-2 text-center text-sm font-medium text-white hover:bg-gray-500 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 dark:focus:ring-gray-800'>
+              Add billing
+            </Link>
           </div>
-        ) : (
-          <ProjectList projects={projects} />
-        )}
-      </div>
-    </>
+        </div>
+      ) : (
+        <ProjectList projects={projects} />
+      )}
+    </div>
   );
 }
