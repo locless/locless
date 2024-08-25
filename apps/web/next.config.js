@@ -7,6 +7,7 @@ const securityHeaders = [
 ];
 
 module.exports = {
+  pageExtensions: ['tsx', 'mdx', 'ts', 'js'],
   transpilePackages: ['@repo/ui', '@repo/db', '@repo/id'],
   webpack: config => {
     config.resolve.alias = {
@@ -25,14 +26,16 @@ module.exports = {
       },
     ];
   },
-  rewrites: () => [
+  redirects: () => [
     {
       source: '/docs',
       destination: 'https://locless.mintlify.app',
+      permanent: true,
     },
     {
       source: '/docs/:match*',
       destination: 'https://locless.mintlify.app/:match*',
+      permanent: true,
     },
   ],
 };
