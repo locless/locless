@@ -21,7 +21,6 @@ export const translations = mysqlTable(
     canReverseDeletion: boolean('canReverseDeletion').notNull().default(true),
   },
   table => ({
-    projectIdx: index('projectIdx').on(table.projectId),
     workspaceIdx: index('workspaceIdx').on(table.workspaceId),
     fileIdx: index('fileIdx').on(table.fileId),
     projectIdAndName: index('projectIdAndName').on(table.projectId, table.name),
