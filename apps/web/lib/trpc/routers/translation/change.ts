@@ -5,7 +5,7 @@ import { UTApi } from 'uploadthing/server';
 import { db, eq, schema } from '@/lib/db';
 import { auth, t } from '../../trpc';
 import { env } from '@/lib/env';
-import { publishEventApiRequests, publishEventStorageUsage } from '@/lib/tinybird';
+import { publishEventApiRequests, publishEventStorageUsage, TBClient } from '@/lib/tinybird';
 
 const GIGABYTE = Math.pow(1024, 3);
 const MAX_FREE_SIZE = 1 * GIGABYTE;
@@ -90,7 +90,7 @@ export const changeTranslation = t.procedure
         .where(eq(schema.workspaces.id, translation.workspaceId));
     });
 
-    await publishEventStorageUsage({
+    await publishEventStorageUsage(TBClient)({
       projectId: translation.projectId,
       elementId: translation.id,
       type: 'translation',
@@ -99,7 +99,7 @@ export const changeTranslation = t.procedure
       time: Date.now(),
     });
 
-    await publishEventApiRequests({
+    await publishEventApiRequests(TBClient)({
       projectId: translation.projectId,
       elementId: translation.id,
       type: 'translation',

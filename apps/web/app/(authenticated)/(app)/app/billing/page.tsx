@@ -4,7 +4,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@repo/ui/components/ui/
 import { getTenantId } from '@/lib/auth';
 import { type Workspace, db } from '@/lib/db';
 import { stripeEnv } from '@/lib/env';
-import { apiRequests, storageUsage } from '@/lib/tinybird';
+import { apiRequests, storageUsage, TBClient } from '@/lib/tinybird';
 import { cn } from '@repo/ui/lib/utils';
 import { type BillingTier, QUOTA, calculateTieredPrices } from '@repo/billing';
 import { Check, ExternalLink } from 'lucide-react';
@@ -44,16 +44,16 @@ const FreeUsage: React.FC<{ workspace: Workspace }> = async ({ workspace }) => {
   const month = t.getUTCMonth() + 1;
 
   const [usedApiRequests, usedStorageUsage] = await Promise.all([
-    apiRequests({
+    apiRequests(TBClient)({
       workspaceId: workspace.id,
       year,
       month,
-    }).then(res => res.data.at(0)?.success ?? 0),
-    storageUsage({
+    }).then((res: any) => res.data.at(0)?.success ?? 0),
+    storageUsage(TBClient)({
       workspaceId: workspace.id,
       year,
       month,
-    }).then(res => res.data.at(0)?.bandwidth ?? 0),
+    }).then((res: any) => res.data.at(0)?.bandwidth ?? 0),
   ]);
 
   return (
@@ -186,16 +186,16 @@ const PaidUsage: React.FC<{ workspace: Workspace }> = async ({ workspace }) => {
   const month = startOfMonth.getUTCMonth() + 1;
 
   const [usedApiRequests, usedStorageUsage] = await Promise.all([
-    apiRequests({
+    apiRequests(TBClient)({
       workspaceId: workspace.id,
       year,
       month,
-    }).then(res => res.data.at(0)?.success ?? 0),
-    storageUsage({
+    }).then((res: any) => res.data.at(0)?.success ?? 0),
+    storageUsage(TBClient)({
       workspaceId: workspace.id,
       year,
       month,
-    }).then(res => res.data.at(0)?.bandwidth ?? 0),
+    }).then((res: any) => res.data.at(0)?.bandwidth ?? 0),
   ]);
 
   let currentPrice = 0;
