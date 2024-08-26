@@ -41,7 +41,6 @@ export const createWorkspace = t.procedure
       deletedAt: null,
       enabled: true,
       isPersonal: false,
-      canReverseDeletion: true,
       isUsageExceeded: false,
       planChanged: null,
       planDowngradeRequest: null,

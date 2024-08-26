@@ -8,6 +8,8 @@ export const env = () =>
       RESEND_API_KEY: z.string().optional(),
       RESEND_AUDIENCE_ID: z.string().optional(),
       CLERK_WEBHOOK_SECRET: z.string().optional(),
+      UNKEY_API_ID: z.string().optional(),
+      UNKEY_ROOT_KEY: z.string().optional(),
     })
     .parse(process.env);
 

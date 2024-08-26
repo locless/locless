@@ -25,19 +25,14 @@ export const createProject = t.procedure
     }
 
     const projectId = newId('project');
-    const keyAuth = newId('keyAuth');
-    const keyPublic = newId('keyPublic');
 
     const project: Project = {
       id: projectId,
       name: input.name,
       workspaceId: ws.id,
-      keyAuth,
-      keyPublic,
       createdAt: new Date(),
       deletedAt: null,
       enabled: true,
-      canReverseDeletion: true,
     };
 
     await db.insert(schema.projects).values(project);
