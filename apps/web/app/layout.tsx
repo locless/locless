@@ -77,6 +77,13 @@ export const metadata = {
     description: 'Accelerate your mobile development ',
     url: 'https://locless.com',
     siteName: 'locless.com',
+    images: [
+      {
+        url: `https://locless.com/images/og.png`,
+        width: 1200,
+        height: 675,
+      },
+    ],
   },
   robots: {
     index: true,
