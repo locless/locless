@@ -3,18 +3,18 @@ import { z } from 'zod';
 
 import { db } from '@/lib/db';
 import { auth, t } from '../../trpc';
-import { unkey } from '@/lib/unkey';
+import { unkey, unkey_api_id } from '@/lib/unkey';
 
-export const updateProjectKey = t.procedure
+export const createProjectKey = t.procedure
   .use(auth)
   .input(
     z.object({
+      name: z.string().min(1).max(50),
       projectId: z.string(),
-      keyId: z.string(),
-      enabled: z.boolean(),
+      permission: z.enum(['api.private_key', 'api.public_key']),
     })
   )
-  .mutation(async ({ ctx, input }) => {
+  .mutation(async ({ input, ctx }) => {
     const project = await db.query.projects.findFirst({
       where: (table, { eq, and, isNull }) => and(eq(table.id, input.projectId), isNull(table.deletedAt)),
       with: {
@@ -26,12 +26,17 @@ export const updateProjectKey = t.procedure
       throw new TRPCError({ code: 'NOT_FOUND', message: 'project not found' });
     }
 
-    await unkey.keys.update({
-      keyId: input.keyId,
-      enabled: input.enabled,
+    const prefix = input.permission === 'api.private_key' ? 'loc_auth' : 'loc_pub';
+
+    const key = await unkey.keys.create({
+      apiId: unkey_api_id,
+      prefix,
+      ownerId: project.id,
+      name: input.name,
+      permissions: [input.permission],
     });
 
     return {
-      enabled: input.enabled,
+      key: key.result?.key,
     };
   });

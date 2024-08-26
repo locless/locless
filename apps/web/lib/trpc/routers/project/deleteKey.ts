@@ -5,16 +5,15 @@ import { db } from '@/lib/db';
 import { auth, t } from '../../trpc';
 import { unkey } from '@/lib/unkey';
 
-export const updateProjectKey = t.procedure
+export const deleteProjectKey = t.procedure
   .use(auth)
   .input(
     z.object({
-      projectId: z.string(),
       keyId: z.string(),
-      enabled: z.boolean(),
+      projectId: z.string(),
     })
   )
-  .mutation(async ({ ctx, input }) => {
+  .mutation(async ({ input, ctx }) => {
     const project = await db.query.projects.findFirst({
       where: (table, { eq, and, isNull }) => and(eq(table.id, input.projectId), isNull(table.deletedAt)),
       with: {
@@ -26,12 +25,5 @@ export const updateProjectKey = t.procedure
       throw new TRPCError({ code: 'NOT_FOUND', message: 'project not found' });
     }
 
-    await unkey.keys.update({
-      keyId: input.keyId,
-      enabled: input.enabled,
-    });
-
-    return {
-      enabled: input.enabled,
-    };
+    await unkey.keys.delete({ keyId: input.keyId });
   });

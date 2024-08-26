@@ -5,6 +5,7 @@ import { newId } from '@repo/id';
 import { Tinybird } from '@chronark/zod-bird';
 import { z } from 'zod';
 import isLocale from './utils/isLocale';
+import { verifyKey } from '@unkey/api';
 
 const GIGABYTE = Math.pow(1024, 3);
 const MAX_FREE_SIZE = 1 * GIGABYTE;
@@ -15,6 +16,7 @@ export type Env = {
   DATABASE_PASSWORD: string;
   UPLOADTHING_SECRET: string;
   TINYBIRD_TOKEN: string;
+  UNKEY_API_ID: string;
 };
 
 const app = new Hono<{ Bindings: Env }>();
@@ -52,10 +54,33 @@ app.get('/translations-pull', async c => {
     return c.text('Invalid Api Key', 400);
   }
 
+  const { result, error } = await verifyKey({
+    key: apiKeyPrivate,
+    apiId: c.env.UNKEY_API_ID,
+  });
+
+  if (error) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (!result.valid) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (!result.permissions?.includes('api.private_key')) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  const projectId = result.ownerId;
+
+  if (!projectId) {
+    return c.text('Invalid Api Key', 400);
+  }
+
   const db = createConnection(c.env);
 
   const project = await db.query.projects.findFirst({
-    where: (projects, { eq, and }) => and(eq(projects.keyAuth, apiKeyPrivate), isNull(projects.deletedAt)),
+    where: (projects, { eq, and }) => and(eq(projects.id, projectId), isNull(projects.deletedAt)),
     with: {
       workspace: true,
     },
@@ -99,12 +124,35 @@ app.get('/translations-id/:id', async c => {
     return c.text('Invalid Api Key', 400);
   }
 
+  const { result, error } = await verifyKey({
+    key: apiKeyPrivate,
+    apiId: c.env.UNKEY_API_ID,
+  });
+
+  if (error) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (!result.valid) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (!result.permissions?.includes('api.private_key')) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  const projectId = result.ownerId;
+
+  if (!projectId) {
+    return c.text('Invalid Api Key', 400);
+  }
+
   const { id } = await c.req.param();
 
   const db = createConnection(c.env);
 
   const project = await db.query.projects.findFirst({
-    where: (projects, { eq, and }) => and(eq(projects.keyAuth, apiKeyPrivate), isNull(projects.deletedAt)),
+    where: (projects, { eq, and }) => and(eq(projects.id, projectId), isNull(projects.deletedAt)),
     with: {
       workspace: true,
     },
@@ -164,6 +212,29 @@ app.get('/translations/:name', async c => {
     return c.text('Invalid Api Key', 400);
   }
 
+  const { result, error } = await verifyKey({
+    key: apiKeyPublic,
+    apiId: c.env.UNKEY_API_ID,
+  });
+
+  if (error) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (!result.valid) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (!result.permissions?.includes('api.public_key')) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  const projectId = result.ownerId;
+
+  if (!projectId) {
+    return c.text('Invalid Api Key', 400);
+  }
+
   const { name } = await c.req.param();
 
   if (!isLocale(name)) {
@@ -173,7 +244,7 @@ app.get('/translations/:name', async c => {
   const db = createConnection(c.env);
 
   const project = await db.query.projects.findFirst({
-    where: (projects, { eq, and }) => and(eq(projects.keyPublic, apiKeyPublic), isNull(projects.deletedAt)),
+    where: (projects, { eq, and }) => and(eq(projects.id, projectId), isNull(projects.deletedAt)),
     with: {
       workspace: true,
     },
@@ -234,10 +305,33 @@ app.get('/file/:name', async c => {
     return c.text('Invalid Api Key', 400);
   }
 
+  const { result, error } = await verifyKey({
+    key: apiKeyPublic,
+    apiId: c.env.UNKEY_API_ID,
+  });
+
+  if (error) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (!result.valid) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (!result.permissions?.includes('api.public_key')) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  const projectId = result.ownerId;
+
+  if (!projectId) {
+    return c.text('Invalid Api Key', 400);
+  }
+
   const db = createConnection(c.env);
 
   const project = await db.query.projects.findFirst({
-    where: (projects, { eq, and }) => and(eq(projects.keyPublic, apiKeyPublic), isNull(projects.deletedAt)),
+    where: (projects, { eq, and }) => and(eq(projects.id, projectId), isNull(projects.deletedAt)),
     with: {
       workspace: true,
     },
@@ -304,6 +398,29 @@ app.post('/generate', async c => {
     return c.text('Invalid Api Key', 400);
   }
 
+  const { result, error } = await verifyKey({
+    key: apiKeyPrivate,
+    apiId: c.env.UNKEY_API_ID,
+  });
+
+  if (error) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (!result.valid) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (!result.permissions?.includes('api.private_key')) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  const projectId = result.ownerId;
+
+  if (!projectId) {
+    return c.text('Invalid Api Key', 400);
+  }
+
   const formData = await c.req.formData();
   const name = formData.get('name');
 
@@ -314,7 +431,7 @@ app.post('/generate', async c => {
   const db = createConnection(c.env);
 
   const project = await db.query.projects.findFirst({
-    where: (projects, { eq, and }) => and(eq(projects.keyAuth, apiKeyPrivate), isNull(projects.deletedAt)),
+    where: (projects, { eq, and }) => and(eq(projects.id, projectId), isNull(projects.deletedAt)),
     with: {
       workspace: true,
     },
@@ -410,7 +527,6 @@ app.post('/generate', async c => {
             updatedAt: creationDate,
             deletedAt: null,
             enabled: true,
-            canReverseDeletion: true,
             stats,
           });
 
@@ -466,6 +582,29 @@ app.post('/generate-translation', async c => {
     return c.text('Invalid Api Key', 400);
   }
 
+  const { result, error } = await verifyKey({
+    key: apiKeyPrivate,
+    apiId: c.env.UNKEY_API_ID,
+  });
+
+  if (error) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (!result.valid) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  if (!result.permissions?.includes('api.private_key')) {
+    return c.text('Invalid Api Key', 400);
+  }
+
+  const projectId = result.ownerId;
+
+  if (!projectId) {
+    return c.text('Invalid Api Key', 400);
+  }
+
   const formData = await c.req.formData();
   const name = formData.get('name');
 
@@ -476,7 +615,7 @@ app.post('/generate-translation', async c => {
   const db = createConnection(c.env);
 
   const project = await db.query.projects.findFirst({
-    where: (projects, { eq, and }) => and(eq(projects.keyAuth, apiKeyPrivate), isNull(projects.deletedAt)),
+    where: (projects, { eq, and }) => and(eq(projects.id, projectId), isNull(projects.deletedAt)),
     with: {
       workspace: true,
     },
@@ -587,7 +726,6 @@ app.post('/generate-translation', async c => {
             updatedAt: currentDate,
             deletedAt: null,
             enabled: true,
-            canReverseDeletion: true,
             stats,
           });
 

@@ -11,6 +11,8 @@ import { changeWorkspacePlan } from './workspace/changePlan';
 import { deleteTranslation } from './translation/delete';
 import { toggleStatusTranslation } from './translation/toggleStatus';
 import { changeTranslation } from './translation/change';
+import { createProjectKey } from './project/createKey';
+import { deleteProjectKey } from './project/deleteKey';
 
 export const router = t.router({
   project: t.router({
@@ -18,6 +20,8 @@ export const router = t.router({
     delete: deleteProject,
     updateName: updateProjectName,
     updateKey: updateProjectKey,
+    createKey: createProjectKey,
+    deleteKey: deleteProjectKey,
   }),
   workspace: t.router({
     create: createWorkspace,

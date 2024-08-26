@@ -7,9 +7,6 @@ const prefixes = {
   project: 'pr',
   component: 'cm',
   translation: 'tr',
-  branch: 'br',
-  keyAuth: 'loc_auth',
-  keyPublic: 'loc_pub',
 } as const;
 
 export function newId<TPrefix extends keyof typeof prefixes>(prefix: TPrefix) {

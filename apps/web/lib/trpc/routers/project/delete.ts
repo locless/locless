@@ -5,6 +5,7 @@ import { db, eq, schema } from '@/lib/db';
 import { auth, t } from '../../trpc';
 import { env } from '@/lib/env';
 import { UTApi } from 'uploadthing/server';
+import { unkey, unkey_api_id } from '@/lib/unkey';
 
 export const deleteProject = t.procedure
   .use(auth)
@@ -68,4 +69,14 @@ export const deleteProject = t.procedure
     });
 
     await utapi.deleteFiles(fileIDs);
+
+    const listKeys = await unkey.apis.listKeys({
+      apiId: unkey_api_id,
+      limit: 100,
+      ownerId: project.id,
+    });
+
+    if (listKeys.result && listKeys.result.keys.length > 0) {
+      await Promise.all(listKeys.result.keys.map(async key => await unkey.keys.delete({ keyId: key.id })));
+    }
   });

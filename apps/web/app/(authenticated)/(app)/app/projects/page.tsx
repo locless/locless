@@ -36,7 +36,6 @@ export default async function ProjectsOverviewPage() {
       deletedAt: null,
       enabled: true,
       isPersonal: !tenantId.includes('org'),
-      canReverseDeletion: true,
       isUsageExceeded: false,
       planChanged: null,
       planDowngradeRequest: null,
