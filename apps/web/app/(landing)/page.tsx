@@ -7,6 +7,16 @@ export default async function Home() {
         <div className='relative isolate px-6 py-14 lg:px-8'>
           <div className='max-w-3xl'>
             <div className='text-center'>
+              <div className='h-[350px] w-11/12 relative overflow-hidden rounded-xl mb-10 mx-auto'>
+                <iframe
+                  width='100%'
+                  height='100%'
+                  src='https://www.youtube.com/embed/6rgK8r3k-kE?si=FIr8PG6Uw-A67IJc&autoplay=1&rel=0'
+                  title='YouTube video player'
+                  allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+                  allowFullScreen
+                />
+              </div>
               <h1 className='text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl'>
                 Remote UI for
                 <br />
